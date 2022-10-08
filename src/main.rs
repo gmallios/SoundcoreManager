@@ -12,6 +12,13 @@ use windows::{
     },
 };
 
+// Modes
+const TRANSPORT_MODE: &[u8; 14] = b"\x08\xee\x00\x00\x00\x06\x81\x0e\x00\x01\x01\x01\x00\x8e";
+const NORMAL_MODE: &[u8; 14] = b"\x08\xee\x00\x00\x00\x06\x81\x0e\x00\x02\x01\x01\x00\x8f";
+const ANC_INDOOR: &[u8; 14] = b"\x08\xee\x00\x00\x00\x06\x81\x0e\x00\x00\x02\x01\x00\x8e";
+const ANC_OUTDOOR: &[u8; 14] = b"\x08\xee\x00\x00\x00\x06\x81\x0e\x00\x00\x01\x01\x00\x8d";
+const ANC_TRANSPORT: &[u8; 14] = b"\x08\xee\x00\x00\x00\x06\x81\x0e\x00\x00\x00\x01\x00\x8c";
+
 fn main() {
     let res = init_winsock();
     if (res != 0) {
@@ -33,13 +40,8 @@ fn main() {
             thread::sleep(Duration::from_millis(100));
             windows::Win32::Networking::WinSock::recv(socket, buf, windows::Win32::Networking::WinSock::SEND_RECV_FLAGS(0));
             println!("Recived from socket {:?}", buf);
-            //sleep 1 sec
             thread::sleep(Duration::from_millis(500));
-            let TRANSPORT_MODE = b"\x08\xee\x00\x00\x00\x06\x81\x0e\x00\x01\x01\x01\x00\x8e";
-            let NORMAL_MODE = b"\x08\xee\x00\x00\x00\x06\x81\x0e\x00\x02\x01\x01\x00\x8f";
-            let ANC_INDOOR = b"\x08\xee\x00\x00\x00\x06\x81\x0e\x00\x00\x02\x01\x00\x8e";
-            let ANC_OUTDOOR = b"\x08\xee\x00\x00\x00\x06\x81\x0e\x00\x00\x01\x01\x00\x8d";
-            let ANC_TRANSPORT = b"\x08\xee\x00\x00\x00\x06\x81\x0e\x00\x00\x00\x01\x00\x8c";
+
             let _ = windows::Win32::Networking::WinSock::send(socket, ANC_INDOOR, windows::Win32::Networking::WinSock::SEND_RECV_FLAGS(0));
          }
         },
