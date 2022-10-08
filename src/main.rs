@@ -18,13 +18,15 @@ const NORMAL_MODE: &[u8; 14] = b"\x08\xee\x00\x00\x00\x06\x81\x0e\x00\x02\x01\x0
 const ANC_INDOOR: &[u8; 14] = b"\x08\xee\x00\x00\x00\x06\x81\x0e\x00\x00\x02\x01\x00\x8e";
 const ANC_OUTDOOR: &[u8; 14] = b"\x08\xee\x00\x00\x00\x06\x81\x0e\x00\x00\x01\x01\x00\x8d";
 const ANC_TRANSPORT: &[u8; 14] = b"\x08\xee\x00\x00\x00\x06\x81\x0e\x00\x00\x00\x01\x00\x8c";
+const known_uuids: [&str; 4] = ["00001101-0000-1000-8000-00805F9B34FB", "66666666-6666-6666-6666-666666666666", "77777777-7777-7777-7777-777777777777", "00002902-0000-1000-8000-00805f9b34fb"];
 
 fn main() {
     let res = init_winsock();
     if (res != 0) {
         println!("Error init winsock");
     }
-    let known_uuids = ["00001101-0000-1000-8000-00805F9B34FB", "66666666-6666-6666-6666-666666666666", "77777777-7777-7777-7777-777777777777", "00002902-0000-1000-8000-00805f9b34fb"];
+
+    // Liberty Air 2 Pro working uuid known_uuids[0]
     let status = try_connect_uuid(known_uuids[0]);
     println!("Connect status: {}", status.0);
     match status.1 {
