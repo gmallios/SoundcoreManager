@@ -1,3 +1,4 @@
+#![allow(warnings, unused)]
 use core::time;
 use std::{thread, time::Duration};
 
@@ -38,13 +39,18 @@ fn main() {
                   println!("send error code: {:?}", WSAGetLastError());
             }
             println!("send bytes: {:?}", b"\x08\xee\x00\x00\x00\x01\x01\n\x00\x02");
-            let buf: &mut [u8; 1024] = &mut [0; 1024];
-            thread::sleep(Duration::from_millis(100));
-            windows::Win32::Networking::WinSock::recv(socket, buf, windows::Win32::Networking::WinSock::SEND_RECV_FLAGS(0));
-            println!("Recived from socket {:?}", buf);
+            let buf: &mut [u8; 97] = &mut [0; 97];
             thread::sleep(Duration::from_millis(500));
 
+            
+            windows::Win32::Networking::WinSock::recv(socket, buf, windows::Win32::Networking::WinSock::SEND_RECV_FLAGS(0));
+            println!("Recived from socket {:X?}", buf);
+            println!("Battery: {:?}", buf[9]*10);
+            println!("ANC Mode: {:?}", &buf[96]);
+            thread::sleep(Duration::from_millis(500));
             //let _ = send_rfcomm(socket, ANC_INDOOR);
+
+            closesocket(socket);
          }
         },
         None => (),
