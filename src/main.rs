@@ -44,10 +44,14 @@ fn main() {
             println!("Recived from socket {:?}", buf);
             thread::sleep(Duration::from_millis(500));
 
-            let _ = windows::Win32::Networking::WinSock::send(socket, ANC_INDOOR, windows::Win32::Networking::WinSock::SEND_RECV_FLAGS(0));
+            //let _ = send_rfcomm(socket, ANC_INDOOR);
          }
         },
         None => (),
+    }
+
+    unsafe{
+        WSACleanup();
     }
    //  unsafe {
    //      // 1-31
@@ -62,44 +66,13 @@ fn main() {
 
 }
 
-fn try_connect(port: u32) -> i32 {
-    unsafe {
-        let sock = create_bt_sock();
-
-        if sock == windows::Win32::Networking::WinSock::INVALID_SOCKET {
-            println!("Error create sock");
-            WSACleanup();
-            return -1;
-        } else {
-            println!("Socket created...");
-
- 
-            let set_result = setsockopt(sock, SOL_RFCOMM.try_into().unwrap(), SO_SNDTIMEO.try_into().unwrap(), Some(&[1,0]));
-            println!("Set timeout: {}", set_result);
-
-            let mut sa: SOCKADDR_BTH = SOCKADDR_BTH {
-                addressFamily: AF_BTH,
-                btAddr: 0xAC122F6AD207, // set your bt mac
-                serviceClassId: std::mem::zeroed(),
-                port: port,
-            };
-
-            let status = windows::Win32::Networking::WinSock::connect(
-                sock,
-                &sa as *const SOCKADDR_BTH as *const SOCKADDR,
-                std::mem::size_of::<SOCKADDR_BTH>() as i32,
-            );
-            if (status == SOCKET_ERROR) {
-                let err = WSAGetLastError();
-                println!("Error connect socket: {:?}", err);
-            }
-            closesocket(sock);
-            return status;
-        }
+fn send_rfcomm(socket: SOCKET, packet: &[u8]) -> i32{
+    let res: i32;
+    unsafe{
+        res = windows::Win32::Networking::WinSock::send(socket, packet, windows::Win32::Networking::WinSock::SEND_RECV_FLAGS(0));
     }
+    return res
 }
-
-
 
 
 fn try_connect_uuid(uuid: &str) -> (i32, Option<SOCKET>) {
@@ -111,12 +84,6 @@ fn try_connect_uuid(uuid: &str) -> (i32, Option<SOCKET>) {
            WSACleanup();
            return (-1, None);
        } else {
-           println!("Socket created...");
-
-
-           let set_result = setsockopt(sock, SOL_RFCOMM.try_into().unwrap(), SO_SNDTIMEO.try_into().unwrap(), Some(&[1,0]));
-           println!("Set timeout: {}", set_result);
-
            let mut sa: SOCKADDR_BTH = SOCKADDR_BTH {
                addressFamily: AF_BTH,
                btAddr: 0xAC122F6AD207, // set your bt mac
@@ -161,3 +128,47 @@ fn init_winsock() -> i32 {
         return i_result;
     }
 }
+
+
+
+// Not using this
+// It takes a long time to find working port or it doesnt work at all ¯\_(ツ)_/¯
+// and it requires fixing to return the socket if connection is successfull
+// Maybe find a way to change timeout???
+fn try_connect(port: u32) -> i32 {
+   unsafe {
+       let sock = create_bt_sock();
+
+       if sock == windows::Win32::Networking::WinSock::INVALID_SOCKET {
+           println!("Error create sock");
+           WSACleanup();
+           return -1;
+       } else {
+           println!("Socket created...");
+
+
+           let set_result = setsockopt(sock, SOL_RFCOMM.try_into().unwrap(), SO_SNDTIMEO.try_into().unwrap(), Some(&[1,0]));
+           println!("Set timeout: {}", set_result);
+
+           let mut sa: SOCKADDR_BTH = SOCKADDR_BTH {
+               addressFamily: AF_BTH,
+               btAddr: 0xAC122F6AD207, // set your bt mac
+               serviceClassId: std::mem::zeroed(),
+               port: port,
+           };
+
+           let status = windows::Win32::Networking::WinSock::connect(
+               sock,
+               &sa as *const SOCKADDR_BTH as *const SOCKADDR,
+               std::mem::size_of::<SOCKADDR_BTH>() as i32,
+           );
+           if (status == SOCKET_ERROR) {
+               let err = WSAGetLastError();
+               println!("Error connect socket: {:?}", err);
+           }
+           closesocket(sock);
+           return status;
+       }
+   }
+}
+
