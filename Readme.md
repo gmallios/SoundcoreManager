@@ -3,23 +3,18 @@
 ## Get info and control soundcore earbuds with the power of rust.
 
 ### Working 
-- ANC Get/Set
+- Grabbing/Parsing Parsing A3951 info
+- Grabbing/Parsing A3951 SN and FW
+- Grabbing A3951 commands from decompiled source and sending them
 
 
 ### TODO: 
-- Case Battery decode
-- Earbud Battery decode
-- EQ Get/Set
-- Move project to lib format
-- Make it linux compatible
-
+- Parse (A3951 exclusive?) ANC Profiles
+- Create ANC Profiles and send them
+- Abstract A3951 Device
+- Abstract socket usage to handle other OSes
 
 # Notes
 ```
 Hardcoded windows api usage atm.
-```
-
-Example reponse(hex array) 
-```
-[9, FF, 0, 0, 1, 1, 1, 61, 0, 1, 1, 3, 4, 1, 0, 0, 0, 78, 78, 78, 78, 78, 78, 78, 78, 78, 78, 78, 78, 78, 78, 78, 78, FF, FF, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 63, 1, 54, 1, 66, 1, 54, 0, 1, 0, 0, 0, 2, 1, 0, 0, 1, 0, 0, 0, 0, 6E]
 ```
