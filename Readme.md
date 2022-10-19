@@ -13,6 +13,7 @@
 - Create ANC Profiles and send them
 - Abstract A3951 Device
 - Abstract socket usage to handle other OSes
+- Use Tauri for gui
 
 # Notes
 ```

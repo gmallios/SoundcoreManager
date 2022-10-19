@@ -1,20 +1,22 @@
 #![allow(warnings, unused)]
 use core::time;
-use std::ops::Add;
-use std::{thread, time::Duration};
+use std::{ops::Add, thread, time::Duration, fmt::Write, num::ParseIntError};
 
-use std::{fmt::Write, num::ParseIntError};
+
+use A3951::A3951Device;
 
 use windows::{
     self,
+    core::HSTRING,
     Win32::{
         Devices::Bluetooth::{AF_BTH, BTHPROTO_RFCOMM, SOCKADDR_BTH, SOL_RFCOMM},
         Networking::WinSock::{
             closesocket, setsockopt, WSACleanup, WSAGetLastError, WSAStartup, SOCKADDR, SOCKET,
-            SOCKET_ERROR, SOCK_STREAM, SO_RCVTIMEO, SO_SNDTIMEO, TIMEVAL, WSADATA,
+            SOCKET_ERROR, SOCK_STREAM, SO_RCVTIMEO, SO_SNDTIMEO, TIMEVAL, WSADATA, WSA_ERROR,
         },
     },
 };
+
 
 mod A3951;
 mod utils;
@@ -37,20 +39,21 @@ const BYTE_OFF: i32 = -1;
 const OPCODE_BAT: [u8; 7] = [0x08, 0xEE, 0x00, 0x00, 0x00, 0x01, 0x05];
 
 fn main() {
-    let signed2: Vec<i8> = vec![8, -18, 0, 0, 0, 1, 1];
-    let bytes = utils::i8vec_to_u8vec(signed2);
-    println!("{:?}", bytes);
+    let mut device = A3951Device::new().unwrap();
+    let a = device.connect_uuid("AC:12:2F:6A:D2:07", known_uuids[0]).unwrap();
+    device.get_info();
+    
+    // let signed2: Vec<i8> = vec![8, -18, 0, 0, 0, 1, 1];
+    // let bytes = utils::i8vec_to_u8vec(signed2);
+    // println!("{:?}", bytes);
 
-    let inp: &[u8] = &decode_hex("08ee0000000101").unwrap();
-    println!("inp: {:?}", inp);
-    println!(
-        "out: {:?}",
-        build_command_array_with_options_toggle_enabled(inp, None)
-    );
-    // let res = init_winsock();
-    // if (res != 0) {
-    //     println!("Error init winsock");
-    // }
+    // let inp: &[u8] = &decode_hex("08ee0000000101").unwrap();
+    // println!("inp: {:?}", inp);
+    // println!(
+    //     "out: {:?}",
+    //     build_command_array_with_options_toggle_enabled(inp, None)
+    // );
+   
 
     // // Liberty Air 2 Pro working uuid known_uuids[0]
     // let status = try_connect_uuid(known_uuids[0]);
@@ -97,9 +100,6 @@ fn main() {
     //     None => (),
     // }
 
-    // unsafe {
-    //     WSACleanup();
-    // }
     //  unsafe {
     //      // 1-31
     //      for port in 1..32 {
@@ -111,206 +111,91 @@ fn main() {
     //  }
 }
 
-fn get_A3195_info(sock: SOCKET) {
-    let cmd = build_command_array_with_options_toggle_enabled(
-        &A3951::create_A3951_command(A3951::CMD_DEVICE_INFO),
-        None,
-    );
-    unsafe {
-        let ret = windows::Win32::Networking::WinSock::send(
-            sock,
-            &cmd,
-            windows::Win32::Networking::WinSock::SEND_RECV_FLAGS(0),
-        );
-        if (ret == SOCKET_ERROR) {
-            println!("send error code: {:?}", WSAGetLastError());
-            return;
-        }
+// fn get_A3195_info(sock: SOCKET) {
+//     let cmd = build_command_array_with_options_toggle_enabled(
+//         &A3951::create_A3951_command(A3951::CMD_DEVICE_INFO),
+//         None,
+//     );
 
-        let buf: &mut [u8; 300] = &mut [0; 300];
-        thread::sleep(Duration::from_millis(100));
+//     send_rfcomm(sock, &cmd);
 
-        windows::Win32::Networking::WinSock::recv(
-            sock,
-            buf,
-            windows::Win32::Networking::WinSock::SEND_RECV_FLAGS(0),
-        );
-        // ParseA3951Info Method from A3951DeviceManager
+    
+//     thread::sleep(Duration::from_millis(100));
 
-        let HOST_DEVICE = buf[9];
-        let TWS_STATUS = buf[10].eq(&1);
-        let LEFT_BATTERY = buf[11]; // 0-5
-        let RIGHT_BATTERY = buf[12]; // 0-5
-        let LEFT_CHARGING: bool = buf[13].eq(&1);
-        let RIGHT_CHARGING: bool = buf[14].eq(&1);
-        let LEFT_BATTERY = buf[11];
-        let RIGHT_BATTERY = buf[12];
-        let mOption = &buf[86]; // Clamped to 2
-        let mANCOption = &buf[87]; // 0-3
-        let mTransOption = &buf[88]; // 0-2
-        let mANCCustom = &buf[89]; // 0-10 or 255
-        let SIDE_TONE = &buf[90].eq(&1);
-        let WEAR_DETECTION = &buf[91].eq(&1);
-        let TOUCH_TONE = &buf[92].eq(&1);
-        //print bat
-        println!(
-            "Left Battery: {:X?}, LeftCharging: {:X?}, Right Battery: {:X?}, RightCharging: {:X?},",
-            LEFT_BATTERY, LEFT_CHARGING, RIGHT_BATTERY, RIGHT_CHARGING
-        );
+//     unsafe {
+//         let buf = recv_rfcomm(sock, 100).unwrap();
+//         // ParseA3951Info Method from A3951DeviceManager
 
-        //print anc
-        println!(
-            "Option: {:X?}, ANCOption: {:X?}, ANCCustom: {:X?}, TransOption: {:X?}",
-            mOption, mANCOption, mANCCustom, mTransOption
-        );
-        //println!("Left  charging: {}", LEFT_CHARGING);
-        //println!("Right charging: {}", RIGHT_CHARGING);
-        //println!("Left  battery: {}", LEFT_BATTERY);
-        //println!("Right battery: {}", RIGHT_BATTERY);
-        println!("Recived from socket {:X?}", &buf);
-    }
-}
+//         let HOST_DEVICE = buf[9];
+//         let TWS_STATUS = buf[10].eq(&1);
+//         let LEFT_BATTERY = buf[11]; // 0-5
+//         let RIGHT_BATTERY = buf[12]; // 0-5
+//         let LEFT_CHARGING: bool = buf[13].eq(&1);
+//         let RIGHT_CHARGING: bool = buf[14].eq(&1);
+//         let LEFT_BATTERY = buf[11];
+//         let RIGHT_BATTERY = buf[12];
+//         let mOption = &buf[86]; // Clamped to 2
+//         let mANCOption = &buf[87]; // 0-3
+//         let mTransOption = &buf[88]; // 0-2
+//         let mANCCustom = &buf[89]; // 0-10 or 255
+//         let SIDE_TONE = &buf[90].eq(&1);
+//         let WEAR_DETECTION = &buf[91].eq(&1);
+//         let TOUCH_TONE = &buf[92].eq(&1);
+//         //print bat
+//         println!(
+//             "Left Battery: {:X?}, LeftCharging: {:X?}, Right Battery: {:X?}, RightCharging: {:X?},",
+//             LEFT_BATTERY, LEFT_CHARGING, RIGHT_BATTERY, RIGHT_CHARGING
+//         );
 
-fn get_info(sock: SOCKET) {
-    // Get Info Command ( SN, FW Version )
-    let buf = decode_hex("08ee00000001050a0006").unwrap();
-    unsafe {
-        let ret = windows::Win32::Networking::WinSock::send(
-            sock,
-            &buf,
-            windows::Win32::Networking::WinSock::SEND_RECV_FLAGS(0),
-        );
-        if (ret == SOCKET_ERROR) {
-            println!("send error code: {:?}", WSAGetLastError());
-            return;
-        }
+//         //print anc
+//         println!(
+//             "Option: {:X?}, ANCOption: {:X?}, ANCCustom: {:X?}, TransOption: {:X?}",
+//             mOption, mANCOption, mANCCustom, mTransOption
+//         );
+//         //println!("Left  charging: {}", LEFT_CHARGING);
+//         //println!("Right charging: {}", RIGHT_CHARGING);
+//         //println!("Left  battery: {}", LEFT_BATTERY);
+//         //println!("Right battery: {}", RIGHT_BATTERY);
+//         println!("Recived from socket {:X?}", &buf);
+//     }
+// }
 
-        let buf: &mut [u8; 50] = &mut [0; 50];
-        thread::sleep(Duration::from_millis(100));
+// fn get_info(sock: SOCKET) {
+//     // Get Info Command ( SN, FW Version )
+//     let buf = decode_hex("08ee00000001050a0006").unwrap();
+//     unsafe {
+//         let ret = windows::Win32::Networking::WinSock::send(
+//             sock,
+//             &buf,
+//             windows::Win32::Networking::WinSock::SEND_RECV_FLAGS(0),
+//         );
+//         if (ret == SOCKET_ERROR) {
+//             println!("send error code: {:?}", WSAGetLastError());
+//             return;
+//         }
 
-        windows::Win32::Networking::WinSock::recv(
-            sock,
-            buf,
-            windows::Win32::Networking::WinSock::SEND_RECV_FLAGS(0),
-        );
-        let SN = std::str::from_utf8(&buf[19..35]).unwrap();
-        let RIGHT_FW = std::str::from_utf8(&buf[14..19]).unwrap();
-        let LEFT_FW = std::str::from_utf8(&buf[9..14]).unwrap();
-        println!("SN: {}, Right FW: {}, Left FW: {}", SN, RIGHT_FW, LEFT_FW);
+//         let buf: &mut [u8; 50] = &mut [0; 50];
+//         thread::sleep(Duration::from_millis(100));
 
-        //println!("Recived from socket {:?}",  &buf);
-    }
-}
+//         windows::Win32::Networking::WinSock::recv(
+//             sock,
+//             buf,
+//             windows::Win32::Networking::WinSock::SEND_RECV_FLAGS(0),
+//         );
+//         let SN = std::str::from_utf8(&buf[19..35]).unwrap();
+//         let RIGHT_FW = std::str::from_utf8(&buf[14..19]).unwrap();
+//         let LEFT_FW = std::str::from_utf8(&buf[9..14]).unwrap();
+//         println!("SN: {}, Right FW: {}, Left FW: {}", SN, RIGHT_FW, LEFT_FW);
 
-fn send_rfcomm(socket: SOCKET, packet: &[u8]) -> i32 {
-    let res: i32;
-    unsafe {
-        res = windows::Win32::Networking::WinSock::send(
-            socket,
-            packet,
-            windows::Win32::Networking::WinSock::SEND_RECV_FLAGS(0),
-        );
-    }
-    return res;
-}
+//         //println!("Recived from socket {:?}",  &buf);
+//     }
+// }
 
-fn try_connect_uuid(uuid: &str) -> (i32, Option<SOCKET>) {
-    unsafe {
-        let sock = create_bt_sock();
 
-        if sock == windows::Win32::Networking::WinSock::INVALID_SOCKET {
-            println!("Error create sock");
-            WSACleanup();
-            return (-1, None);
-        } else {
-            let mut sa: SOCKADDR_BTH = SOCKADDR_BTH {
-                addressFamily: AF_BTH,
-                btAddr: 0xAC122F6AD207, // set your bt mac
-                serviceClassId: windows::core::GUID::from(uuid),
-                port: 0,
-            };
 
-            let status = windows::Win32::Networking::WinSock::connect(
-                sock,
-                &sa as *const SOCKADDR_BTH as *const SOCKADDR,
-                std::mem::size_of::<SOCKADDR_BTH>() as i32,
-            );
-            if (status == SOCKET_ERROR) {
-                let err = WSAGetLastError();
-                println!("Error connect socket: {:?}", err);
-                closesocket(sock);
-            }
 
-            return (status, Some(sock));
-        }
-    }
-}
 
-fn create_bt_sock() -> SOCKET {
-    unsafe {
-        let mut sock = windows::Win32::Networking::WinSock::INVALID_SOCKET;
-        sock = windows::Win32::Networking::WinSock::socket(
-            AF_BTH.into(),
-            SOCK_STREAM.into(),
-            BTHPROTO_RFCOMM.try_into().unwrap(),
-        );
-        return sock;
-    }
-}
 
-fn init_winsock() -> i32 {
-    unsafe {
-        let wsaData = Box::into_raw(Box::new(WSADATA::default()));
-        let i_result: i32;
-        i_result = WSAStartup(0x0202, wsaData);
-        return i_result;
-    }
-}
-
-// Not using this
-// It takes a long time to find working port or it doesnt work at all ¯\_(ツ)_/¯
-// and it requires fixing to return the socket if connection is successfull
-// Maybe find a way to change timeout???
-fn try_connect(port: u32) -> i32 {
-    unsafe {
-        let sock = create_bt_sock();
-
-        if sock == windows::Win32::Networking::WinSock::INVALID_SOCKET {
-            println!("Error create sock");
-            WSACleanup();
-            return -1;
-        } else {
-            println!("Socket created...");
-
-            let set_result = setsockopt(
-                sock,
-                SOL_RFCOMM.try_into().unwrap(),
-                SO_SNDTIMEO.try_into().unwrap(),
-                Some(&[1, 0]),
-            );
-            println!("Set timeout: {}", set_result);
-
-            let mut sa: SOCKADDR_BTH = SOCKADDR_BTH {
-                addressFamily: AF_BTH,
-                btAddr: 0xAC122F6AD207, // set your bt mac
-                serviceClassId: std::mem::zeroed(),
-                port: port,
-            };
-
-            let status = windows::Win32::Networking::WinSock::connect(
-                sock,
-                &sa as *const SOCKADDR_BTH as *const SOCKADDR,
-                std::mem::size_of::<SOCKADDR_BTH>() as i32,
-            );
-            if (status == SOCKET_ERROR) {
-                let err = WSAGetLastError();
-                println!("Error connect socket: {:?}", err);
-            }
-            closesocket(sock);
-            return status;
-        }
-    }
-}
 
 // https://stackoverflow.com/questions/52987181/how-can-i-convert-a-hex-string-to-a-u8-slice
 pub fn decode_hex(s: &str) -> Result<Vec<u8>, std::num::ParseIntError> {
