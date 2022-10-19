@@ -1,4 +1,6 @@
-use crate::utils::i8_to_u8vec;
+use std::num::ParseIntError;
+
+use crate::{utils::i8_to_u8vec, build_command_array_with_options_toggle_enabled};
 
 
 use windows::{
@@ -8,11 +10,52 @@ use windows::{
         Devices::Bluetooth::{AF_BTH, BTHPROTO_RFCOMM, SOCKADDR_BTH, SOL_RFCOMM},
         Networking::WinSock::{
             closesocket, setsockopt, WSACleanup, WSAGetLastError, WSAStartup, SOCKADDR, SOCKET,
-            SOCKET_ERROR, SOCK_STREAM, SO_RCVTIMEO, SO_SNDTIMEO, TIMEVAL, WSADATA, WSA_ERROR, send, SEND_RECV_FLAGS,
+            SOCKET_ERROR, SOCK_STREAM, SO_RCVTIMEO, SO_SNDTIMEO, TIMEVAL, WSADATA, WSA_ERROR, send, SEND_RECV_FLAGS, recv,
         },
     },
 };
 
+
+//TODO: More error types and rewrite winerrors 
+
+#[derive(Debug)]
+pub enum A3951Error {
+    Unknown
+}
+
+impl std::fmt::Display for A3951Error {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "{:}", std::error::Error::description(self))
+    }
+}
+
+impl std::error::Error for A3951Error {
+    fn description(&self) -> &str {
+        match self {
+            A3951Error::Unknown => "Unknown Error",
+            //A3951Error::Errno(_, ref message) => message.as_str(),
+        }
+    }
+}
+
+impl From<std::io::Error> for A3951Error {
+    fn from(error: std::io::Error) -> Self {
+        A3951Error::Unknown
+    }
+}
+
+impl From<std::num::ParseIntError> for A3951Error {
+    fn from(error: std::num::ParseIntError) -> Self {
+        A3951Error::Unknown
+    }
+}
+
+
+impl From<windows::core::Error> for A3951Error {
+    fn from(error: windows::core::Error) -> Self {
+        A3951Error::Unknown
+    }
+}
 
 
 
@@ -28,10 +71,10 @@ pub const WINAPI_FLAG: SEND_RECV_FLAGS = windows::Win32::Networking::WinSock::SE
 impl A3951Device {
    
 
-    pub fn new() -> Result<A3951Device, Box<dyn std::error::Error>> {
+    pub fn new() -> Result<A3951Device, A3951Error> {
         unsafe {
             if init_winsock() != 0 {
-                return Err(Box::new(windows::core::Error::new(
+                return Err(A3951Error::from(windows::core::Error::new(
                     windows::core::HRESULT(0),
                     HSTRING::from("winsock init error"),
                 )));
@@ -47,27 +90,31 @@ impl A3951Device {
         &mut self,
         mac_addr: &str,
         uuid: &str,
-    ) -> Result<(), Box<dyn std::error::Error>> {
+    ) -> Result<(), A3951Error> {
         self.sock = try_connect_uuid(self.sock, mac_addr, uuid)?;
         self.state = 1;
         Ok(())
     }
 
-    pub fn get_info(&self) {
-        self.send(&Self::create_cmd(CMD_DEVICE_INFO));
-        let resp = self.recv(1000).unwrap();
+    pub fn example_get_info(&self) {
+        let cmd = &Self::create_cmd(CMD_DEVICE_INFO);
+        println!("CMD: {:?}", cmd);
+        self.send(cmd);
+        std::thread::sleep(std::time::Duration::from_millis(100));
+        let resp = self.recv(100).unwrap();
         println!("resp: {:?}", resp);
     }
 
     pub fn create_cmd(inp: [i8; 7]) -> Vec<u8>{
-        return i8_to_u8vec(&inp);
+        return build_command_array_with_options_toggle_enabled(&i8_to_u8vec(&inp), None);
     }
 
-    fn send(&self, data: &[u8]) -> Result<(), Box<dyn std::error::Error>> {
+
+    fn send(&self, data: &[u8]) -> Result<(), A3951Error> {
         let mut bytes_sent = 0;
         unsafe {
             if send(self.sock, data, WINAPI_FLAG) == SOCKET_ERROR {
-                return Err(Box::new(windows::core::Error::new(
+                return Err(A3951Error::from(windows::core::Error::new(
                     windows::core::HRESULT(0),
                     HSTRING::from("send error"),
                 )));
@@ -76,11 +123,11 @@ impl A3951Device {
         Ok(())
     }
 
-    fn recv(&self, num_of_bytes: usize) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
-        let resp: Vec<u8> = vec![0; num_of_bytes];
+    fn recv(&self, num_of_bytes: usize) -> Result<Vec<u8>, A3951Error> {
+        let mut resp: Vec<u8> = vec![0; num_of_bytes];
         unsafe {
-            if send(self.sock, &resp, WINAPI_FLAG) == SOCKET_ERROR {
-                return Err(Box::new(windows::core::Error::new(
+            if recv(self.sock, &mut resp, WINAPI_FLAG) == SOCKET_ERROR {
+                return Err(A3951Error::from(windows::core::Error::new(
                     windows::core::HRESULT(0),
                     HSTRING::from("recv error"),
                 )));
@@ -133,7 +180,7 @@ fn try_connect_uuid(
     sock: SOCKET,
     addr: &str,
     uuid: &str,
-) -> Result<SOCKET, Box<dyn std::error::Error>> {
+) -> Result<SOCKET, A3951Error> {
     unsafe {
         let mut saddr: SOCKADDR_BTH = SOCKADDR_BTH {
             addressFamily: AF_BTH,
@@ -151,7 +198,7 @@ fn try_connect_uuid(
             let err = WSAGetLastError();
             println!("Error connect socket: {:?}", err);
             closesocket(sock);
-            return Err(Box::new(windows::core::Error::new(
+            return Err(A3951Error::from(windows::core::Error::new(
                 windows::core::HRESULT(0),
                 HSTRING::from("error connecting to socket"),
             )));
@@ -161,7 +208,7 @@ fn try_connect_uuid(
     }
 }
 
-fn create_bt_sock() -> Result<SOCKET, Box<dyn std::error::Error>> {
+fn create_bt_sock() -> Result<SOCKET, A3951Error> {
     unsafe {
         let mut sock = windows::Win32::Networking::WinSock::INVALID_SOCKET;
         sock = windows::Win32::Networking::WinSock::socket(
@@ -170,7 +217,7 @@ fn create_bt_sock() -> Result<SOCKET, Box<dyn std::error::Error>> {
             BTHPROTO_RFCOMM.try_into().unwrap(),
         );
         if (sock == windows::Win32::Networking::WinSock::INVALID_SOCKET) {
-            return Err(Box::new(windows::core::Error::new(
+            return Err(A3951Error::from(windows::core::Error::new(
                 windows::core::HRESULT(0),
                 HSTRING::from("failed creating socket"),
             )));

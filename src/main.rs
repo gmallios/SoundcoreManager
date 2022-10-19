@@ -40,8 +40,8 @@ const OPCODE_BAT: [u8; 7] = [0x08, 0xEE, 0x00, 0x00, 0x00, 0x01, 0x05];
 
 fn main() {
     let mut device = A3951Device::new().unwrap();
-    let a = device.connect_uuid("AC:12:2F:6A:D2:07", known_uuids[0]).unwrap();
-    device.get_info();
+    device.connect_uuid("AC:12:2F:6A:D2:07", known_uuids[0]).unwrap();
+    device.example_get_info();
     
     // let signed2: Vec<i8> = vec![8, -18, 0, 0, 0, 1, 1];
     // let bytes = utils::i8vec_to_u8vec(signed2);
@@ -254,7 +254,6 @@ pub fn build_command_array_with_options_toggle_enabled(
     let mut bArr3 = vec![0; length2 - 1];
     bArr3[..bArr.len()].copy_from_slice(bArr);
     let len2bArr = int_to_byte_array(length2 as i32);
-    println!("length2 {}", length2);
     bArr3[bArr.len()] = len2bArr[3] & 0xFF;
     bArr3[bArr.len() + 1] = len2bArr[2] & 0xFF;
     if bArr2.is_some() {
