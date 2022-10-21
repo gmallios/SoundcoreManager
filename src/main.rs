@@ -1,7 +1,6 @@
 #![allow(warnings, unused)]
 use core::time;
-use std::{ops::Add, thread, time::Duration, fmt::Write, num::ParseIntError};
-
+use std::{fmt::Write, num::ParseIntError, ops::Add, thread, time::Duration};
 
 use A3951::A3951Device;
 
@@ -17,16 +16,15 @@ use windows::{
     },
 };
 
-
 mod A3951;
 mod utils;
 
 // Modes
-const TRANSPORT_MODE: &[u8; 14] = b"\x08\xee\x00\x00\x00\x06\x81\x0e\x00\x01\x01\x01\x00\x8e";
-const NORMAL_MODE: &[u8; 14] = b"\x08\xee\x00\x00\x00\x06\x81\x0e\x00\x02\x01\x01\x00\x8f";
-const ANC_INDOOR: &[u8; 14] = b"\x08\xee\x00\x00\x00\x06\x81\x0e\x00\x00\x02\x01\x00\x8e";
-const ANC_OUTDOOR: &[u8; 14] = b"\x08\xee\x00\x00\x00\x06\x81\x0e\x00\x00\x01\x01\x00\x8d";
-const ANC_TRANSPORT: &[u8; 14] = b"\x08\xee\x00\x00\x00\x06\x81\x0e\x00\x00\x00\x01\x00\x8c";
+// const TRANSPORT_MODE: &[u8; 14] = b"\x08\xee\x00\x00\x00\x06\x81\x0e\x00\x01\x01\x01\x00\x8e";
+// const NORMAL_MODE: &[u8; 14] = b"\x08\xee\x00\x00\x00\x06\x81\x0e\x00\x02\x01\x01\x00\x8f";
+// const ANC_INDOOR: &[u8; 14] = b"\x08\xee\x00\x00\x00\x06\x81\x0e\x00\x00\x02\x01\x00\x8e";
+// const ANC_OUTDOOR: &[u8; 14] = b"\x08\xee\x00\x00\x00\x06\x81\x0e\x00\x00\x01\x01\x00\x8d";
+// const ANC_TRANSPORT: &[u8; 14] = b"\x08\xee\x00\x00\x00\x06\x81\x0e\x00\x00\x00\x01\x00\x8c";
 const known_uuids: [&str; 4] = [
     "00001101-0000-1000-8000-00805F9B34FB",
     "66666666-6666-6666-6666-666666666666",
@@ -40,9 +38,21 @@ const OPCODE_BAT: [u8; 7] = [0x08, 0xEE, 0x00, 0x00, 0x00, 0x01, 0x05];
 
 fn main() {
     let mut device = A3951Device::new().unwrap();
-    device.connect_uuid("AC:12:2F:6A:D2:07", known_uuids[0]).unwrap();
-    device.example_get_info();
-    
+    device
+        .connect_uuid("AC:12:2F:6A:D2:07", known_uuids[0])
+        .unwrap();
+    let info = device.get_info().unwrap();
+    println!(
+        "SN: {}, Right FW: {}, Left FW: {}",
+        info.sn, info.right_fw, info.left_fw
+    );
+    let status = device.get_status().unwrap();
+    println!(
+        "Left Battery: {:X?}, LeftCharging: {:X?}, Right Battery: {:X?}, RightCharging: {:X?},",
+        status.left_battery_level, status.left_battery_charging, status.right_battery_level, status.right_battery_charging
+    );
+
+
     // let signed2: Vec<i8> = vec![8, -18, 0, 0, 0, 1, 1];
     // let bytes = utils::i8vec_to_u8vec(signed2);
     // println!("{:?}", bytes);
@@ -53,7 +63,6 @@ fn main() {
     //     "out: {:?}",
     //     build_command_array_with_options_toggle_enabled(inp, None)
     // );
-   
 
     // // Liberty Air 2 Pro working uuid known_uuids[0]
     // let status = try_connect_uuid(known_uuids[0]);
@@ -119,7 +128,6 @@ fn main() {
 
 //     send_rfcomm(sock, &cmd);
 
-    
 //     thread::sleep(Duration::from_millis(100));
 
 //     unsafe {
@@ -190,12 +198,6 @@ fn main() {
 //         //println!("Recived from socket {:?}",  &buf);
 //     }
 // }
-
-
-
-
-
-
 
 // https://stackoverflow.com/questions/52987181/how-can-i-convert-a-hex-string-to-a-u8-slice
 pub fn decode_hex(s: &str) -> Result<Vec<u8>, std::num::ParseIntError> {

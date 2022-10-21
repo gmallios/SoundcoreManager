@@ -1,6 +1,6 @@
-use std::num::ParseIntError;
+use std::{num::ParseIntError, time::Duration, string::ParseError, str::Utf8Error};
 
-use crate::{utils::i8_to_u8vec, build_command_array_with_options_toggle_enabled};
+use crate::{utils::{i8_to_u8vec, Clamp}, build_command_array_with_options_toggle_enabled};
 
 
 use windows::{
@@ -20,7 +20,9 @@ use windows::{
 
 #[derive(Debug)]
 pub enum A3951Error {
-    Unknown
+    Unknown,
+    ParseError,
+    WinError(String)
 }
 
 impl std::fmt::Display for A3951Error {
@@ -33,7 +35,8 @@ impl std::error::Error for A3951Error {
     fn description(&self) -> &str {
         match self {
             A3951Error::Unknown => "Unknown Error",
-            //A3951Error::Errno(_, ref message) => message.as_str(),
+            A3951Error::ParseError => "Parse Error",
+            A3951Error::WinError(ref message) => message.as_str(),
         }
     }
 }
@@ -53,7 +56,13 @@ impl From<std::num::ParseIntError> for A3951Error {
 
 impl From<windows::core::Error> for A3951Error {
     fn from(error: windows::core::Error) -> Self {
-        A3951Error::Unknown
+        A3951Error::WinError(error.to_string())
+    }
+}
+
+impl From<std::string::FromUtf8Error> for A3951Error {
+    fn from(error: std::string::FromUtf8Error) -> Self {
+        A3951Error::ParseError
     }
 }
 
@@ -62,10 +71,12 @@ impl From<windows::core::Error> for A3951Error {
 
 pub(crate) struct A3951Device {
     sock: SOCKET,
-    pub state: i32
+    connected: bool
 }
 
-static CMD_DEVICE_INFO: [i8; 7] = [8,-18,0,0,0,1,1];
+static CMD_DEVICE_STATUS: [i8; 7] = [8,-18,0,0,0,1,1];
+static CMD_DEVICE_INFO: [i8; 7] = [8,-18,0,0,0,1,5];
+static SLEEP_DURATION: Duration = std::time::Duration::from_millis(100);
 pub const WINAPI_FLAG: SEND_RECV_FLAGS = windows::Win32::Networking::WinSock::SEND_RECV_FLAGS(0);
 
 impl A3951Device {
@@ -82,7 +93,7 @@ impl A3951Device {
         }
         Ok(A3951Device {
             sock: create_bt_sock()?,
-            state: 0
+            connected: false
         })
     }
 
@@ -92,17 +103,25 @@ impl A3951Device {
         uuid: &str,
     ) -> Result<(), A3951Error> {
         self.sock = try_connect_uuid(self.sock, mac_addr, uuid)?;
-        self.state = 1;
         Ok(())
     }
 
-    pub fn example_get_info(&self) {
+
+    //TODO: Check for command in response ( 2 bytes )
+    pub fn get_info(&self) -> Result<A3951DeviceInfo, A3951Error> {
         let cmd = &Self::create_cmd(CMD_DEVICE_INFO);
-        println!("CMD: {:?}", cmd);
-        self.send(cmd);
-        std::thread::sleep(std::time::Duration::from_millis(100));
-        let resp = self.recv(100).unwrap();
-        println!("resp: {:?}", resp);
+        self.send(cmd)?;
+        std::thread::sleep(SLEEP_DURATION);
+        let resp = self.recv(50)?;
+        Ok(A3951DeviceInfo::from_bytes(&resp)?)
+    }
+
+    pub fn get_status(&self) -> Result<A3951DeviceStatus, A3951Error> {
+        let cmd = &Self::create_cmd(CMD_DEVICE_STATUS);
+        self.send(cmd)?;
+        std::thread::sleep(SLEEP_DURATION);
+        let resp = self.recv(100)?;
+        Ok(A3951DeviceStatus::from_bytes(&resp)?)
     }
 
     pub fn create_cmd(inp: [i8; 7]) -> Vec<u8>{
@@ -152,28 +171,78 @@ impl Drop for A3951Device {
 }
 
 #[derive(Default)]
-pub(crate) struct A3951DeviceInfo {
-    name: String,
-    mac_address: String,
-    status: A3951_STATUS,
-    anc: A3951_ANC,
+pub struct A3951DeviceInfo {
+    pub left_fw: String, 
+    pub right_fw: String,
+    pub sn: String,
+
+}
+impl A3951DeviceInfo {
+    fn from_bytes(arr: &[u8]) -> Result<A3951DeviceInfo, std::string::FromUtf8Error> {
+        Ok(A3951DeviceInfo {
+            left_fw:  String::from_utf8(arr[9..14].to_vec())?,
+            right_fw: String::from_utf8(arr[14..19].to_vec())?,
+            sn: String::from_utf8(arr[19..35].to_vec())?,
+        })
+    }
 }
 
 #[derive(Default)]
-pub(crate) struct A3951_STATUS {
-    HOST_DEVICE: u8,
-    TWS_STATUS: bool,
-    LEFT_BATTERY: u8,
-    RIGHT_BATTERY: u8,
-    LEFT_CHARGING: bool,
-    RIGHT_CHARGING: bool,
+pub struct A3951DeviceStatus {
+    pub host_device: u8,
+    pub tws_status: bool,
+    pub left_battery_level: u8,
+    pub right_battery_level: u8,
+    pub left_battery_charging: bool,
+    pub right_battery_charging: bool,
+    pub anc_status: A3951DeviceANC,
+    pub side_tone_enabled: bool,
+    pub wear_detection_enabled: bool,
+    pub touch_tone_enabled: bool,
 }
+
+impl A3951DeviceStatus {
+    fn from_bytes(arr: &[u8]) -> Result<A3951DeviceStatus, std::string::FromUtf8Error> {
+        Ok(A3951DeviceStatus {
+            host_device: arr[9],
+            tws_status: arr[10] == 1,
+            left_battery_level: Clamp::clamp(arr[9], 0, 5),
+            right_battery_level: Clamp::clamp(arr[12], 0 , 5),
+            left_battery_charging: arr[13] == 1,
+            right_battery_charging: arr[14] == 1,
+            anc_status: A3951DeviceANC::from_bytes(&arr[86..90])?,
+            side_tone_enabled: arr[90] == 1,
+            wear_detection_enabled: arr[91] == 1,
+            touch_tone_enabled: arr[92] == 1,
+        })
+    }
+}
+
 #[derive(Default)]
-pub(crate) struct A3951_ANC {
-    Option: u8,
-    ANCOption: u8,
-    TransOption: u8,
-    ANCCustom: u8,
+pub struct A3951DeviceANC {
+    pub option: u8,
+    pub anc_option: u8,
+    pub transparency_option: u8,
+    pub anc_custom: u8,
+}
+
+impl A3951DeviceANC {
+    fn from_bytes(arr: &[u8]) -> Result<A3951DeviceANC, std::string::FromUtf8Error> {
+        let mut anc_custom: u8;
+
+        if arr[3] == 255{
+            anc_custom = 255;
+        } else {
+            anc_custom = Clamp::clamp(arr[3], 0, 10);
+        }
+        
+        Ok(A3951DeviceANC {
+            option: Clamp::clamp(arr[0], 0, 2),
+            anc_option: Clamp::clamp(arr[1], 0, 3),
+            transparency_option: arr[2],
+            anc_custom
+        })
+    }
 }
 
 fn try_connect_uuid(
