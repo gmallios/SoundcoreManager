@@ -21,7 +21,7 @@ static CMD_DEVICE_BATTERYLEVEL: [i8; 7] = [8, -18, 0, 0, 0, 1, 3];
 static CMD_DEVICE_BATTERYCHARGING: [i8; 7] = [8, -18, 0, 0, 0, 1, 4];
 static CMD_DEVICE_LDAC: [i8; 7] = [8, -18, 0, 0, 0, 1, 127]; // NOTE: Last byte is Byte.MAX_VALUE from java. Im not sure about the value
 static CMD_DEVICE_GETEQ: [i8; 7] = [8, -18, 0, 0, 0, 2, 1]; // Not tested yet.
-static CMD_DEVICE_GETANC: [i8; 7] = [8, -18, 0, 0, 0, 6, 2]; // Not tested yet.
+static CMD_DEVICE_GETANC: [i8; 7] = [8, -18, 0, 0, 0, 6, 1];
 static CMD_DEVICE_SETANC: [i8; 7] = [8, -18, 0, 0, 0, 6, -127];
 
 static SLEEP_DURATION: Duration = std::time::Duration::from_millis(100);
@@ -97,6 +97,14 @@ impl A3951Device {
         std::thread::sleep(SLEEP_DURATION);
         let resp = self.recv(20)?;
         Ok(resp[9] == 1)
+    }
+
+    pub fn get_anc(&self) -> Result<A3951DeviceANC, A3951Error> {
+        let cmd = &Self::create_cmd(CMD_DEVICE_GETANC);
+        self.send(cmd)?;
+        std::thread::sleep(SLEEP_DURATION);
+        let resp = self.recv(50)?;
+        Ok(A3951DeviceANC::from_bytes(&resp[9..13])?)
     }
 
     pub fn set_anc(&self, anc_profile: A3951DeviceANC) -> Result<(), A3951Error> {
