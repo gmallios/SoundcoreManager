@@ -28,9 +28,9 @@ static SLEEP_DURATION: Duration = std::time::Duration::from_millis(100);
 
 pub const WINAPI_FLAG: SEND_RECV_FLAGS = windows::Win32::Networking::WinSock::SEND_RECV_FLAGS(0);
 
-pub(crate) struct A3951Device {
+pub struct A3951Device {
     sock: SOCKET,
-    connected: bool,
+    //connected: bool,
     // For future use. Not implemented yet. It will enable us to not handle socket/sending/receiving.
     // send_fn: Box<dyn FnMut(&[u8]) -> Result<(), A3951Error>>,
     // recv_fn: Box<dyn FnMut(usize) -> Result<Vec<u8>, Box<dyn std::error::Error>>>,
@@ -38,17 +38,16 @@ pub(crate) struct A3951Device {
 
 impl A3951Device {
     pub fn new() -> Result<A3951Device, A3951Error> {
-        unsafe {
-            if init_winsock() != 0 {
-                return Err(A3951Error::from(windows::core::Error::new(
-                    windows::core::HRESULT(0),
-                    HSTRING::from("winsock init error"),
-                )));
-            }
+        if init_winsock() != 0 {
+            return Err(A3951Error::from(windows::core::Error::new(
+                windows::core::HRESULT(0),
+                HSTRING::from("winsock init error"),
+            )));
         }
+
         Ok(A3951Device {
             sock: create_bt_sock()?,
-            connected: false,
+            //connected: false,
         })
     }
 
@@ -56,7 +55,6 @@ impl A3951Device {
         self.sock = try_connect_uuid(self.sock, mac_addr, uuid)?;
         Ok(())
     }
-
 
     //TODO: Check for command in response ( 2 bytes )
     pub fn get_info(&self) -> Result<A3951DeviceInfo, A3951Error> {
@@ -111,7 +109,8 @@ impl A3951Device {
         let cmd = &Self::create_cmd_with_data(CMD_DEVICE_SETANC, anc_profile.to_bytes().to_vec());
         self.send(cmd)?;
         std::thread::sleep(SLEEP_DURATION);
-        let resp = self.recv(10)?;
+        // Validate resp??
+        let _resp = self.recv(10)?;
         Ok(())
     }
 
@@ -124,7 +123,6 @@ impl A3951Device {
     }
 
     fn send(&self, data: &[u8]) -> Result<(), A3951Error> {
-        let mut bytes_sent = 0;
         unsafe {
             if send(self.sock, data, WINAPI_FLAG) == SOCKET_ERROR {
                 return Err(A3951Error::from(windows::core::Error::new(
@@ -301,7 +299,7 @@ impl A3951DeviceANC {
     };
 
     fn from_bytes(arr: &[u8]) -> Result<A3951DeviceANC, std::string::FromUtf8Error> {
-        let mut anc_custom: u8;
+        let anc_custom: u8;
 
         if arr[3] == 255 {
             anc_custom = 255;
@@ -318,7 +316,7 @@ impl A3951DeviceANC {
     }
 
     fn to_bytes(&self) -> [u8; 4] {
-        let mut anc_custom: u8;
+        let anc_custom: u8;
 
         if self.anc_custom == 255 {
             anc_custom = 255;
@@ -432,10 +430,10 @@ fn create_bt_sock() -> Result<SOCKET, A3951Error> {
 }
 
 fn init_winsock() -> i32 {
-    let wsaData = Box::into_raw(Box::new(WSADATA::default()));
+    let wsa_data = Box::into_raw(Box::new(WSADATA::default()));
     let i_result: i32;
     unsafe {
-        i_result = WSAStartup(0x0202, wsaData);
+        i_result = WSAStartup(0x0202, wsa_data);
     }
     return i_result;
 }
@@ -511,13 +509,13 @@ impl std::error::Error for A3951Error {
 }
 
 impl From<std::io::Error> for A3951Error {
-    fn from(error: std::io::Error) -> Self {
+    fn from(_error: std::io::Error) -> Self {
         A3951Error::Unknown
     }
 }
 
 impl From<std::num::ParseIntError> for A3951Error {
-    fn from(error: std::num::ParseIntError) -> Self {
+    fn from(_error: std::num::ParseIntError) -> Self {
         A3951Error::Unknown
     }
 }
@@ -529,7 +527,7 @@ impl From<windows::core::Error> for A3951Error {
 }
 
 impl From<std::string::FromUtf8Error> for A3951Error {
-    fn from(error: std::string::FromUtf8Error) -> Self {
+    fn from(_error: std::string::FromUtf8Error) -> Self {
         A3951Error::ParseError
     }
 }
