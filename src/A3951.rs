@@ -1,7 +1,6 @@
-use std::{num::ParseIntError, time::Duration, string::ParseError, str::Utf8Error};
+use std::{num::ParseIntError, str::Utf8Error, string::ParseError, time::Duration};
 
-use crate::{utils::{i8_to_u8vec, Clamp}, build_command_array_with_options_toggle_enabled};
-
+use crate::utils::{build_command_array_with_options_toggle_enabled, i8_to_u8vec, Clamp};
 
 use windows::{
     self,
@@ -9,79 +8,26 @@ use windows::{
     Win32::{
         Devices::Bluetooth::{AF_BTH, BTHPROTO_RFCOMM, SOCKADDR_BTH, SOL_RFCOMM},
         Networking::WinSock::{
-            closesocket, setsockopt, WSACleanup, WSAGetLastError, WSAStartup, SOCKADDR, SOCKET,
-            SOCKET_ERROR, SOCK_STREAM, SO_RCVTIMEO, SO_SNDTIMEO, TIMEVAL, WSADATA, WSA_ERROR, send, SEND_RECV_FLAGS, recv,
+            closesocket, recv, send, setsockopt, WSACleanup, WSAGetLastError, WSAStartup,
+            SEND_RECV_FLAGS, SOCKADDR, SOCKET, SOCKET_ERROR, SOCK_STREAM, SO_RCVTIMEO, SO_SNDTIMEO,
+            TIMEVAL, WSADATA, WSA_ERROR,
         },
     },
 };
 
+static CMD_DEVICE_STATUS: [i8; 7] = [8, -18, 0, 0, 0, 1, 1];
+static CMD_DEVICE_INFO: [i8; 7] = [8, -18, 0, 0, 0, 1, 5];
+static CMD_DEVICE_BATTERYLEVEL: [i8; 7] = [8, -18, 0, 0, 0, 1, 3];
+static CMD_DEVICE_BATTERYCHARGING: [i8; 7] = [8, -18, 0, 0, 0, 1, 4];
+static CMD_DEVICE_LDAC: [i8; 7] = [8, -18, 0, 0, 0, 1, 127]; // Last byte is Byte.MAX_VALUE from java. Im not sure about the value
+static CMD_DEVICE_EQINFO: [i8; 7] = [8, -18, 0, 0, 0, 2, 1]; // Not tested yet.
+static CMD_DEVICE_GETANCINFO: [i8; 7] = [8, -18, 0, 0, 0, 6, 2]; // Not tested yet.
 
-//TODO: More error types and rewrite winerrors 
-
-#[derive(Debug)]
-pub enum A3951Error {
-    Unknown,
-    ParseError,
-    WinError(String)
-}
-
-impl std::fmt::Display for A3951Error {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{:}", std::error::Error::description(self))
-    }
-}
-
-impl std::error::Error for A3951Error {
-    fn description(&self) -> &str {
-        match self {
-            A3951Error::Unknown => "Unknown Error",
-            A3951Error::ParseError => "Parse Error",
-            A3951Error::WinError(ref message) => message.as_str(),
-        }
-    }
-}
-
-impl From<std::io::Error> for A3951Error {
-    fn from(error: std::io::Error) -> Self {
-        A3951Error::Unknown
-    }
-}
-
-impl From<std::num::ParseIntError> for A3951Error {
-    fn from(error: std::num::ParseIntError) -> Self {
-        A3951Error::Unknown
-    }
-}
-
-
-impl From<windows::core::Error> for A3951Error {
-    fn from(error: windows::core::Error) -> Self {
-        A3951Error::WinError(error.to_string())
-    }
-}
-
-impl From<std::string::FromUtf8Error> for A3951Error {
-    fn from(error: std::string::FromUtf8Error) -> Self {
-        A3951Error::ParseError
-    }
-}
-
-
-
-
-pub(crate) struct A3951Device {
-    sock: SOCKET,
-    connected: bool
-}
-
-static CMD_DEVICE_STATUS: [i8; 7] = [8,-18,0,0,0,1,1];
-static CMD_DEVICE_INFO: [i8; 7] = [8,-18,0,0,0,1,5];
 static SLEEP_DURATION: Duration = std::time::Duration::from_millis(100);
+
 pub const WINAPI_FLAG: SEND_RECV_FLAGS = windows::Win32::Networking::WinSock::SEND_RECV_FLAGS(0);
 
 impl A3951Device {
-   
-
     pub fn new() -> Result<A3951Device, A3951Error> {
         unsafe {
             if init_winsock() != 0 {
@@ -93,19 +39,45 @@ impl A3951Device {
         }
         Ok(A3951Device {
             sock: create_bt_sock()?,
-            connected: false
+            connected: false,
         })
     }
 
-    pub fn connect_uuid(
-        &mut self,
-        mac_addr: &str,
-        uuid: &str,
-    ) -> Result<(), A3951Error> {
+    pub fn connect_uuid(&mut self, mac_addr: &str, uuid: &str) -> Result<(), A3951Error> {
         self.sock = try_connect_uuid(self.sock, mac_addr, uuid)?;
         Ok(())
     }
 
+    /* TEST FUNCTIONS ARE WIP */
+
+    pub fn test_batt_level(&self) {
+        // Charging and levels from genearl status seem fuzzy.
+        let cmd = &Self::create_cmd(CMD_DEVICE_BATTERYLEVEL);
+        self.send(cmd);
+        std::thread::sleep(SLEEP_DURATION);
+        let resp = self.recv(100).unwrap();
+        println!("resp: {:?}", resp);
+        println!("left batt: {:?}", resp[9]);
+        println!("right batt: {:?}", resp[10]);
+    }
+
+    pub fn test_batt_charging(&self) {
+        let cmd = &Self::create_cmd(CMD_DEVICE_BATTERYCHARGING);
+        self.send(cmd);
+        std::thread::sleep(SLEEP_DURATION);
+        let resp = self.recv(100).unwrap();
+        println!("resp: {:?}", resp);
+        println!("left batt: {:?}", resp[9]);
+        println!("right batt: {:?}", resp[10]);
+    }
+
+    pub fn test_ldac(&self) {
+        let cmd = &Self::create_cmd(CMD_DEVICE_LDAC);
+        self.send(cmd);
+        std::thread::sleep(SLEEP_DURATION);
+        let resp = self.recv(100).unwrap();
+        println!("ldac: {:?}", resp[9] == 1);
+    }
 
     //TODO: Check for command in response ( 2 bytes )
     pub fn get_info(&self) -> Result<A3951DeviceInfo, A3951Error> {
@@ -124,10 +96,9 @@ impl A3951Device {
         Ok(A3951DeviceStatus::from_bytes(&resp)?)
     }
 
-    pub fn create_cmd(inp: [i8; 7]) -> Vec<u8>{
+    pub fn create_cmd(inp: [i8; 7]) -> Vec<u8> {
         return build_command_array_with_options_toggle_enabled(&i8_to_u8vec(&inp), None);
     }
-
 
     fn send(&self, data: &[u8]) -> Result<(), A3951Error> {
         let mut bytes_sent = 0;
@@ -172,15 +143,14 @@ impl Drop for A3951Device {
 
 #[derive(Default)]
 pub struct A3951DeviceInfo {
-    pub left_fw: String, 
+    pub left_fw: String,
     pub right_fw: String,
     pub sn: String,
-
 }
 impl A3951DeviceInfo {
     fn from_bytes(arr: &[u8]) -> Result<A3951DeviceInfo, std::string::FromUtf8Error> {
         Ok(A3951DeviceInfo {
-            left_fw:  String::from_utf8(arr[9..14].to_vec())?,
+            left_fw: String::from_utf8(arr[9..14].to_vec())?,
             right_fw: String::from_utf8(arr[14..19].to_vec())?,
             sn: String::from_utf8(arr[19..35].to_vec())?,
         })
@@ -207,7 +177,7 @@ impl A3951DeviceStatus {
             host_device: arr[9],
             tws_status: arr[10] == 1,
             left_battery_level: Clamp::clamp(arr[9], 0, 5),
-            right_battery_level: Clamp::clamp(arr[12], 0 , 5),
+            right_battery_level: Clamp::clamp(arr[12], 0, 5),
             left_battery_charging: arr[13] == 1,
             right_battery_charging: arr[14] == 1,
             anc_status: A3951DeviceANC::from_bytes(&arr[86..90])?,
@@ -230,34 +200,97 @@ impl A3951DeviceANC {
     fn from_bytes(arr: &[u8]) -> Result<A3951DeviceANC, std::string::FromUtf8Error> {
         let mut anc_custom: u8;
 
-        if arr[3] == 255{
+        if arr[3] == 255 {
             anc_custom = 255;
         } else {
             anc_custom = Clamp::clamp(arr[3], 0, 10);
         }
-        
+
         Ok(A3951DeviceANC {
             option: Clamp::clamp(arr[0], 0, 2),
             anc_option: Clamp::clamp(arr[1], 0, 3),
             transparency_option: arr[2],
-            anc_custom
+            anc_custom,
         })
+    }
+
+    fn to_bytes(&self) -> [u8; 4] {
+        let mut anc_custom: u8;
+
+        if self.anc_custom == 255 {
+            anc_custom = 255;
+        } else {
+            anc_custom = Clamp::clamp(self.anc_custom, 0, 10);
+        }
+
+        [
+            Clamp::clamp(self.option, 0, 2),
+            Clamp::clamp(self.anc_option, 0, 3),
+            self.transparency_option,
+            anc_custom,
+        ]
     }
 }
 
-fn try_connect_uuid(
-    sock: SOCKET,
-    addr: &str,
-    uuid: &str,
-) -> Result<SOCKET, A3951Error> {
-    unsafe {
-        let mut saddr: SOCKADDR_BTH = SOCKADDR_BTH {
-            addressFamily: AF_BTH,
-            btAddr: crate::utils::mac_str_to_u64(addr)?, // set your bt mac 0xAC122F6AD207
-            serviceClassId: windows::core::GUID::from(uuid),
-            port: 0,
-        };
+#[derive(Default)]
+pub struct EQWave {
+    pos0: f32,
+    pos1: f32,
+    pos2: f32,
+    pos3: f32,
+    pos4: f32,
+    pos5: f32,
+    pos6: f32,
+    pos7: f32,
+}
 
+impl EQWave {
+    fn from_bytes(arr: &[u8]) -> Result<EQWave, A3951Error> {
+        if (arr.len() < 8) {
+            return Err(A3951Error::Unknown);
+        }
+
+        let i8slice = unsafe { &*(arr as *const _ as *const [i8]) };
+        let results = Self::eq_int_to_float(i8slice);
+        Ok(EQWave {
+            pos0: results[0],
+            pos1: results[1],
+            pos2: results[2],
+            pos3: results[3],
+            pos4: results[4],
+            pos5: results[5],
+            pos6: results[6],
+            pos7: results[7],
+        })
+    }
+
+    fn eq_int_to_float(arr: &[i8]) -> Vec<f32> {
+        let mut eq: Vec<f32> = Vec::new();
+        let max_val: f32 = (12.0 + 7.0) - 1.0;
+        let min_val: f32 = (12.0 - 7.0) + 1.0;
+        for i in arr {
+            let f: f32 = *i as f32 / 10.0;
+            if (f > max_val) {
+                eq.push(max_val);
+            } else if (f < min_val) {
+                eq.push(min_val);
+            } else {
+                eq.push(f);
+            }
+        }
+        eq
+    }
+}
+
+fn try_connect_uuid(sock: SOCKET, addr: &str, uuid: &str) -> Result<SOCKET, A3951Error> {
+    let mut saddr: SOCKADDR_BTH = SOCKADDR_BTH {
+        addressFamily: AF_BTH,
+        btAddr: crate::utils::mac_str_to_u64(addr)?, // set your bt mac 0xAC122F6AD207
+        serviceClassId: windows::core::GUID::from(uuid),
+        port: 0,
+    };
+
+    unsafe {
         let status = windows::Win32::Networking::WinSock::connect(
             sock,
             &saddr as *const SOCKADDR_BTH as *const SOCKADDR,
@@ -272,36 +305,37 @@ fn try_connect_uuid(
                 HSTRING::from("error connecting to socket"),
             )));
         }
-
-        return Ok(sock);
     }
+
+    return Ok(sock);
 }
 
 fn create_bt_sock() -> Result<SOCKET, A3951Error> {
+    let mut sock = windows::Win32::Networking::WinSock::INVALID_SOCKET;
     unsafe {
-        let mut sock = windows::Win32::Networking::WinSock::INVALID_SOCKET;
         sock = windows::Win32::Networking::WinSock::socket(
             AF_BTH.into(),
             SOCK_STREAM.into(),
             BTHPROTO_RFCOMM.try_into().unwrap(),
         );
-        if (sock == windows::Win32::Networking::WinSock::INVALID_SOCKET) {
-            return Err(A3951Error::from(windows::core::Error::new(
-                windows::core::HRESULT(0),
-                HSTRING::from("failed creating socket"),
-            )));
-        }
-        return Ok(sock);
     }
+    if (sock == windows::Win32::Networking::WinSock::INVALID_SOCKET) {
+        return Err(A3951Error::from(windows::core::Error::new(
+            windows::core::HRESULT(0),
+            HSTRING::from("failed creating socket"),
+        )));
+    }
+    return Ok(sock);
 }
 
-pub(crate) unsafe fn init_winsock() -> i32 {
+fn init_winsock() -> i32 {
     let wsaData = Box::into_raw(Box::new(WSADATA::default()));
     let i_result: i32;
-    i_result = WSAStartup(0x0202, wsaData);
+    unsafe {
+        i_result = WSAStartup(0x0202, wsaData);
+    }
     return i_result;
 }
-
 
 // Not using this
 // It takes a long time to find working port or it doesnt work at all ¯\_(ツ)_/¯
@@ -347,3 +381,57 @@ pub(crate) unsafe fn init_winsock() -> i32 {
 //         }
 //     }
 // }
+
+//TODO: More error types and rewrite winerrors
+
+#[derive(Debug)]
+pub enum A3951Error {
+    Unknown,
+    ParseError,
+    WinError(String),
+}
+
+impl std::fmt::Display for A3951Error {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "{:}", std::error::Error::description(self))
+    }
+}
+
+impl std::error::Error for A3951Error {
+    fn description(&self) -> &str {
+        match self {
+            A3951Error::Unknown => "Unknown Error",
+            A3951Error::ParseError => "Parse Error",
+            A3951Error::WinError(ref message) => message.as_str(),
+        }
+    }
+}
+
+impl From<std::io::Error> for A3951Error {
+    fn from(error: std::io::Error) -> Self {
+        A3951Error::Unknown
+    }
+}
+
+impl From<std::num::ParseIntError> for A3951Error {
+    fn from(error: std::num::ParseIntError) -> Self {
+        A3951Error::Unknown
+    }
+}
+
+impl From<windows::core::Error> for A3951Error {
+    fn from(error: windows::core::Error) -> Self {
+        A3951Error::WinError(error.to_string())
+    }
+}
+
+impl From<std::string::FromUtf8Error> for A3951Error {
+    fn from(error: std::string::FromUtf8Error) -> Self {
+        A3951Error::ParseError
+    }
+}
+
+pub(crate) struct A3951Device {
+    sock: SOCKET,
+    connected: bool,
+}
