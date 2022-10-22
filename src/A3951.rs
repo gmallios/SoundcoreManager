@@ -19,9 +19,9 @@ static CMD_DEVICE_STATUS: [i8; 7] = [8, -18, 0, 0, 0, 1, 1];
 static CMD_DEVICE_INFO: [i8; 7] = [8, -18, 0, 0, 0, 1, 5];
 static CMD_DEVICE_BATTERYLEVEL: [i8; 7] = [8, -18, 0, 0, 0, 1, 3];
 static CMD_DEVICE_BATTERYCHARGING: [i8; 7] = [8, -18, 0, 0, 0, 1, 4];
-static CMD_DEVICE_LDAC: [i8; 7] = [8, -18, 0, 0, 0, 1, 127]; // Last byte is Byte.MAX_VALUE from java. Im not sure about the value
-static CMD_DEVICE_EQINFO: [i8; 7] = [8, -18, 0, 0, 0, 2, 1]; // Not tested yet.
-static CMD_DEVICE_GETANCINFO: [i8; 7] = [8, -18, 0, 0, 0, 6, 2]; // Not tested yet.
+static CMD_DEVICE_LDAC: [i8; 7] = [8, -18, 0, 0, 0, 1, 127]; // NOTE: Last byte is Byte.MAX_VALUE from java. Im not sure about the value
+static CMD_DEVICE_GETEQ: [i8; 7] = [8, -18, 0, 0, 0, 2, 1]; // Not tested yet.
+static CMD_DEVICE_GETANC: [i8; 7] = [8, -18, 0, 0, 0, 6, 2]; // Not tested yet.
 static CMD_DEVICE_SETANC: [i8; 7] = [8, -18, 0, 0, 0, 6, -127];
 
 static SLEEP_DURATION: Duration = std::time::Duration::from_millis(100);
@@ -57,27 +57,6 @@ impl A3951Device {
         Ok(())
     }
 
-    /* TEST FUNCTIONS ARE WIP */
-
-    pub fn test_batt_level(&self) {
-        // Charging and levels from genearl status seem fuzzy.
-        let cmd = &Self::create_cmd(CMD_DEVICE_BATTERYLEVEL);
-        self.send(cmd);
-        std::thread::sleep(SLEEP_DURATION);
-        let resp = self.recv(100).unwrap();
-        println!("resp: {:?}", resp);
-        println!("left batt: {:?}", resp[9]);
-        println!("right batt: {:?}", resp[10]);
-    }
-
-    pub fn test_batt_charging(&self) {
-        let cmd = &Self::create_cmd(CMD_DEVICE_BATTERYCHARGING);
-        std::thread::sleep(SLEEP_DURATION);
-        let resp = self.recv(100).unwrap();
-        println!("resp: {:?}", resp);
-        println!("left batt: {:?}", resp[9]);
-        println!("right batt: {:?}", resp[10]);
-    }
 
     //TODO: Check for command in response ( 2 bytes )
     pub fn get_info(&self) -> Result<A3951DeviceInfo, A3951Error> {
@@ -96,11 +75,27 @@ impl A3951Device {
         Ok(A3951DeviceStatus::from_bytes(&resp)?)
     }
 
+    pub fn get_battery_level(&self) -> Result<A3951BatteryLevel, A3951Error> {
+        let cmd = &Self::create_cmd(CMD_DEVICE_BATTERYLEVEL);
+        self.send(cmd)?;
+        std::thread::sleep(SLEEP_DURATION);
+        let resp = self.recv(20)?;
+        Ok(A3951BatteryLevel::from_bytes(&resp[9..11])?)
+    }
+
+    pub fn get_battery_charging(&self) -> Result<A3951BatteryCharging, A3951Error> {
+        let cmd = &Self::create_cmd(CMD_DEVICE_BATTERYCHARGING);
+        self.send(cmd)?;
+        std::thread::sleep(SLEEP_DURATION);
+        let resp = self.recv(20)?;
+        Ok(A3951BatteryCharging::from_bytes(&resp[9..11])?)
+    }
+
     pub fn get_ldac_status(&self) -> Result<bool, A3951Error> {
         let cmd = &Self::create_cmd(CMD_DEVICE_LDAC);
         self.send(cmd)?;
         std::thread::sleep(SLEEP_DURATION);
-        let resp = self.recv(10)?;
+        let resp = self.recv(20)?;
         Ok(resp[9] == 1)
     }
 
@@ -181,10 +176,8 @@ impl A3951DeviceInfo {
 pub struct A3951DeviceStatus {
     pub host_device: u8,
     pub tws_status: bool,
-    pub left_battery_level: u8,
-    pub right_battery_level: u8,
-    pub left_battery_charging: bool,
-    pub right_battery_charging: bool,
+    pub battery_level: A3951BatteryLevel,
+    pub battery_charging: A3951BatteryCharging,
     pub anc_status: A3951DeviceANC,
     pub side_tone_enabled: bool,
     pub wear_detection_enabled: bool,
@@ -200,10 +193,8 @@ impl A3951DeviceStatus {
         Ok(A3951DeviceStatus {
             host_device: arr[9],
             tws_status: arr[10] == 1,
-            left_battery_level: Clamp::clamp(arr[9], 0, 5),
-            right_battery_level: Clamp::clamp(arr[12], 0, 5),
-            left_battery_charging: arr[13] == 1,
-            right_battery_charging: arr[14] == 1,
+            battery_level: A3951BatteryLevel::from_bytes(&arr[11..13])?,
+            battery_charging: A3951BatteryCharging::from_bytes(&arr[13..15])?,
             anc_status: A3951DeviceANC::from_bytes(&arr[86..90])?,
             side_tone_enabled: arr[90] == 1,
             wear_detection_enabled: arr[91] == 1,
@@ -218,10 +209,36 @@ pub struct A3951BatteryLevel {
     pub right: u8,
 }
 
+impl A3951BatteryLevel {
+    fn from_bytes(arr: &[u8]) -> Result<A3951BatteryLevel, A3951Error> {
+        if arr.len() < 2 {
+            return Err(A3951Error::Unknown);
+        }
+
+        Ok(A3951BatteryLevel {
+            left: Clamp::clamp(arr[0], 0, 5),
+            right: Clamp::clamp(arr[1], 0, 5),
+        })
+    }
+}
+
 #[derive(Default, Debug)]
 pub struct A3951BatteryCharging {
     pub left: bool,
     pub right: bool,
+}
+
+impl A3951BatteryCharging {
+    fn from_bytes(arr: &[u8]) -> Result<A3951BatteryCharging, A3951Error> {
+        if arr.len() < 2 {
+            return Err(A3951Error::Unknown);
+        }
+
+        Ok(A3951BatteryCharging {
+            left: arr[0] == 1,
+            right: arr[1] == 1,
+        })
+    }
 }
 
 #[derive(Default, Debug)]
