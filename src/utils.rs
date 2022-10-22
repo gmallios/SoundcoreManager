@@ -42,7 +42,7 @@ pub(crate) fn build_command_array_with_options_toggle_enabled(
     bArr3[bArr.len()] = len2bArr[3] & 0xFF;
     bArr3[bArr.len() + 1] = len2bArr[2] & 0xFF;
     if bArr2.is_some() {
-        bArr3[..length].copy_from_slice(&bArr2.unwrap());
+        bArr3[length..].copy_from_slice(&bArr2.unwrap());
     }
 
     return calculate_checksum(&bArr3);

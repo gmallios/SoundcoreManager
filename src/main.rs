@@ -16,6 +16,8 @@ use windows::{
     },
 };
 
+use crate::A3951::A3951DeviceANC;
+
 mod A3951;
 mod utils;
 
@@ -51,8 +53,12 @@ fn main() {
         "Left Battery: {:X?}, LeftCharging: {:X?}, Right Battery: {:X?}, RightCharging: {:X?},",
         status.left_battery_level, status.left_battery_charging, status.right_battery_level, status.right_battery_charging
     );
+    println!("ANC Status: {:?}", status.anc_status);
 
-    device.test_ldac()
+    println!("LDAC Status: {}", device.get_ldac_status().unwrap());
+    
+    device.set_anc(A3951DeviceANC::ANC_INDOOR_MODE).unwrap();
+    
 
 
     // let signed2: Vec<i8> = vec![8, -18, 0, 0, 0, 1, 1];
