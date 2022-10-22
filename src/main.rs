@@ -51,14 +51,20 @@ fn main() {
     let status = device.get_status().unwrap();
     println!(
         "Left Battery: {:X?}, LeftCharging: {:X?}, Right Battery: {:X?}, RightCharging: {:X?},",
-        status.left_battery_level, status.left_battery_charging, status.right_battery_level, status.right_battery_charging
+        status.battery_level.left, status.battery_charging.left, status.battery_level.right, status.battery_charging.right,
     );
     println!("ANC Status: {:?}", status.anc_status);
-
+    println!("ANC Status from get_anc: {:?}", device.get_anc().unwrap());
     println!("LDAC Status: {}", device.get_ldac_status().unwrap());
     
-    device.set_anc(A3951DeviceANC::ANC_INDOOR_MODE).unwrap();
+    //device.set_anc(A3951DeviceANC::ANC_INDOOR_MODE).unwrap();
     
+    loop {
+        let level = device.get_battery_level().unwrap();
+        println!("Left Battery: {:X?}, Right Battery: {:X?}", level.left, level.right);
+        let charging_status = device.get_battery_charging().unwrap();
+        println!("Left Charging: {:X?}, Right Charging: {:X?}", charging_status.left, charging_status.right);
+    }
 
 
     // let signed2: Vec<i8> = vec![8, -18, 0, 0, 0, 1, 1];
