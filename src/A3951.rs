@@ -29,6 +29,16 @@ static SLEEP_DURATION: Duration = std::time::Duration::from_millis(100);
 
 pub const WINAPI_FLAG: SEND_RECV_FLAGS = windows::Win32::Networking::WinSock::SEND_RECV_FLAGS(0);
 
+
+pub(crate) struct A3951Device {
+    sock: SOCKET,
+    connected: bool,
+    // For future use. Not implemented yet. It will enable us to not handle socket/sending/receiving.
+    // send_fn: Box<dyn FnMut(&[u8]) -> Result<(), A3951Error>>,
+    // recv_fn: Box<dyn FnMut(usize) -> Result<Vec<u8>, Box<dyn std::error::Error>>>,
+}
+
+
 impl A3951Device {
     pub fn new() -> Result<A3951Device, A3951Error> {
         unsafe {
@@ -65,7 +75,6 @@ impl A3951Device {
 
     pub fn test_batt_charging(&self) {
         let cmd = &Self::create_cmd(CMD_DEVICE_BATTERYCHARGING);
-        self.send(cmd);
         std::thread::sleep(SLEEP_DURATION);
         let resp = self.recv(100).unwrap();
         println!("resp: {:?}", resp);
@@ -491,7 +500,3 @@ impl From<std::string::FromUtf8Error> for A3951Error {
     }
 }
 
-pub(crate) struct A3951Device {
-    sock: SOCKET,
-    connected: bool,
-}
