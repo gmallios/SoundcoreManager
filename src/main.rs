@@ -52,6 +52,8 @@ fn main() {
         status.left_battery_level, status.left_battery_charging, status.right_battery_level, status.right_battery_charging
     );
 
+    device.test_ldac()
+
 
     // let signed2: Vec<i8> = vec![8, -18, 0, 0, 0, 1, 1];
     // let bytes = utils::i8vec_to_u8vec(signed2);
@@ -227,6 +229,7 @@ pub fn encode_hex_to_cmd_str(bytes: &[u8]) -> String {
     s
 }
 
+// TODO: Remove unwraps and return Result
 pub fn build_command_array_with_options(bArr: &[u8], bArr2: Option<&[u8]>) -> Vec<u8> {
     if (bArr2.is_none()) {
         return Vec::from(bArr);
@@ -241,55 +244,6 @@ pub fn build_command_array_with_options(bArr: &[u8], bArr2: Option<&[u8]>) -> Ve
     return result;
 }
 
-pub fn build_command_array_with_options_toggle_enabled(
-    bArr: &[u8],
-    bArr2: Option<&[u8]>,
-) -> Vec<u8> {
-    let length = bArr.len() + 2;
-    let length2 = (if bArr2.is_some() {
-        bArr2.unwrap().len()
-    } else {
-        0
-    }) + length
-        + 1;
 
-    let mut bArr3 = vec![0; length2 - 1];
-    bArr3[..bArr.len()].copy_from_slice(bArr);
-    let len2bArr = int_to_byte_array(length2 as i32);
-    bArr3[bArr.len()] = len2bArr[3] & 0xFF;
-    bArr3[bArr.len() + 1] = len2bArr[2] & 0xFF;
-    if bArr2.is_some() {
-        bArr3[..length].copy_from_slice(&bArr2.unwrap());
-    }
 
-    return calculate_checksum(&bArr3);
-}
 
-pub fn int_to_byte_array(num: i32) -> [u8; 4] {
-    // let bs: [u8; 4] = num.to_le_bytes();
-    // bs
-    [
-        (num >> 24) as u8 & 0xff,
-        (num >> 16) as u8 & 0xff,
-        (num >> 8) as u8 & 0xff,
-        num as u8 & 0xff,
-    ]
-}
-
-pub fn calculate_checksum(bArr: &[u8]) -> Vec<u8> {
-    let mut res = vec![0; bArr.len() + 1];
-    res[..bArr.len()].copy_from_slice(bArr);
-    res[bArr.len()] = calculate_checksum_byte(bArr);
-    return res;
-}
-
-pub fn calculate_checksum_byte(bArr: &[u8]) -> u8 {
-    if (bArr.is_empty()) {
-        return 0;
-    }
-    let mut i = 0;
-    for byte in bArr {
-        i += (byte & 0xFF) as i32;
-    }
-    return (i & 0xFF).try_into().unwrap();
-}
