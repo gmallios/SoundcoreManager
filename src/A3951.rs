@@ -242,6 +242,21 @@ impl A3951DeviceANC {
         anc_custom: 6,
     };
 
+    pub const TRANSPARENCY_FULLY_TRANSPARENT_MODE: A3951DeviceANC = A3951DeviceANC {
+        option: 1,
+        anc_option: 0,
+        transparency_option: 0,
+        anc_custom: 6,
+    };
+
+
+    pub const TRANSPARENCY_VOCAL_MODE: A3951DeviceANC = A3951DeviceANC {
+        option: 1,
+        anc_option: 0,
+        transparency_option: 1,
+        anc_custom: 6,
+    };
+
     fn from_bytes(arr: &[u8]) -> Result<A3951DeviceANC, std::string::FromUtf8Error> {
         let mut anc_custom: u8;
 
