@@ -24,11 +24,9 @@ static CMD_DEVICE_EQINFO: [i8; 7] = [8, -18, 0, 0, 0, 2, 1]; // Not tested yet.
 static CMD_DEVICE_GETANCINFO: [i8; 7] = [8, -18, 0, 0, 0, 6, 2]; // Not tested yet.
 static CMD_DEVICE_SETANC: [i8; 7] = [8, -18, 0, 0, 0, 6, -127];
 
-
 static SLEEP_DURATION: Duration = std::time::Duration::from_millis(100);
 
 pub const WINAPI_FLAG: SEND_RECV_FLAGS = windows::Win32::Networking::WinSock::SEND_RECV_FLAGS(0);
-
 
 pub(crate) struct A3951Device {
     sock: SOCKET,
@@ -37,7 +35,6 @@ pub(crate) struct A3951Device {
     // send_fn: Box<dyn FnMut(&[u8]) -> Result<(), A3951Error>>,
     // recv_fn: Box<dyn FnMut(usize) -> Result<Vec<u8>, Box<dyn std::error::Error>>>,
 }
-
 
 impl A3951Device {
     pub fn new() -> Result<A3951Device, A3951Error> {
@@ -81,8 +78,6 @@ impl A3951Device {
         println!("left batt: {:?}", resp[9]);
         println!("right batt: {:?}", resp[10]);
     }
-
-   
 
     //TODO: Check for command in response ( 2 bytes )
     pub fn get_info(&self) -> Result<A3951DeviceInfo, A3951Error> {
@@ -197,7 +192,11 @@ pub struct A3951DeviceStatus {
 }
 
 impl A3951DeviceStatus {
-    fn from_bytes(arr: &[u8]) -> Result<A3951DeviceStatus, std::string::FromUtf8Error> {
+    fn from_bytes(arr: &[u8]) -> Result<A3951DeviceStatus, A3951Error> {
+        if arr.len() < 93 {
+            return Err(A3951Error::Unknown);
+        }
+
         Ok(A3951DeviceStatus {
             host_device: arr[9],
             tws_status: arr[10] == 1,
@@ -214,6 +213,18 @@ impl A3951DeviceStatus {
 }
 
 #[derive(Default, Debug)]
+pub struct A3951BatteryLevel {
+    pub left: u8,
+    pub right: u8,
+}
+
+#[derive(Default, Debug)]
+pub struct A3951BatteryCharging {
+    pub left: bool,
+    pub right: bool,
+}
+
+#[derive(Default, Debug)]
 pub struct A3951DeviceANC {
     pub option: u8,
     pub anc_option: u8,
@@ -222,7 +233,6 @@ pub struct A3951DeviceANC {
 }
 
 impl A3951DeviceANC {
-
     pub const NORMAL_MODE: A3951DeviceANC = A3951DeviceANC {
         option: 2,
         anc_option: 0,
@@ -230,14 +240,14 @@ impl A3951DeviceANC {
         anc_custom: 6,
     };
 
-    pub const ANC_TRANSPORT_MODE: A3951DeviceANC =  A3951DeviceANC {
+    pub const ANC_TRANSPORT_MODE: A3951DeviceANC = A3951DeviceANC {
         option: 0,
         anc_option: 0,
         transparency_option: 1,
         anc_custom: 6,
     };
 
-    pub const ANC_OUTDOOR_MODE: A3951DeviceANC =  A3951DeviceANC {
+    pub const ANC_OUTDOOR_MODE: A3951DeviceANC = A3951DeviceANC {
         option: 0,
         anc_option: 1,
         transparency_option: 1,
@@ -257,7 +267,6 @@ impl A3951DeviceANC {
         transparency_option: 0,
         anc_custom: 6,
     };
-
 
     pub const TRANSPARENCY_VOCAL_MODE: A3951DeviceANC = A3951DeviceANC {
         option: 1,
@@ -499,4 +508,3 @@ impl From<std::string::FromUtf8Error> for A3951Error {
         A3951Error::ParseError
     }
 }
-
