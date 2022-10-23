@@ -3,7 +3,7 @@
 version = 3
 
 [[package]]
-name = "soundcore-rs"
+name = "soundcore-lib"
 version = "0.1.0"
 dependencies = [
  "windows",

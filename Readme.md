@@ -1,21 +1,7 @@
-# soundcore-rs
+# Tauri + React + Typescript
 
-## Get info and control soundcore earbuds with the power of rust.
+This template should help get you started developing with Tauri, React and Typescript in Vite.
 
-### Working 
-- Grabbing/Parsing Parsing A3951 info
-- Grabbing/Parsing A3951 SN and FW
-- Grabbing A3951 commands from decompiled source and sending them
+## Recommended IDE Setup
 
-
-### TODO: 
-- Parse (A3951 exclusive?) ANC Profiles
-- Create ANC Profiles and send them
-- Abstract A3951 Device
-- Abstract socket usage to handle other OSes
-- Use Tauri for gui
-
-# Notes
-```
-Hardcoded windows api usage atm.
-```
+- [VS Code](https://code.visualstudio.com/) + [Tauri](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode) + [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer)
