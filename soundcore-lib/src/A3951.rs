@@ -1,5 +1,5 @@
 use std::{num::ParseIntError, str::Utf8Error, string::ParseError, time::Duration};
-
+use serde::{Serialize, Deserialize};
 use crate::utils::{build_command_array_with_options_toggle_enabled, i8_to_u8vec, Clamp};
 
 use windows::{
@@ -162,7 +162,7 @@ impl Drop for A3951Device {
     }
 }
 
-#[derive(Default, Debug)]
+#[derive(Default, Debug, Serialize, Deserialize)]
 pub struct A3951DeviceInfo {
     pub left_fw: String,
     pub right_fw: String,
@@ -178,7 +178,7 @@ impl A3951DeviceInfo {
     }
 }
 
-#[derive(Default, Debug)]
+#[derive(Default, Debug, Serialize, Deserialize)]
 pub struct A3951DeviceStatus {
     pub host_device: u8,
     pub tws_status: bool,
@@ -209,7 +209,7 @@ impl A3951DeviceStatus {
     }
 }
 
-#[derive(Default, Debug)]
+#[derive(Default, Debug, Serialize, Deserialize)]
 pub struct A3951BatteryLevel {
     pub left: u8,
     pub right: u8,
@@ -228,7 +228,7 @@ impl A3951BatteryLevel {
     }
 }
 
-#[derive(Default, Debug)]
+#[derive(Default, Debug, Serialize, Deserialize)]
 pub struct A3951BatteryCharging {
     pub left: bool,
     pub right: bool,
@@ -247,7 +247,7 @@ impl A3951BatteryCharging {
     }
 }
 
-#[derive(Default, Debug)]
+#[derive(Default, Debug, Serialize, Deserialize)]
 pub struct A3951DeviceANC {
     pub option: u8,
     pub anc_option: u8,
@@ -333,7 +333,7 @@ impl A3951DeviceANC {
     }
 }
 
-#[derive(Default)]
+#[derive(Default, Debug, Serialize, Deserialize)]
 pub struct EQWave {
     pos0: f32,
     pos1: f32,
