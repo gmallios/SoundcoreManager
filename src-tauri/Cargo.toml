@@ -2,7 +2,7 @@
 name = "soundcore-rs"
 version = "0.0.0"
 description = ""
-authors = ["you"]
+authors = ["Grigorios Mallios"]
 license = ""
 repository = ""
 edition = "2021"
@@ -18,6 +18,7 @@ serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }
 tauri = { version = "1.1", features = ["api-all"] }
 soundcore-lib = { path = "../soundcore-lib/" }
+ts-rs = "6.2"
 
 [features]
 # by default Tauri runs in production mode
