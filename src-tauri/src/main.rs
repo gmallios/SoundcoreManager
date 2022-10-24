@@ -7,7 +7,7 @@ use std::sync::{Mutex, RwLock};
 
 
 use client_types::{DeviceSelection};
-use soundcore_lib::A3951::A3951BatteryLevel;
+use soundcore_lib::A3951::{A3951BatteryLevel, A3951BatteryCharging};
 #[cfg(target_os = "windows")]
 use soundcore_lib::A3951::A3951Device;
 use tauri::State;
@@ -90,14 +90,12 @@ fn get_battery_level(state: State<DeviceState>) -> Result<A3951BatteryLevel, Str
             let device = device.lock().unwrap();
             match &*device {
                 SupportedDevices::A3951(device) => {
-                    println!("Getting battery level");
                     let battery_level = device.get_battery_level();
                     match battery_level {
                         Ok(battery_level) => {
                             Ok(battery_level)
                         },
                         Err(_) => {
-                            println!("Failed to get battery level");
                             Err("Failed to get battery info".to_string())
                         }
                     }
@@ -110,6 +108,33 @@ fn get_battery_level(state: State<DeviceState>) -> Result<A3951BatteryLevel, Str
     }
 }
 
+#[tauri::command]
+fn get_battery_charging(state: State<DeviceState>) -> Result<A3951BatteryCharging, String> {
+    let device_state = state.device.lock().unwrap();
+    match &*device_state {
+        Some(device) => {
+            let device = device.lock().unwrap();
+            match &*device {
+                SupportedDevices::A3951(device) => {
+                    let battery_charging = device.get_battery_charging();
+                    match battery_charging {
+                        Ok(battery_charging) => {
+                            Ok(battery_charging)
+                        },
+                        Err(_) => {
+                            Err("Failed to get battery charging".to_string())
+                        }
+                    }
+                }
+            }
+        },
+        None => {
+            Err("Device not initialized".to_string())
+        }
+    }
+}
+
+
 struct DeviceState {
     device: Mutex<Option<Mutex<SupportedDevices>>>,
     initialized: Mutex<bool>,
@@ -120,7 +145,7 @@ struct DeviceState {
 fn main() {
     tauri::Builder::default()
         .manage(DeviceState { device: Mutex::new(None), initialized: Mutex::new(false) })
-        .invoke_handler(tauri::generate_handler![init_device, connect_uuid, get_battery_level])
+        .invoke_handler(tauri::generate_handler![init_device, connect_uuid, get_battery_level, get_battery_charging])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

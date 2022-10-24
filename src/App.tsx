@@ -6,23 +6,39 @@ import useDeviceStore, { DeviceConnectionState } from "./hooks/useDeviceStore";
 
 
 function App() {
-  // const [greetMsg, setGreetMsg] = useState("");
-  // const [name, setName] = useState("");
-  const { tryInitialize, getBatteryLevel, connectUUID, deviceConnectionState } = useDeviceStore();
+  const { tryInitialize, getBatteryLevel, getBatteryCharging, connectUUID, deviceConnectionState } = useDeviceStore();
 
-  // async function greet() {
-  //   // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
-  //   setGreetMsg(await invoke("greet", { name }));
-  // }
+
 
   useEffect(() => {
     tryInitialize("A3951");
     connectUUID("AC:12:2F:6A:D2:07","00001101-0000-1000-8000-00805F9B34FB");
+
+    
   }, []);
 
+  // May require additional tweaking
+  const BATTERY_LEVEL_POLL_RATE = 10000;
+  const BATTERY_CHARGING_POLL_RATE = 500;
+
+
+
   useEffect(() => {
-    if(deviceConnectionState == DeviceConnectionState.CONNECTED)
-      getBatteryLevel();
+    if(deviceConnectionState == DeviceConnectionState.CONNECTED){
+      
+      const batteryLevelInterval = setInterval(() => {
+        getBatteryLevel();
+      }, BATTERY_LEVEL_POLL_RATE);
+
+      const batteryChargingInterval = setInterval(() => {
+        getBatteryCharging();
+      }, BATTERY_CHARGING_POLL_RATE);
+    
+      return () => {
+        clearInterval(batteryLevelInterval);
+        clearInterval(batteryChargingInterval);
+      };
+    }
       
   }, [deviceConnectionState]);
 

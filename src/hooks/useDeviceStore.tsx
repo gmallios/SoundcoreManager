@@ -7,8 +7,10 @@ interface DeviceStoreState {
   tryInitialize: (selectedDevice: DeviceSelection) => void,
   connectUUID: (macAddr: String, uuid: String) => void,
   getBatteryLevel: () => void,
+  getBatteryCharging: () => void,
 
-  batteryLevel: DeviceBatteryLevel
+  batteryLevel: DeviceBatteryLevel,
+  batteryCharging: DeviceBatteryCharging
 }
 
 export enum DeviceConnectionState {
@@ -21,6 +23,11 @@ export enum DeviceConnectionState {
 export interface DeviceBatteryLevel {
   left: number,
   right: number
+}
+
+export interface DeviceBatteryCharging {
+  left: boolean,
+  right: boolean
 }
 
 const useDeviceStore = create<DeviceStoreState>((set) => ({
@@ -49,8 +56,16 @@ const useDeviceStore = create<DeviceStoreState>((set) => ({
       console.log(err);
     });
   },
+  getBatteryCharging: () => {
+    invoke("get_battery_charging").then((msg: any) => {
+      set((state) => ({ ...state, batteryCharging: msg }));
+    }).catch((err) => {
+      console.log(err);
+    });
+  },
 
-  batteryLevel: { left: 0, right: 0 }
+  batteryLevel: { left: 0, right: 0 },
+  batteryCharging: { left: false, right: false }
 }))
 
 export default useDeviceStore;
