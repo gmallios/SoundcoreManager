@@ -6,7 +6,7 @@
     "distDir": "../dist"
   },
   "package": {
-    "productName": "soundcore-desktop",
+    "productName": "soundcore-rs",
     "version": "0.0.0"
   },
   "tauri": {
