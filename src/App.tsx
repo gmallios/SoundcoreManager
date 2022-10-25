@@ -25,7 +25,8 @@ function App() {
 
   useEffect(() => {
     if(deviceConnectionState == DeviceConnectionState.CONNECTED){
-      
+      getBatteryCharging();
+      getBatteryLevel();
       const batteryLevelInterval = setInterval(() => {
         getBatteryLevel();
       }, BATTERY_LEVEL_POLL_RATE);
