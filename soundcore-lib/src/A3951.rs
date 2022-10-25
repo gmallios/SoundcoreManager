@@ -1,6 +1,6 @@
 use std::{num::ParseIntError, str::Utf8Error, string::ParseError, time::Duration};
 use serde::{Serialize, Deserialize};
-use crate::utils::{build_command_array_with_options_toggle_enabled, i8_to_u8vec, Clamp};
+use crate::utils::{build_command_array_with_options_toggle_enabled, i8_to_u8vec, Clamp, verify_resp};
 
 use windows::{
     self,
@@ -62,6 +62,9 @@ impl A3951Device {
         self.send(cmd)?;
         std::thread::sleep(SLEEP_DURATION);
         let resp = self.recv(50)?;
+        if !verify_resp(&resp){
+            return Err(A3951Error::ResponseChecksumError);
+        }
         Ok(A3951DeviceInfo::from_bytes(&resp)?)
     }
 
@@ -70,6 +73,10 @@ impl A3951Device {
         self.send(cmd)?;
         std::thread::sleep(SLEEP_DURATION);
         let resp = self.recv(100)?;
+        // In order to verify response we need exact size of response debug it.
+        // if !verify_resp(&resp){
+        //     return Err(A3951Error::ResponseChecksumError);
+        // }
         Ok(A3951DeviceStatus::from_bytes(&resp)?)
     }
 
@@ -77,7 +84,10 @@ impl A3951Device {
         let cmd = &Self::create_cmd(CMD_DEVICE_BATTERYLEVEL);
         self.send(cmd)?;
         std::thread::sleep(SLEEP_DURATION);
-        let resp = self.recv(20)?;
+        let resp = self.recv(100)?;
+        if !verify_resp(&resp[0..12]){
+            return Err(A3951Error::ResponseChecksumError);
+        }
         Ok(A3951BatteryLevel::from_bytes(&resp[9..11])?)
     }
 
@@ -85,7 +95,10 @@ impl A3951Device {
         let cmd = &Self::create_cmd(CMD_DEVICE_BATTERYCHARGING);
         self.send(cmd)?;
         std::thread::sleep(SLEEP_DURATION);
-        let resp = self.recv(20)?;
+        let resp = self.recv(100)?;
+        if !verify_resp(&resp[0..12]){
+            return Err(A3951Error::ResponseChecksumError);
+        }
         Ok(A3951BatteryCharging::from_bytes(&resp[9..11])?)
     }
 
@@ -94,6 +107,9 @@ impl A3951Device {
         self.send(cmd)?;
         std::thread::sleep(SLEEP_DURATION);
         let resp = self.recv(20)?;
+        // if !verify_resp(&resp){
+        //     return Err(A3951Error::ResponseChecksumError);
+        // }
         Ok(resp[9] == 1)
     }
 
@@ -102,6 +118,9 @@ impl A3951Device {
         self.send(cmd)?;
         std::thread::sleep(SLEEP_DURATION);
         let resp = self.recv(50)?;
+        // if !verify_resp(&resp){
+        //     return Err(A3951Error::ResponseChecksumError);
+        // }
         Ok(A3951DeviceANC::from_bytes(&resp[9..13])?)
     }
 
@@ -384,7 +403,7 @@ impl EQWave {
 }
 
 fn try_connect_uuid(sock: SOCKET, addr: &str, uuid: &str) -> Result<SOCKET, A3951Error> {
-    let mut saddr: SOCKADDR_BTH = SOCKADDR_BTH {
+    let saddr: SOCKADDR_BTH = SOCKADDR_BTH {
         addressFamily: AF_BTH,
         btAddr: crate::utils::mac_str_to_u64(addr)?, // set your bt mac 0xAC122F6AD207
         serviceClassId: windows::core::GUID::from(uuid),
@@ -412,7 +431,7 @@ fn try_connect_uuid(sock: SOCKET, addr: &str, uuid: &str) -> Result<SOCKET, A395
 }
 
 fn create_bt_sock() -> Result<SOCKET, A3951Error> {
-    let mut sock = windows::Win32::Networking::WinSock::INVALID_SOCKET;
+    let sock;
     unsafe {
         sock = windows::Win32::Networking::WinSock::socket(
             AF_BTH.into(),
@@ -420,7 +439,7 @@ fn create_bt_sock() -> Result<SOCKET, A3951Error> {
             BTHPROTO_RFCOMM.try_into().unwrap(),
         );
     }
-    if (sock == windows::Win32::Networking::WinSock::INVALID_SOCKET) {
+    if sock == windows::Win32::Networking::WinSock::INVALID_SOCKET {
         return Err(A3951Error::from(windows::core::Error::new(
             windows::core::HRESULT(0),
             HSTRING::from("failed creating socket"),
@@ -489,6 +508,7 @@ fn init_winsock() -> i32 {
 pub enum A3951Error {
     Unknown,
     ParseError,
+    ResponseChecksumError,
     WinError(String),
 }
 
@@ -503,6 +523,7 @@ impl std::error::Error for A3951Error {
         match self {
             A3951Error::Unknown => "Unknown Error",
             A3951Error::ParseError => "Parse Error",
+            A3951Error::ResponseChecksumError => "Response Checksum Error",
             A3951Error::WinError(ref message) => message.as_str(),
         }
     }

@@ -23,6 +23,17 @@ pub(crate) fn mac_str_to_u64(addr: &str) -> Result<u64, std::num::ParseIntError>
     Ok(a)
 }
 
+pub(crate) fn verify_resp(resp: &[u8]) -> bool {
+    if resp.is_empty() {
+        return false;
+    }
+
+    let len = resp.len() - 1;
+    let mut b_arr2: Vec<u8> = vec![0; len];
+    b_arr2.copy_from_slice(&resp[0..len]);
+
+    return calculate_checksum_byte(&b_arr2) == resp[len];
+}
 
 pub(crate) fn build_command_array_with_options_toggle_enabled(
     bArr: &[u8],
