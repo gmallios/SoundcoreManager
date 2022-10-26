@@ -94,7 +94,7 @@ enum ANCCardButtonVariant {
     TRANSPARENCY_MODE
 }
 
-function ANCCardButton({setSliderPosition, position}: {setSliderPosition: any, position: AllowedSliderPositions}) {
+function ANCCardButton({setSliderPosition, position}: {setSliderPosition: React.Dispatch<React.SetStateAction<AllowedSliderPositions>>, position: AllowedSliderPositions}) {
     return (
         <ANCSliderButton>
         <p onClick={() => { setSliderPosition(position)}}>A</p>
