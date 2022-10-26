@@ -32,7 +32,6 @@ fn init_device(state: State<DeviceState>, device: DeviceSelection) -> Result<Str
                 Ok(device) => {
                     *device_state = Some(Mutex::new(SupportedDevices::A3951(device)));
                     *state.initialized.lock().unwrap() = true;
-                    println!("Device initialized");
                     Ok("A3951 Device initialized".to_string())
                 }
                 Err(_) => {
@@ -57,16 +56,14 @@ fn connect_uuid(state: State<DeviceState>, mac_addr: String, uuid: String) -> Re
     match device_state{
         Some(selected_device) => {
             let mut guard = selected_device.lock().unwrap();
-            let mut selected_device = &mut *guard;
+            let selected_device = &mut *guard;
             match selected_device {
                 SupportedDevices::A3951(selected_device) => {
                     match selected_device.connect_uuid(&mac_addr, &uuid) {
                         Ok(_) => {
-                            println!("Connected to device");
                             Ok(())
                         },
                         Err(_) => {
-                            println!("Failed to connect to device");
                             Err("Failed to connect to device".to_string())
                         }
                     }
@@ -74,7 +71,6 @@ fn connect_uuid(state: State<DeviceState>, mac_addr: String, uuid: String) -> Re
             }
         },
         None => {
-            println!("Device not initialized");
             Err("Device not initialized".to_string())
         }
     }
