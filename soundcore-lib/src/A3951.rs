@@ -24,7 +24,7 @@ static CMD_DEVICE_GETEQ: [i8; 7] = [8, -18, 0, 0, 0, 2, 1]; // Not tested yet.
 static CMD_DEVICE_GETANC: [i8; 7] = [8, -18, 0, 0, 0, 6, 1];
 static CMD_DEVICE_SETANC: [i8; 7] = [8, -18, 0, 0, 0, 6, -127];
 
-static SLEEP_DURATION: Duration = std::time::Duration::from_millis(100);
+static SLEEP_DURATION: Duration = std::time::Duration::from_millis(30);
 
 pub const WINAPI_FLAG: SEND_RECV_FLAGS = windows::Win32::Networking::WinSock::SEND_RECV_FLAGS(0);
 
