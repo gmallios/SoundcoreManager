@@ -45,7 +45,7 @@ const ANCSliderSwitcher = styled("div", {
     shadowColor: "black",
     shadowRadius: 10,
     shadowOpacity: 0.31,
-    transition: "right 0.65s",
+    transition: "right 0.3s",
     ...(position == "left" && {
         right: Metrics.switchWidth + (Metrics.switchWidth-49) // 33 + 16
     }),
