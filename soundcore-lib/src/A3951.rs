@@ -317,6 +317,15 @@ impl A3951DeviceANC {
         anc_custom: 6,
     };
 
+    pub fn anc_custom_value(val: u8) -> A3951DeviceANC {
+        A3951DeviceANC {
+            option: 0,
+            anc_option: 3,
+            transparency_option: 1,
+            anc_custom: Clamp::clamp(val, 0, 10),
+        }
+    }
+
     fn from_bytes(arr: &[u8]) -> Result<A3951DeviceANC, std::string::FromUtf8Error> {
         let anc_custom: u8;
 
