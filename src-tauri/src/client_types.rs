@@ -9,6 +9,18 @@ pub(crate) enum DeviceSelection {
     None
 }
 
+
+#[derive(TS, Serialize, Deserialize)]
+#[ts(export, export_to = "../src/bindings/ANCModes.d.ts")]
+pub(crate) enum ANCModes {
+    NormalMode,
+    AncTransportMode,
+    AncOutdoorMode,
+    AncIndoorMode,
+    AncCustomValue(u8),
+    TransparencyFullyTransparentMode,
+    TransparencyVocalMode,
+}
 // #[derive(TS, Serialize, Deserialize)]
 // #[ts(export, export_to = "../src/bindings/Result.d.ts")]
 // pub(crate) enum Result {
