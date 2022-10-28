@@ -1,14 +1,21 @@
 import { invoke } from '@tauri-apps/api/tauri';
 import create from 'zustand'
+import { ANCModes } from '../bindings/ANCModes';
 import { DeviceSelection } from '../bindings/DeviceSelection';
 
 interface DeviceStoreState {
   deviceConnectionState: DeviceConnectionState
   tryInitialize: (selectedDevice: DeviceSelection) => void,
   connectUUID: (macAddr: String, uuid: String) => void,
+  
+  
+  // Get functions
   getBatteryLevel: () => void,
   getBatteryCharging: () => void,
-
+  // Set functions
+  setANCMode: (mode: ANCModes) => void,
+  // Earbud state
+  currentANCMode: ANCModes | null,
   batteryLevel: DeviceBatteryLevel,
   batteryCharging: DeviceBatteryCharging
 }
@@ -64,6 +71,15 @@ const useDeviceStore = create<DeviceStoreState>((set) => ({
     });
   },
 
+  setANCMode: (mode: ANCModes) => {
+    invoke("set_anc_mode", { mode: mode }).then((_msg) => {
+      set((state) => ({ ...state, currentANCMode: mode }));
+    }).catch((err) => {
+      console.log(err);
+    });
+  },
+
+  currentANCMode: null,
   batteryLevel: { left: 0, right: 0 },
   batteryCharging: { left: false, right: false }
 }))
