@@ -6,8 +6,8 @@
 use std::sync::{Mutex, RwLock};
 
 
-use client_types::{DeviceSelection};
-use soundcore_lib::A3951::{A3951BatteryLevel, A3951BatteryCharging};
+use client_types::{DeviceSelection, ANCModes};
+use soundcore_lib::A3951::{A3951BatteryLevel, A3951BatteryCharging, A3951DeviceANC};
 #[cfg(target_os = "windows")]
 use soundcore_lib::A3951::A3951Device;
 use tauri::State;
@@ -130,6 +130,39 @@ fn get_battery_charging(state: State<DeviceState>) -> Result<A3951BatteryChargin
     }
 }
 
+#[tauri::command]
+fn set_anc_mode(state: State<DeviceState>, mode: ANCModes) -> Result<(), String> {
+    let device_state = state.device.lock().unwrap();
+    match &*device_state {
+        Some(device) => {
+            let device = device.lock().unwrap();
+            match &*device {
+                SupportedDevices::A3951(device) => {
+                    let mode_to_send = match mode {
+                        ANCModes::NormalMode => A3951DeviceANC::NORMAL_MODE,
+                        ANCModes::AncTransportMode => A3951DeviceANC::ANC_TRANSPORT_MODE,
+                        ANCModes::AncOutdoorMode => A3951DeviceANC::ANC_OUTDOOR_MODE,
+                        ANCModes::AncIndoorMode => A3951DeviceANC::ANC_INDOOR_MODE,
+                        ANCModes::AncCustomValue(value) => A3951DeviceANC::anc_custom_value(value),
+                        ANCModes::TransparencyFullyTransparentMode => A3951DeviceANC::TRANSPARENCY_FULLY_TRANSPARENT_MODE,
+                        ANCModes::TransparencyVocalMode => A3951DeviceANC::TRANSPARENCY_VOCAL_MODE,
+                    };
+                    match device.set_anc(mode_to_send) {
+                        Ok(_) => {
+                            Ok(())
+                        },
+                        Err(_) => {
+                            Err("Failed to set ANC mode".to_string())
+                        }
+                    }
+                }
+            }
+        },
+        None => {
+            Err("Device not initialized".to_string())
+        }
+    }
+}
 
 struct DeviceState {
     device: Mutex<Option<Mutex<SupportedDevices>>>,
@@ -141,7 +174,8 @@ struct DeviceState {
 fn main() {
     tauri::Builder::default()
         .manage(DeviceState { device: Mutex::new(None), initialized: Mutex::new(false) })
-        .invoke_handler(tauri::generate_handler![init_device, connect_uuid, get_battery_level, get_battery_charging])
+        .invoke_handler(tauri::generate_handler![init_device, connect_uuid, 
+            get_battery_level, get_battery_charging, set_anc_mode])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
