@@ -1,5 +1,5 @@
 import { Button, Collapse, Grid, Icon, Paper, Slider, Stack, styled } from "@mui/material";
-import { useEffect, useState } from "react";
+import { Children, ReactNode, useEffect, useState } from "react";
 import ANCIcon from "../assets/ambient_icon_anc.png";
 import NormalIcon from "../assets/ambient_icon_off.png";
 import TransIcon from "../assets/ambient_icon_trans.png";
@@ -87,28 +87,60 @@ const ANCSliderButton = styled(Button, {
 
 export default function ANCModeCard() {
 
-    const { setANCMode } = useDeviceStore();
+    const { sendANCMode } = useDeviceStore();
 
     let [sliderPosition, setSliderPosition] = useState<AllowedSliderPositions>("center");
     let [sliderIcon, setSliderIcon] = useState<string>(NormalIcon);
-    let [ancModeSelected, setAncModeSelected] = useState<ANCModes>("NormalMode"); // Keep track across restars?
 
+    let [ancModeSelected, setAncModeSelected] = useState<ANCModes | "AncCustomValue">("AncOutdoorMode"); 
+    let [transModeSelected, setTransModeSelected] = useState<ANCModes>("TransparencyFullyTransparentMode");
+    let [ancCustomValue, setAncCustomValue] = useState<number | number[]>(10);
+
+
+    let ancButtons: Array<[string, ANCModes | "AncCustomValue"]> =
+        [
+            ["Transport", "AncTransportMode"],
+            ["Outdoor", "AncOutdoorMode"],
+            ["Indoor", "AncIndoorMode"],
+            ["Custom", "AncCustomValue"]
+        ];
+
+    let transButtons: Array<[string, ANCModes]> =
+        [
+            ["Fully Trasparent", "TransparencyFullyTransparentMode"],
+            ["Vocal Mode", "TransparencyVocalMode"]
+        ]
 
     // TODO: Load persisted values
     useEffect(() => {
-        // Handle middle position
-        if(sliderPosition == "center")
-            setANCMode("NormalMode");
+        if (sliderPosition == "center"){
+            sendANCMode("NormalMode");
+        } else if(sliderPosition == "left" && ancModeSelected != "AncCustomValue"){
+            sendANCMode(ancModeSelected);
+        } else if(sliderPosition == "right"){
+            sendANCMode(transModeSelected);
+        }
     }, [sliderPosition]);
 
     useEffect(() => {
-        // Handles all other positions
-        setANCMode(ancModeSelected);
-    }, [ancModeSelected]);
+        if(sliderPosition == "left"){
+            if(ancModeSelected == "AncCustomValue"){
+                sendANCMode({ AncCustomValue: ancCustomValue as number });
+            } else {
+                sendANCMode(ancModeSelected);
+            }
+        }
+    }, [ancModeSelected, ancCustomValue]);
+
+    useEffect(() => {
+        if(sliderPosition == "right"){
+            sendANCMode(transModeSelected);
+        }
+    }, [transModeSelected]);
 
     return (
-        <Paper elevation={0} sx={{  marginTop: 1, marginBottom: 1, display: "flex", minWidth: 275, justifyContent: "center", alignItems: "center" }}>
-            <Grid sx={{ paddingLeft:0, justifyContent: "center" }}>
+        <Paper elevation={0} sx={{ marginTop: 1, marginBottom: 1, display: "flex", minWidth: 275, justifyContent: "center", alignItems: "center" }}>
+            <Grid sx={{ paddingLeft: 0, justifyContent: "center" }}>
                 <Grid item>
                     <ANCSliderContainer>
                         <ANCSliderSwitcher position={sliderPosition}>
@@ -122,8 +154,23 @@ export default function ANCModeCard() {
                     </ANCSliderContainer>
                 </Grid>
                 <Grid item sx={{ paddingTop: "0px !important" }}>
-                    <Collapse in={sliderPosition == "left"} mountOnEnter unmountOnExit>
-                        <ANCModeSelection setAncModeSelected={setAncModeSelected} />
+                    <Collapse in={sliderPosition != "center"} mountOnEnter unmountOnExit>
+                        <ButtonGrid buttonArray={sliderPosition == "left" ? ancButtons : transButtons} setButtonSelected={sliderPosition == "left" ? setAncModeSelected : setTransModeSelected} buttonSelected={sliderPosition == "left" ? ancModeSelected : transModeSelected}>
+                            <Collapse in={sliderPosition == "left" && ancModeSelected == "AncCustomValue"}>
+                                <Slider
+                                    size="small"
+                                    defaultValue={10}
+                                    onChange={(_, newValue) => setAncCustomValue(newValue)}
+                                    onChangeCommitted={(_, newValue) => setAncCustomValue(newValue)}
+                                    sx={{ mt: 2, pb: 0, width: "98%" }}
+                                    min={0}
+                                    max={10}
+                                    marks
+                                    aria-label="Small"
+                                    valueLabelDisplay="auto"
+                                />
+                            </Collapse>
+                        </ButtonGrid>
                     </Collapse>
                 </Grid>
             </Grid>
@@ -159,55 +206,15 @@ const ANCModeButton = styled(Button, {
     color: active ? theme.palette.text.primary : theme.palette.text.secondary,
 }));
 
-function ANCModeSelection({ setAncModeSelected }: { setAncModeSelected: React.Dispatch<React.SetStateAction<ANCModes>> }) {
 
-    let [modeSelected, setModeSelected] = useState<ANCModes | "AncCustomValue">("AncIndoorMode");
-    let [customModeSelected, setCustomModeSelected] = useState<boolean>(false);
-    let [customValue, setCustomValue] = useState<number | number[]>(10);
-
-    useEffect(() => {
-        // Indoor mode by default
-        if (modeSelected == "AncCustomValue") {
-            setCustomModeSelected(true)
-        } else {
-            setCustomModeSelected(false)
-            setAncModeSelected(modeSelected);
-        }
-
-
-    }, [modeSelected]);
-
-
-    useEffect(() => {
-        if (customModeSelected) {
-            setAncModeSelected({ AncCustomValue: customValue as number });
-        }
-    }, [customValue]);
-
-
+function ButtonGrid({ children, buttonArray, setButtonSelected, buttonSelected }: { children: ReactNode, buttonArray: Array<[string, ANCModes | "AncCustomValue"]>, setButtonSelected: React.Dispatch<React.SetStateAction<any>>, buttonSelected: any }) {
     return (
         <Stack>
             <Grid container direction="row" spacing={1} sx={{ display: "flex", justifyContent: "space-evenly", pt: 2 }}>
-                <Grid item><ANCModeButton variant="outlined" active={modeSelected == "AncTransportMode"} onClick={() => { setModeSelected("AncTransportMode") }} size="small">Transport</ANCModeButton></Grid>
-                <Grid item><ANCModeButton variant="outlined" active={modeSelected == "AncOutdoorMode"} onClick={() => { setModeSelected("AncOutdoorMode") }} size="small">Outdoor</ANCModeButton></Grid>
-                <Grid item><ANCModeButton variant="outlined" active={modeSelected == "AncIndoorMode"} onClick={() => { setModeSelected("AncIndoorMode") }} size="small">Indoor</ANCModeButton></Grid>
-                <Grid item><ANCModeButton variant="outlined" active={modeSelected == "AncCustomValue"} onClick={() => { setModeSelected("AncCustomValue") }} size="small">Custom</ANCModeButton></Grid>
-
+                {buttonArray.map(([title, mode]) => (
+                    <Grid item key={title}><ANCModeButton variant="outlined" active={buttonSelected == mode} onClick={() => { setButtonSelected(mode) }} size="small">{title}</ANCModeButton></Grid>
+                ))}
             </Grid>
-            <Collapse in={customModeSelected}>
-                <Slider
-                    size="small"
-                    defaultValue={10}
-                    onChange={(_, newValue) => setCustomValue(newValue)}
-                    onChangeCommitted={(_, newValue) => setCustomValue(newValue)}
-                    sx={{ mt: 2, pb: 0, width: "98%" }}
-                    min={0}
-                    max={10}
-                    marks
-                    aria-label="Small"
-                    valueLabelDisplay="auto"
-                />
-            </Collapse>
-        </Stack>
-    );
+            {children}
+        </Stack>);
 }
