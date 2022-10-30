@@ -85,10 +85,19 @@ impl A3951Device {
         self.send(cmd)?;
         std::thread::sleep(SLEEP_DURATION);
         let resp = self.recv(100)?;
+        
         if !verify_resp(&resp[0..12]){
             return Err(A3951Error::ResponseChecksumError);
         }
-        Ok(A3951BatteryLevel::from_bytes(&resp[9..11])?)
+
+        if resp[6] == 4 {
+            println!("Device level blink: {:?}", resp);
+            // Case battery level. Ignore for now, more debugging needed.
+            // Battery charging "blinks" when this event is triggered.
+            return Err(A3951Error::Unknown)
+        } 
+        
+        Ok(A3951BatteryLevel::from_bytes(&resp[9..11])?)     
     }
 
     pub fn get_battery_charging(&self) -> Result<A3951BatteryCharging, A3951Error> {
@@ -96,9 +105,19 @@ impl A3951Device {
         self.send(cmd)?;
         std::thread::sleep(SLEEP_DURATION);
         let resp = self.recv(100)?;
+        
+
+        
         if !verify_resp(&resp[0..12]){
             return Err(A3951Error::ResponseChecksumError);
         }
+        // https://prnt.sc/yze5IvvUtYlq Case battery "blink"
+        if resp[13] == 255{
+            println!("Device charging blink: {:?}", resp);
+            // When "blinking" resp[13] is 255 afaik.
+            return Err(A3951Error::Unknown)
+        }
+
         Ok(A3951BatteryCharging::from_bytes(&resp[9..11])?)
     }
 
