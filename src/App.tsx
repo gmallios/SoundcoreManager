@@ -5,15 +5,16 @@ import A3951InfoCard from "./components/A3951InfoCard";
 import useDeviceStore, { DeviceConnectionState } from "./hooks/useDeviceStore";
 import Stack from '@mui/material/Stack';
 import ANCModeCard from "./components/ANCModeCard";
+import EQCard from "./components/EQCard";
 
 function App() {
-  const { tryInitialize, getBatteryLevel, getBatteryCharging, connectUUID, deviceConnectionState } = useDeviceStore();
+  const { currentANCMode, tryInitialize, getBatteryLevel, getBatteryCharging, connectUUID, deviceConnectionState, getANCMode } = useDeviceStore();
 
 
 
   useEffect(() => {
     tryInitialize("A3951");
-    connectUUID("AC:12:2F:6A:D2:07","00001101-0000-1000-8000-00805F9B34FB");
+    connectUUID("AC:12:2F:6A:D2:07", "00001101-0000-1000-8000-00805F9B34FB");
   }, []);
 
   // May require additional tweaking
@@ -21,9 +22,12 @@ function App() {
   const BATTERY_CHARGING_POLL_RATE = 500;
 
   useEffect(() => {
-    if(deviceConnectionState == DeviceConnectionState.CONNECTED){
+    if (deviceConnectionState == DeviceConnectionState.CONNECTED) {
+      // Initializes the state
       getBatteryCharging();
       getBatteryLevel();
+      getANCMode();
+
       const batteryLevelInterval = setInterval(() => {
         getBatteryLevel();
       }, BATTERY_LEVEL_POLL_RATE);
@@ -31,21 +35,24 @@ function App() {
       const batteryChargingInterval = setInterval(() => {
         getBatteryCharging();
       }, BATTERY_CHARGING_POLL_RATE);
-    
+
       return () => {
         clearInterval(batteryLevelInterval);
         clearInterval(batteryChargingInterval);
       };
     }
-      
+
   }, [deviceConnectionState]);
 
   return (
     <div>
-      <Stack>
-        <A3951InfoCard />
-        <ANCModeCard />
-      </Stack>
+      {deviceConnectionState == DeviceConnectionState.CONNECTED &&
+        <Stack>
+          <A3951InfoCard />
+          {currentANCMode != null && <ANCModeCard /> }
+          <EQCard />
+        </Stack>
+      }
     </div>
   );
 }

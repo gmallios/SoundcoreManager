@@ -7,11 +7,10 @@ interface DeviceStoreState {
   deviceConnectionState: DeviceConnectionState
   tryInitialize: (selectedDevice: DeviceSelection) => void,
   connectUUID: (macAddr: String, uuid: String) => void,
-  
-  
   // Get functions
   getBatteryLevel: () => void,
   getBatteryCharging: () => void,
+  getANCMode: () => void,
   // Set functions
   sendANCMode: (mode: ANCModes) => void,
   // Earbud state
@@ -66,6 +65,15 @@ const useDeviceStore = create<DeviceStoreState>((set) => ({
   getBatteryCharging: () => {
     invoke("get_battery_charging").then((msg: any) => {
       set((state) => ({ ...state, batteryCharging: msg }));
+    }).catch((err) => {
+      console.log(err);
+    });
+  },
+
+  getANCMode: () => {
+    invoke("get_anc_mode").then((msg: any) => {
+      let mode = msg as ANCModes;
+      set((state) => ({ ...state, currentANCMode: mode }));
     }).catch((err) => {
       console.log(err);
     });

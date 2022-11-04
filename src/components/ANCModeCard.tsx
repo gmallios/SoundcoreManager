@@ -6,7 +6,7 @@ import TransIcon from "../assets/ambient_icon_trans.png";
 import useDeviceStore from "../hooks/useDeviceStore";
 import { ANCModes } from "../bindings/ANCModes";
 
-const width = 465;
+const width = window.innerWidth - 35;
 
 const Metrics = {
     containerWidth: width - 30,
@@ -27,7 +27,7 @@ const ANCSliderContainer = styled("div")(({ theme }) => ({
     borderRadius: 27.5,
 }));
 
-type AllowedSliderPositions = "left" | "right" | "center";
+export type AllowedSliderPositions = "left" | "right" | "center" | null;
 
 interface ANCSliderSwitcherProps {
     position: AllowedSliderPositions;
@@ -51,15 +51,15 @@ const ANCSliderSwitcher = styled("div", {
     shadowColor: "black",
     shadowRadius: 10,
     shadowOpacity: 0.31,
-    transition: "right 0.32s cubic-bezier(0.87, 0, 0.13, 1)",
+    transition: "transform 0.32s cubic-bezier(0.87, 0, 0.13, 1)",
     ...(position == "left" && {
-        right: Metrics.switchWidth + (Metrics.switchWidth - 49) // 33 + 16
+        transform: "translateX(-78%)",
     }),
     ...(position == "right" && {
-        right: Metrics.switchWidth - (Metrics.switchWidth - 33) // 16 * 2 padding + 1
+        transform: "translateX(78%)",
     }),
     ...(position == "center" && {
-        right: Metrics.switchWidth,
+        transform: "translateX(0)",
     }),
 
 }));
@@ -87,14 +87,15 @@ const ANCSliderButton = styled(Button, {
 
 export default function ANCModeCard() {
 
-    const { sendANCMode } = useDeviceStore();
+    const { sendANCMode, currentANCMode } = useDeviceStore();
 
-    let [sliderPosition, setSliderPosition] = useState<AllowedSliderPositions>("center");
+    let [sliderPosition, setSliderPosition] = useState<AllowedSliderPositions>(null);
     let [sliderIcon, setSliderIcon] = useState<string>(NormalIcon);
 
-    let [ancModeSelected, setAncModeSelected] = useState<ANCModes | "AncCustomValue">("AncOutdoorMode"); 
+    let [ancModeSelected, setAncModeSelected] = useState<ANCModes | "AncCustomValue">("AncOutdoorMode");
     let [transModeSelected, setTransModeSelected] = useState<ANCModes>("TransparencyFullyTransparentMode");
-    let [ancCustomValue, setAncCustomValue] = useState<number | number[]>(10);
+    let [ancCustomValue, setAncCustomValue] = useState<number | number[] | null>(null);
+
 
 
     let ancButtons: Array<[string, ANCModes | "AncCustomValue"]> =
@@ -109,22 +110,42 @@ export default function ANCModeCard() {
         [
             ["Fully Trasparent", "TransparencyFullyTransparentMode"],
             ["Vocal Mode", "TransparencyVocalMode"]
-        ]
+        ];
+
+    useEffect(() => {
+        if (currentANCMode != null) {
+            if (currentANCMode == "NormalMode") {
+                setSliderPosition("center");
+            } else if (currentANCMode == "TransparencyFullyTransparentMode" || currentANCMode == "TransparencyVocalMode") {
+                setSliderPosition("right");
+                setTransModeSelected(currentANCMode);
+            } else {
+                setSliderPosition("left");
+                if (typeof currentANCMode === "object") {
+                    setAncCustomValue(currentANCMode.AncCustomValue);
+                    setAncModeSelected("AncCustomValue");
+                } else {
+                    setAncModeSelected(currentANCMode);
+                }
+            }
+        }
+    }, []);
+
 
     // TODO: Load persisted values
     useEffect(() => {
-        if (sliderPosition == "center"){
+        if (sliderPosition == "center") {
             sendANCMode("NormalMode");
-        } else if(sliderPosition == "left" && ancModeSelected != "AncCustomValue"){
+        } else if (sliderPosition == "left" && ancModeSelected != "AncCustomValue") {
             sendANCMode(ancModeSelected);
-        } else if(sliderPosition == "right"){
+        } else if (sliderPosition == "right") {
             sendANCMode(transModeSelected);
         }
     }, [sliderPosition]);
 
     useEffect(() => {
-        if(sliderPosition == "left"){
-            if(ancModeSelected == "AncCustomValue"){
+        if (sliderPosition == "left") {
+            if (ancModeSelected == "AncCustomValue") {
                 sendANCMode({ AncCustomValue: ancCustomValue as number });
             } else {
                 sendANCMode(ancModeSelected);
@@ -133,7 +154,7 @@ export default function ANCModeCard() {
     }, [ancModeSelected, ancCustomValue]);
 
     useEffect(() => {
-        if(sliderPosition == "right"){
+        if (sliderPosition == "right") {
             sendANCMode(transModeSelected);
         }
     }, [transModeSelected]);
@@ -157,18 +178,19 @@ export default function ANCModeCard() {
                     <Collapse in={sliderPosition != "center"} mountOnEnter unmountOnExit>
                         <ButtonGrid buttonArray={sliderPosition == "left" ? ancButtons : transButtons} setButtonSelected={sliderPosition == "left" ? setAncModeSelected : setTransModeSelected} buttonSelected={sliderPosition == "left" ? ancModeSelected : transModeSelected}>
                             <Collapse in={sliderPosition == "left" && ancModeSelected == "AncCustomValue"}>
-                                <Slider
-                                    size="small"
-                                    defaultValue={10}
-                                    onChange={(_, newValue) => setAncCustomValue(newValue)}
-                                    onChangeCommitted={(_, newValue) => setAncCustomValue(newValue)}
-                                    sx={{ mt: 2, pb: 0, width: "98%" }}
-                                    min={0}
-                                    max={10}
-                                    marks
-                                    aria-label="Small"
-                                    valueLabelDisplay="auto"
-                                />
+                                {ancCustomValue != null &&
+                                    <Slider
+                                        size="small"
+                                        value={ancCustomValue}
+                                        onChange={(_, newValue) => setAncCustomValue(newValue)}
+                                        onChangeCommitted={(_, newValue) => setAncCustomValue(newValue)}
+                                        sx={{ mt: 2, pb: 0, width: "98%" }}
+                                        min={0}
+                                        max={10}
+                                        marks
+                                        aria-label="Small"
+                                        valueLabelDisplay="auto"
+                                    />}
                             </Collapse>
                         </ButtonGrid>
                     </Collapse>
