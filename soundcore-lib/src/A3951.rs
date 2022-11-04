@@ -56,12 +56,13 @@ impl A3951Device {
         Ok(())
     }
 
+
     //TODO: Check for command in response ( 2 bytes )
     pub fn get_info(&self) -> Result<A3951DeviceInfo, A3951Error> {
         let cmd = &Self::create_cmd(CMD_DEVICE_INFO);
         self.send(cmd)?;
         std::thread::sleep(SLEEP_DURATION);
-        let resp = self.recv(50)?;
+        let resp = self.recv(36)?;
         if !verify_resp(&resp){
             return Err(A3951Error::ResponseChecksumError);
         }
@@ -72,11 +73,10 @@ impl A3951Device {
         let cmd = &Self::create_cmd(CMD_DEVICE_STATUS);
         self.send(cmd)?;
         std::thread::sleep(SLEEP_DURATION);
-        let resp = self.recv(100)?;
-        // In order to verify response we need exact size of response debug it.
-        // if !verify_resp(&resp){
-        //     return Err(A3951Error::ResponseChecksumError);
-        // }
+        let resp = self.recv(97)?;
+        if !verify_resp(&resp){
+            return Err(A3951Error::ResponseChecksumError);
+        }
         Ok(A3951DeviceStatus::from_bytes(&resp)?)
     }
 
@@ -125,10 +125,10 @@ impl A3951Device {
         let cmd = &Self::create_cmd(CMD_DEVICE_LDAC);
         self.send(cmd)?;
         std::thread::sleep(SLEEP_DURATION);
-        let resp = self.recv(20)?;
-        // if !verify_resp(&resp){
-        //     return Err(A3951Error::ResponseChecksumError);
-        // }
+        let resp = self.recv(11)?;
+        if !verify_resp(&resp){
+            return Err(A3951Error::ResponseChecksumError);
+        }
         Ok(resp[9] == 1)
     }
 
@@ -136,10 +136,10 @@ impl A3951Device {
         let cmd = &Self::create_cmd(CMD_DEVICE_GETANC);
         self.send(cmd)?;
         std::thread::sleep(SLEEP_DURATION);
-        let resp = self.recv(50)?;
-        // if !verify_resp(&resp){
-        //     return Err(A3951Error::ResponseChecksumError);
-        // }
+        let resp = self.recv(14)?;
+        if !verify_resp(&resp){
+            return Err(A3951Error::ResponseChecksumError);
+        }
         Ok(A3951DeviceANC::from_bytes(&resp[9..13])?)
     }
 
@@ -226,6 +226,8 @@ pub struct A3951DeviceStatus {
     pub side_tone_enabled: bool,
     pub wear_detection_enabled: bool,
     pub touch_tone_enabled: bool,
+    pub left_eq: EQWave,
+    pub right_eq: EQWave,
 }
 
 impl A3951DeviceStatus {
@@ -239,6 +241,8 @@ impl A3951DeviceStatus {
             tws_status: arr[10] == 1,
             battery_level: A3951BatteryLevel::from_bytes(&arr[11..13])?,
             battery_charging: A3951BatteryCharging::from_bytes(&arr[13..15])?,
+            left_eq: EQWave::from_bytes(&arr[17..25])?,
+            right_eq: EQWave::from_bytes(&arr[25..33])?,
             anc_status: A3951DeviceANC::from_bytes(&arr[86..90])?,
             side_tone_enabled: arr[90] == 1,
             wear_detection_enabled: arr[91] == 1,
