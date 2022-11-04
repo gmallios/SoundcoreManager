@@ -55,10 +55,10 @@
     "windows": [
       {
         "fullscreen": false,
-        "height": 500,
+        "height": 600,
         "resizable": false,
         "title": "Soundcore Manager",
-        "width": 500
+        "width": 600
       }
     ]
   }
