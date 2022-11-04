@@ -285,7 +285,7 @@ impl A3951BatteryCharging {
     }
 }
 
-#[derive(Default, Debug, Serialize, Deserialize)]
+#[derive(Default, Debug, Serialize, Deserialize, PartialEq, Eq)]
 pub struct A3951DeviceANC {
     pub option: u8,
     pub anc_option: u8,
