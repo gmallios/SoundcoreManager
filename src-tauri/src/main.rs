@@ -130,6 +130,53 @@ fn get_battery_charging(state: State<DeviceState>) -> Result<A3951BatteryChargin
     }
 }
 
+// #[tauri::command]
+// fn get_device_status(state: State<DeviceState>) -> Result<String, String> {
+//     todo!()
+// }
+
+// #[tauri::command]
+// fn get_device_info(state: State<DeviceState>) -> Result<String, String> {
+//     todo!()
+// }
+
+#[tauri::command]
+fn get_anc_mode(state: State<DeviceState>) -> Result<ANCModes, String> {
+    let device_state = state.device.lock().unwrap();
+    match &*device_state {
+        Some(device) => {
+            let device = device.lock().unwrap();
+            match &*device {
+                SupportedDevices::A3951(device) => {
+                    let anc_mode = device.get_anc();
+                    match anc_mode {
+                        Ok(anc_mode) => {
+                            let anc_mode_selected: ANCModes = match anc_mode {
+                                A3951DeviceANC::ANC_INDOOR_MODE => ANCModes::AncIndoorMode,
+                                A3951DeviceANC::ANC_OUTDOOR_MODE => ANCModes::AncOutdoorMode,
+                                A3951DeviceANC::ANC_TRANSPORT_MODE => ANCModes::AncTransportMode,
+                                A3951DeviceANC::NORMAL_MODE => ANCModes::NormalMode,
+                                A3951DeviceANC::TRANSPARENCY_FULLY_TRANSPARENT_MODE => ANCModes::TransparencyFullyTransparentMode,
+                                A3951DeviceANC::TRANSPARENCY_VOCAL_MODE => ANCModes::TransparencyVocalMode,
+                                custom_val => {
+                                    ANCModes::AncCustomValue(custom_val.anc_custom)
+                                }
+                            };
+                            return Ok(anc_mode_selected);
+                        },
+                        Err(_) => {
+                            return Err("Failed to get anc mode".to_string());
+                        }
+                    }
+                }
+            }
+        },
+        None => {
+            return Err("Device not initialized".to_string());
+        }
+    }
+}
+
 #[tauri::command]
 fn set_anc_mode(state: State<DeviceState>, mode: ANCModes) -> Result<(), String> {
     let device_state = state.device.lock().unwrap();
@@ -174,8 +221,11 @@ struct DeviceState {
 fn main() {
     tauri::Builder::default()
         .manage(DeviceState { device: Mutex::new(None), initialized: Mutex::new(false) })
-        .invoke_handler(tauri::generate_handler![init_device, connect_uuid, 
-            get_battery_level, get_battery_charging, set_anc_mode])
+        .invoke_handler(tauri::generate_handler![
+            init_device, connect_uuid, 
+            get_battery_level, get_battery_charging, 
+            set_anc_mode, get_anc_mode
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
