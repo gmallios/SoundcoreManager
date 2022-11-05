@@ -1,6 +1,8 @@
+use crate::utils::{
+    build_command_array_with_options_toggle_enabled, i8_to_u8vec, verify_resp, Clamp,
+};
+use serde::{Deserialize, Serialize};
 use std::{num::ParseIntError, str::Utf8Error, string::ParseError, time::Duration};
-use serde::{Serialize, Deserialize};
-use crate::utils::{build_command_array_with_options_toggle_enabled, i8_to_u8vec, Clamp, verify_resp};
 
 use windows::{
     self,
@@ -21,6 +23,7 @@ static CMD_DEVICE_BATTERYLEVEL: [i8; 7] = [8, -18, 0, 0, 0, 1, 3];
 static CMD_DEVICE_BATTERYCHARGING: [i8; 7] = [8, -18, 0, 0, 0, 1, 4];
 static CMD_DEVICE_LDAC: [i8; 7] = [8, -18, 0, 0, 0, 1, 127]; // NOTE: Last byte is Byte.MAX_VALUE from java. Im not sure about the value
 static CMD_DEVICE_GETEQ: [i8; 7] = [8, -18, 0, 0, 0, 2, 1]; // Not tested yet.
+static CMD_DEVICE_SETEQ: [i8; 7] = [8, -18, 0, 0, 0, 3, -121]; // Not tested yet.
 static CMD_DEVICE_GETANC: [i8; 7] = [8, -18, 0, 0, 0, 6, 1];
 static CMD_DEVICE_SETANC: [i8; 7] = [8, -18, 0, 0, 0, 6, -127];
 
@@ -56,14 +59,13 @@ impl A3951Device {
         Ok(())
     }
 
-
     //TODO: Check for command in response ( 2 bytes )
     pub fn get_info(&self) -> Result<A3951DeviceInfo, A3951Error> {
         let cmd = &Self::create_cmd(CMD_DEVICE_INFO);
         self.send(cmd)?;
         std::thread::sleep(SLEEP_DURATION);
         let resp = self.recv(36)?;
-        if !verify_resp(&resp){
+        if !verify_resp(&resp) {
             return Err(A3951Error::ResponseChecksumError);
         }
         Ok(A3951DeviceInfo::from_bytes(&resp)?)
@@ -74,7 +76,7 @@ impl A3951Device {
         self.send(cmd)?;
         std::thread::sleep(SLEEP_DURATION);
         let resp = self.recv(97)?;
-        if !verify_resp(&resp){
+        if !verify_resp(&resp) {
             return Err(A3951Error::ResponseChecksumError);
         }
         Ok(A3951DeviceStatus::from_bytes(&resp)?)
@@ -85,8 +87,8 @@ impl A3951Device {
         self.send(cmd)?;
         std::thread::sleep(SLEEP_DURATION);
         let resp = self.recv(100)?;
-        
-        if !verify_resp(&resp[0..12]){
+
+        if !verify_resp(&resp[0..12]) {
             return Err(A3951Error::ResponseChecksumError);
         }
 
@@ -94,10 +96,10 @@ impl A3951Device {
             println!("Device level blink: {:?}", resp);
             // Case battery level. Ignore for now, more debugging needed.
             // Battery charging "blinks" when this event is triggered.
-            return Err(A3951Error::Unknown)
-        } 
-        
-        Ok(A3951BatteryLevel::from_bytes(&resp[9..11])?)     
+            return Err(A3951Error::Unknown);
+        }
+
+        Ok(A3951BatteryLevel::from_bytes(&resp[9..11])?)
     }
 
     pub fn get_battery_charging(&self) -> Result<A3951BatteryCharging, A3951Error> {
@@ -105,17 +107,15 @@ impl A3951Device {
         self.send(cmd)?;
         std::thread::sleep(SLEEP_DURATION);
         let resp = self.recv(100)?;
-        
 
-        
-        if !verify_resp(&resp[0..12]){
+        if !verify_resp(&resp[0..12]) {
             return Err(A3951Error::ResponseChecksumError);
         }
         // https://prnt.sc/yze5IvvUtYlq Case battery "blink"
-        if resp[13] == 255{
+        if resp[13] == 255 {
             println!("Device charging blink: {:?}", resp);
             // When "blinking" resp[13] is 255 afaik.
-            return Err(A3951Error::Unknown)
+            return Err(A3951Error::Unknown);
         }
 
         Ok(A3951BatteryCharging::from_bytes(&resp[9..11])?)
@@ -126,7 +126,7 @@ impl A3951Device {
         self.send(cmd)?;
         std::thread::sleep(SLEEP_DURATION);
         let resp = self.recv(11)?;
-        if !verify_resp(&resp){
+        if !verify_resp(&resp) {
             return Err(A3951Error::ResponseChecksumError);
         }
         Ok(resp[9] == 1)
@@ -137,7 +137,7 @@ impl A3951Device {
         self.send(cmd)?;
         std::thread::sleep(SLEEP_DURATION);
         let resp = self.recv(14)?;
-        if !verify_resp(&resp){
+        if !verify_resp(&resp) {
             return Err(A3951Error::ResponseChecksumError);
         }
         Ok(A3951DeviceANC::from_bytes(&resp[9..13])?)
@@ -384,7 +384,7 @@ impl A3951DeviceANC {
     }
 }
 
-#[derive(Default, Debug, Serialize, Deserialize)]
+#[derive(Default, Debug, Serialize, Deserialize, Clone, Copy)]
 pub struct EQWave {
     pos0: f32,
     pos1: f32,
@@ -405,7 +405,7 @@ impl EQWave {
         let i8slice = unsafe { &*(arr as *const _ as *const [i8]) };
         let results = Self::eq_int_to_float(i8slice);
         Ok(EQWave {
-            pos0: results[0],
+            pos0: results[0], //6.0 - 18.0
             pos1: results[1],
             pos2: results[2],
             pos3: results[3],
@@ -432,6 +432,129 @@ impl EQWave {
         }
         eq
     }
+    
+    /* A3951 "Needs" drc, other devices might not (see m10061y0 in jadx) */
+    fn transform_to_realeq(mut input_wave: EQWave) -> EQWave {
+        Self::transform_addsub(
+            Self::apply_drc(Self::transform_addsub(input_wave, false, 12.0)),
+            true,
+            12.0,
+        )
+    }
+
+    fn apply_drc(mut input_wave: EQWave) -> EQWave {
+        /* Spaghetti code, ported straight from Soundcore App */
+        const EQCONST_A: f32 = 0.85;
+        const EQCONST_B: f32 = 0.95;
+        let (d, d2, d3, d4, d5, d6, d7, d8, d9, d10, d11, d12) = (
+            input_wave.pos0 as f64,
+            input_wave.pos1 as f64,
+            EQCONST_A as f64,
+            input_wave.pos2 as f64,
+            input_wave.pos3 as f64,
+            input_wave.pos4 as f64,
+            input_wave.pos5 as f64,
+            input_wave.pos6 as f64,
+            input_wave.pos7 as f64,
+            EQCONST_B as f64,
+            (input_wave.pos2 * 0.81 * EQCONST_A) as f64,
+            (input_wave.pos5 * 0.81 * EQCONST_A) as f64,
+        );
+        input_wave.pos0 = ((((((((1.26 * d) - ((d2 * 0.71) * d3)) + (d4 * 0.177))
+            - (d5 * 0.0494))
+            + (d6 * 0.0345))
+            - (d7 * 0.0197))
+            + (d8 * 0.0075))
+            - (0.00217 * d9)) as f32;
+        input_wave.pos1 = ((((((((((-0.71) * d) * d3) + ((d2 * 1.73) * d10)) - d11)
+            + (d5 * 0.204))
+            - (d6 * 0.068))
+            + (d7 * 0.045))
+            - (d8 * 0.0235))
+            + (d9 * 0.0075)) as f32;
+        input_wave.pos2 = ((((((((d * 0.177) - ((d2 * 0.81) * d3)) + ((d4 * 1.73) * d10))
+            - ((d5 * 0.81) * d3))
+            + (d6 * 0.208))
+            - (d7 * 0.07))
+            + (d8 * 0.045))
+            - (d9 * 0.0197)) as f32;
+        input_wave.pos3 = (((((((((-0.0494) * d) + (d2 * 0.204)) - d11) + ((d5 * 1.73) * d10))
+            - ((d6 * 0.82) * d3))
+            + (d7 * 0.208))
+            - (d8 * 0.068))
+            + (d9 * 0.0345)) as f32;
+        input_wave.pos4 = ((((((((d * 0.0345) - (d2 * 0.068)) + (d4 * 0.208))
+            - ((0.82 * d5) * d3))
+            + ((d6 * 1.73) * d10))
+            - d12)
+            + (d8 * 0.204))
+            - (d9 * 0.0494)) as f32;
+        input_wave.pos5 = (((((((((-0.0197) * d) + (d2 * 0.045)) - (0.07 * d4)) + (0.208 * d5))
+            - ((d6 * 0.81) * d3))
+            + ((1.73 * d7) * d10))
+            - ((0.81 * d8) * d3))
+            + (d9 * 0.177)) as f32;
+        input_wave.pos6 = ((((((((d * 0.0075) - (d2 * 0.0235)) + (0.045 * d4)) - (d5 * 0.068))
+            + (0.204 * d6))
+            - d12)
+            + ((1.83 * d8) * d10))
+            - ((d9 * 0.71) * d3)) as f32;
+        input_wave.pos7 = ((((((((d * (-0.00217)) + (d2 * 0.0075)) - (d4 * 0.0197))
+            + (d5 * 0.0345))
+            - (d6 * 0.0494))
+            + (d7 * 0.177))
+            - ((d8 * 0.71) * d3))
+            + (d9 * 1.5)) as f32;
+        Self::transform_multdiv(input_wave, false, 10.0)
+    }
+
+    fn transform_multdiv(mut input_wave: EQWave, should_mult: bool, factor: f32) -> EQWave {
+        if should_mult {
+            input_wave.pos0 *= factor;
+            input_wave.pos1 *= factor;
+            input_wave.pos2 *= factor;
+            input_wave.pos3 *= factor;
+            input_wave.pos4 *= factor;
+            input_wave.pos5 *= factor;
+            input_wave.pos6 *= factor;
+            input_wave.pos7 *= factor;
+        } else {
+            input_wave.pos0 /= factor;
+            input_wave.pos1 /= factor;
+            input_wave.pos2 /= factor;
+            input_wave.pos3 /= factor;
+            input_wave.pos4 /= factor;
+            input_wave.pos5 /= factor;
+            input_wave.pos6 /= factor;
+            input_wave.pos7 /= factor;
+        }
+        input_wave
+    }
+
+    fn transform_addsub(mut input_wave: EQWave, should_add: bool, offset: f32) -> EQWave {
+        if should_add {
+            input_wave.pos0 += offset;
+            input_wave.pos1 += offset;
+            input_wave.pos2 += offset;
+            input_wave.pos3 += offset;
+            input_wave.pos4 += offset;
+            input_wave.pos5 += offset;
+            input_wave.pos6 += offset;
+            input_wave.pos7 += offset;
+        } else {
+            input_wave.pos0 -= offset;
+            input_wave.pos1 -= offset;
+            input_wave.pos2 -= offset;
+            input_wave.pos3 -= offset;
+            input_wave.pos4 -= offset;
+            input_wave.pos5 -= offset;
+            input_wave.pos6 -= offset;
+            input_wave.pos7 -= offset;
+        }
+        input_wave
+    }
+
+    
 }
 
 fn try_connect_uuid(sock: SOCKET, addr: &str, uuid: &str) -> Result<SOCKET, A3951Error> {
