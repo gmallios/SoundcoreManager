@@ -21,6 +21,7 @@ interface DeviceStoreState {
 
 export enum DeviceConnectionState {
   DISCONNECTED,
+  CONNECTING,
   CONNECTED,
   INITIALIZED,
   UNINITIALIZED
@@ -48,11 +49,12 @@ const useDeviceStore = create<DeviceStoreState>((set) => ({
     });
   },
   connectUUID: (macAddr: String, uuid: String) => {
+    set((state) => ({ ...state, deviceConnectionState: DeviceConnectionState.CONNECTING }));
     invoke("connect_uuid", { macAddr: macAddr, uuid: uuid }).then((_msg) => {
       set((state) => ({ ...state, deviceConnectionState: DeviceConnectionState.CONNECTED }));
     }).catch((err) => {
       console.log(err);
-      set((state) => ({ ...state, deviceConnectionState: DeviceConnectionState.UNINITIALIZED }));
+      set((state) => ({ ...state, deviceConnectionState: DeviceConnectionState.DISCONNECTED }));
     });
   },
   getBatteryLevel: () => {

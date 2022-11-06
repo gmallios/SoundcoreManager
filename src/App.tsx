@@ -21,12 +21,15 @@ function App() {
   const BATTERY_LEVEL_POLL_RATE = 10000;
   const BATTERY_CHARGING_POLL_RATE = 500;
 
+  const [isConnected, setIsConnected] = useState(false);
+
   useEffect(() => {
     if (deviceConnectionState == DeviceConnectionState.CONNECTED) {
       // Initializes the state
       getBatteryCharging();
       getBatteryLevel();
       getANCMode();
+      setIsConnected(true);
 
       const batteryLevelInterval = setInterval(() => {
         getBatteryLevel();
@@ -40,8 +43,9 @@ function App() {
         clearInterval(batteryLevelInterval);
         clearInterval(batteryChargingInterval);
       };
+    } else if(deviceConnectionState == DeviceConnectionState.DISCONNECTED) {
+      setIsConnected(false);
     }
-
   }, [deviceConnectionState]);
 
   return (
@@ -49,7 +53,7 @@ function App() {
       {deviceConnectionState == DeviceConnectionState.CONNECTED &&
         <Stack>
           <A3951InfoCard />
-          {currentANCMode != null && <ANCModeCard /> }
+          {isConnected && <ANCModeCard /> }
           <EQCard />
         </Stack>
       }
