@@ -204,7 +204,6 @@ impl A3951Device {
         /* drc_offset + 56-72 "Corrected" EQ Wave */
         output_arr[drc_offset+56..drc_offset+64].copy_from_slice(&corrected_eq_wave_bytes[0..8]);
         output_arr[drc_offset+64..drc_offset+72].copy_from_slice(&corrected_eq_wave_bytes[0..8]);
-        println!("{:?}", output_arr);
         let cmd = Self::create_cmd_with_data(CMD_DEVICE_SETEQ_DRC, output_arr);
         self.send(&cmd)?;
         Ok(())
