@@ -75,7 +75,7 @@ fn main() {
         pos9: 12.0,
     };
 
-    device.test_set_eq(wave);
+    device.set_eq(wave);
     // loop {
     //     let level = device.get_battery_level().unwrap();
     //     println!("Left Battery: {:X?}, Right Battery: {:X?}", level.left, level.right);
