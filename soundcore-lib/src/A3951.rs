@@ -23,7 +23,8 @@ static CMD_DEVICE_BATTERYLEVEL: [i8; 7] = [8, -18, 0, 0, 0, 1, 3];
 static CMD_DEVICE_BATTERYCHARGING: [i8; 7] = [8, -18, 0, 0, 0, 1, 4];
 static CMD_DEVICE_LDAC: [i8; 7] = [8, -18, 0, 0, 0, 1, 127]; // NOTE: Last byte is Byte.MAX_VALUE from java. Im not sure about the value
 static CMD_DEVICE_GETEQ: [i8; 7] = [8, -18, 0, 0, 0, 2, 1]; // Not tested yet.
-static CMD_DEVICE_SETEQ: [i8; 7] = [8, -18, 0, 0, 0, 3, -121]; // Not tested yet.
+static CMD_DEVICE_SETEQ_DRC: [i8; 7] = [8, -18, 0, 0, 0, 3, -121]; // This gets used when DRC is supported/enabled.
+static CMD_DEVICE_SETEQ_NODRC: [i8; 7] = [8, -18, 0, 0, 0, 3, -122]; // This gets used when DRC is not supported/enabled.
 static CMD_DEVICE_GETANC: [i8; 7] = [8, -18, 0, 0, 0, 6, 1];
 static CMD_DEVICE_SETANC: [i8; 7] = [8, -18, 0, 0, 0, 6, -127];
 
@@ -149,6 +150,63 @@ impl A3951Device {
         std::thread::sleep(SLEEP_DURATION);
         // Validate resp??
         let _resp = self.recv(10)?;
+        Ok(())
+    }
+
+    pub fn set_eq(&self, eq_wave: EQWave) -> Result<(), A3951Error> {
+        let drc_supported = true;
+        let eq_index: i32 = 65278; /* Custom EQ Index */
+        let eq_hindex = 0; /* I don't know what this is, doesn't seem to change across EQ Indexes and EQ values and is constant */
+        let arr_len = match drc_supported {
+            /* 76: DRC 74: No DRC */
+            true => 76,
+            false => 74,
+        };
+        let drc_offset = match drc_supported {
+            true => 4,
+            false => 2,
+        };
+        let mut output_arr: Vec<u8> = vec![0; arr_len];
+
+        output_arr[0] = eq_index as u8 & 0xFF;
+        output_arr[1] = ((eq_index >> 8) & 0xFF) as u8;
+
+        if drc_supported {
+            /* hindex is used on DRC models */
+            output_arr[2] = eq_hindex as u8 & 0xFF;
+            output_arr[3] = ((eq_hindex >> 8) & 0xFF) as u8;
+        }
+
+        /* used for both left and right EQs */
+        let corrected_eq_wave = EQWave::transform_to_realeq(eq_wave);
+        let eq_wave_bytes = EQWaveInt::from_eq_wave(eq_wave).to_bytes(); 
+        let corrected_eq_wave_bytes = EQWaveInt::from_eq_wave(corrected_eq_wave).to_bytes(); 
+        let hearid_wave_bytes = EQWaveInt::from_eq_wave(EQWave::HEARD_ID_DEFAULT).to_bytes();
+
+        /* drc_offset - drc_offset + 16 EQ Wave */
+        output_arr[drc_offset..drc_offset+8].copy_from_slice(&eq_wave_bytes[0..8]);
+        output_arr[drc_offset+8..drc_offset+16].copy_from_slice(&eq_wave_bytes[0..8]);
+        /* Straight from Soundcore spaghetti */
+        output_arr[drc_offset+16] = ((-1 & -1) & 255) as u8; 
+        output_arr[drc_offset+17] = ((-1 & -1) & 255) as u8; 
+        output_arr[drc_offset+18] = (0 & 255) as u8;
+        /* drc_offset + 19-35 HearID EQ Wave */
+        output_arr[drc_offset+19..drc_offset+27].copy_from_slice(&hearid_wave_bytes[0..8]);
+        output_arr[drc_offset+27..drc_offset+35].copy_from_slice(&hearid_wave_bytes[0..8]);
+
+        output_arr[drc_offset+35..drc_offset+39].copy_from_slice(&[0, 0, 0, 0]);
+        output_arr[drc_offset+39] = (0 & 255) as u8; /* HearID type */
+
+        /* drc_offset + 40-56 HearID Customer EQ Wave (IDK what this means, hearid data is not reversed atm) */
+        output_arr[drc_offset+40..drc_offset+48].copy_from_slice(&hearid_wave_bytes[0..8]);
+        output_arr[drc_offset+48..drc_offset+56].copy_from_slice(&hearid_wave_bytes[0..8]);
+
+        /* drc_offset + 56-72 "Corrected" EQ Wave */
+        output_arr[drc_offset+56..drc_offset+64].copy_from_slice(&corrected_eq_wave_bytes[0..8]);
+        output_arr[drc_offset+64..drc_offset+72].copy_from_slice(&corrected_eq_wave_bytes[0..8]);
+        println!("{:?}", output_arr);
+        let cmd = Self::create_cmd_with_data(CMD_DEVICE_SETEQ_DRC, output_arr);
+        self.send(&cmd)?;
         Ok(())
     }
 
@@ -384,21 +442,86 @@ impl A3951DeviceANC {
     }
 }
 
+/* This gets sent to the device. EQWave is transformed into this. */
+#[derive(Default, Debug)]
+pub struct EQWaveInt {
+    pos0: i16,
+    pos1: i16,
+    pos2: i16,
+    pos3: i16,
+    pos4: i16,
+    pos5: i16,
+    pos6: i16,
+    pos7: i16,
+    pos8: i16,
+    pos9: i16,
+}
+
+impl EQWaveInt {
+    fn from_eq_wave(eq: EQWave) -> EQWaveInt {
+        const F: f32 = 10.0; /* Constant derived from method usage in the Soundcore App */
+        EQWaveInt {
+            pos0: (eq.pos0 * F).round() as i16,
+            pos1: (eq.pos1 * F).round() as i16,
+            pos2: (eq.pos2 * F).round() as i16,
+            pos3: (eq.pos3 * F).round() as i16,
+            pos4: (eq.pos4 * F).round() as i16,
+            pos5: (eq.pos5 * F).round() as i16,
+            pos6: (eq.pos6 * F).round() as i16,
+            pos7: (eq.pos7 * F).round() as i16,
+            pos8: (eq.pos8 * F).round() as i16,
+            pos9: (eq.pos9 * F).round() as i16,
+        }
+    }
+
+    fn to_bytes(&self) -> [u8; 10] {
+        [
+            (self.pos0 as u8) & 255,
+            (self.pos1 as u8) & 255,
+            (self.pos2 as u8) & 255,
+            (self.pos3 as u8) & 255,
+            (self.pos4 as u8) & 255,
+            (self.pos5 as u8) & 255,
+            (self.pos6 as u8) & 255,
+            (self.pos7 as u8) & 255,
+            (self.pos8 as u8) & 255,
+            (self.pos9 as u8) & 255,
+        ]
+    }
+}
+
+/* This gets received from the device and is used to create the EQ to send. */
 #[derive(Default, Debug, Serialize, Deserialize, Clone, Copy)]
 pub struct EQWave {
-    pos0: f32,
-    pos1: f32,
-    pos2: f32,
-    pos3: f32,
-    pos4: f32,
-    pos5: f32,
-    pos6: f32,
-    pos7: f32,
+    pub pos0: f32,
+    pub pos1: f32,
+    pub pos2: f32,
+    pub pos3: f32,
+    pub pos4: f32,
+    pub pos5: f32,
+    pub pos6: f32,
+    pub pos7: f32,
+    pub pos8: f32,
+    pub pos9: f32,
 }
 
 impl EQWave {
+
+    pub const HEARD_ID_DEFAULT: EQWave = EQWave {
+        pos0: 25.5,
+        pos1: 25.5,
+        pos2: 25.5,
+        pos3: 25.5,
+        pos4: 25.5,
+        pos5: 25.5,
+        pos6: 25.5,
+        pos7: 25.5,
+        pos8: 25.5,
+        pos9: 25.5,
+    };
+
     fn from_bytes(arr: &[u8]) -> Result<EQWave, A3951Error> {
-        if (arr.len() < 8) {
+        if arr.len() < 8 {
             return Err(A3951Error::Unknown);
         }
 
@@ -413,6 +536,9 @@ impl EQWave {
             pos5: results[5],
             pos6: results[6],
             pos7: results[7],
+            /* Since A3951 uses 8-band eq these are constant */
+            pos8: 12.0,
+            pos9: 0.0,
         })
     }
 
@@ -432,7 +558,7 @@ impl EQWave {
         }
         eq
     }
-    
+
     /* A3951 "Needs" drc, other devices might not (see m10061y0 in jadx) */
     fn transform_to_realeq(mut input_wave: EQWave) -> EQWave {
         Self::transform_addsub(
@@ -553,8 +679,6 @@ impl EQWave {
         }
         input_wave
     }
-
-    
 }
 
 fn try_connect_uuid(sock: SOCKET, addr: &str, uuid: &str) -> Result<SOCKET, A3951Error> {

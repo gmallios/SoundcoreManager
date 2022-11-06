@@ -16,7 +16,7 @@ use windows::{
     },
 };
 
-use crate::A3951::A3951DeviceANC;
+use crate::A3951::{A3951DeviceANC, EQWave};
 
 mod A3951;
 mod utils;
@@ -53,18 +53,35 @@ fn main() {
         "Left Battery: {:X?}, LeftCharging: {:X?}, Right Battery: {:X?}, RightCharging: {:X?},",
         status.battery_level.left, status.battery_charging.left, status.battery_level.right, status.battery_charging.right,
     );
+
+    println!("Left EQ: {:X?}", status.left_eq);
+    println!("Right EQ: {:X?}", status.right_eq);
     println!("ANC Status: {:?}", status.anc_status);
     println!("ANC Status from get_anc: {:?}", device.get_anc().unwrap());
     println!("LDAC Status: {}", device.get_ldac_status().unwrap());
     
     //device.set_anc(A3951DeviceANC::ANC_INDOOR_MODE).unwrap();
-    
-    loop {
-        let level = device.get_battery_level().unwrap();
-        println!("Left Battery: {:X?}, Right Battery: {:X?}", level.left, level.right);
-        let charging_status = device.get_battery_charging().unwrap();
-        println!("Left Charging: {:X?}, Right Charging: {:X?}", charging_status.left, charging_status.right);
-    }
+
+    let wave = EQWave {
+        pos0: 14.0,
+        pos1: 13.0,
+        pos2: 12.0,
+        pos3: 12.0,
+        pos4: 12.0,
+        pos5: 12.0,
+        pos6: 12.0,
+        pos7: 12.0,
+        pos8: 12.0,
+        pos9: 12.0,
+    };
+
+    device.test_set_eq(wave);
+    // loop {
+    //     let level = device.get_battery_level().unwrap();
+    //     println!("Left Battery: {:X?}, Right Battery: {:X?}", level.left, level.right);
+    //     let charging_status = device.get_battery_charging().unwrap();
+    //     println!("Left Charging: {:X?}, Right Charging: {:X?}", charging_status.left, charging_status.right);
+    // }
 
 
     // let signed2: Vec<i8> = vec![8, -18, 0, 0, 0, 1, 1];
