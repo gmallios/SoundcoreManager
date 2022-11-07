@@ -2,17 +2,16 @@ use crate::utils::{
     build_command_array_with_options_toggle_enabled, i8_to_u8vec, verify_resp, Clamp,
 };
 use serde::{Deserialize, Serialize};
-use std::{num::ParseIntError, str::Utf8Error, string::ParseError, time::Duration};
+use std::time::Duration;
 
 use windows::{
     self,
     core::HSTRING,
     Win32::{
-        Devices::Bluetooth::{AF_BTH, BTHPROTO_RFCOMM, SOCKADDR_BTH, SOL_RFCOMM},
+        Devices::Bluetooth::{AF_BTH, BTHPROTO_RFCOMM, SOCKADDR_BTH},
         Networking::WinSock::{
-            closesocket, recv, send, setsockopt, WSACleanup, WSAGetLastError, WSAStartup,
-            SEND_RECV_FLAGS, SOCKADDR, SOCKET, SOCKET_ERROR, SOCK_STREAM, SO_RCVTIMEO, SO_SNDTIMEO,
-            TIMEVAL, WSADATA, WSA_ERROR,
+            closesocket, recv, send, WSACleanup, WSAGetLastError, WSAStartup,
+            SEND_RECV_FLAGS, SOCKADDR, SOCKET, SOCKET_ERROR, SOCK_STREAM, WSADATA, 
         },
     },
 };
@@ -153,6 +152,7 @@ impl A3951Device {
         Ok(())
     }
 
+
     pub fn set_eq(&self, eq_wave: EQWave) -> Result<(), A3951Error> {
         let drc_supported = true;
         let eq_index: i32 = 65278; /* Custom EQ Index */
@@ -206,6 +206,8 @@ impl A3951Device {
         output_arr[drc_offset+64..drc_offset+72].copy_from_slice(&corrected_eq_wave_bytes[0..8]);
         let cmd = Self::create_cmd_with_data(CMD_DEVICE_SETEQ_DRC, output_arr);
         self.send(&cmd)?;
+        std::thread::sleep(SLEEP_DURATION);
+        let _resp = self.recv(100)?;
         Ok(())
     }
 
@@ -524,10 +526,9 @@ impl EQWave {
             return Err(A3951Error::Unknown);
         }
 
-        let i8slice = unsafe { &*(arr as *const _ as *const [i8]) };
-        let results = Self::eq_int_to_float(i8slice);
+        let results = Self::eq_int_to_float(arr);
         Ok(EQWave {
-            pos0: results[0], //6.0 - 18.0
+            pos0: arr[0] as f32 / 10.0, //6.0 - 18.0
             pos1: results[1],
             pos2: results[2],
             pos3: results[3],
@@ -541,15 +542,15 @@ impl EQWave {
         })
     }
 
-    fn eq_int_to_float(arr: &[i8]) -> Vec<f32> {
+    fn eq_int_to_float(arr: &[u8]) -> Vec<f32> {
         let mut eq: Vec<f32> = Vec::new();
         let max_val: f32 = (12.0 + 7.0) - 1.0;
         let min_val: f32 = (12.0 - 7.0) + 1.0;
         for i in arr {
             let f: f32 = *i as f32 / 10.0;
-            if (f > max_val) {
+            if f > max_val {
                 eq.push(max_val);
-            } else if (f < min_val) {
+            } else if f < min_val {
                 eq.push(min_val);
             } else {
                 eq.push(f);
@@ -559,7 +560,7 @@ impl EQWave {
     }
 
     /* A3951 "Needs" drc, other devices might not (see m10061y0 in jadx) */
-    fn transform_to_realeq(mut input_wave: EQWave) -> EQWave {
+    fn transform_to_realeq(input_wave: EQWave) -> EQWave {
         Self::transform_addsub(
             Self::apply_drc(Self::transform_addsub(input_wave, false, 12.0)),
             true,
@@ -694,7 +695,7 @@ fn try_connect_uuid(sock: SOCKET, addr: &str, uuid: &str) -> Result<SOCKET, A395
             &saddr as *const SOCKADDR_BTH as *const SOCKADDR,
             std::mem::size_of::<SOCKADDR_BTH>() as i32,
         );
-        if (status == SOCKET_ERROR) {
+        if status == SOCKET_ERROR {
             let err = WSAGetLastError();
             println!("Error connect socket: {:?}", err);
             closesocket(sock);

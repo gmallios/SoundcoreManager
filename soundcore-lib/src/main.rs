@@ -63,7 +63,7 @@ fn main() {
     //device.set_anc(A3951DeviceANC::ANC_INDOOR_MODE).unwrap();
 
     let wave = EQWave {
-        pos0: 14.0,
+        pos0: 14.5,
         pos1: 13.0,
         pos2: 12.0,
         pos3: 12.0,
@@ -76,6 +76,9 @@ fn main() {
     };
 
     device.set_eq(wave);
+    let status1 = device.get_status().unwrap();
+    println!("Left EQ: {:X?}", status1.left_eq);
+    println!("Right EQ: {:X?}", status1.right_eq);
     // loop {
     //     let level = device.get_battery_level().unwrap();
     //     println!("Left Battery: {:X?}, Right Battery: {:X?}", level.left, level.right);
