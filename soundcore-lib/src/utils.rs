@@ -36,27 +36,27 @@ pub(crate) fn verify_resp(resp: &[u8]) -> bool {
 }
 
 pub(crate) fn build_command_array_with_options_toggle_enabled(
-    bArr: &[u8],
-    bArr2: Option<&[u8]>,
+    cmd: &[u8],
+    optional_data: Option<&[u8]>,
 ) -> Vec<u8> {
-    let length = bArr.len() + 2;
-    let length2 = (if bArr2.is_some() {
-        bArr2.unwrap().len()
+    let length = cmd.len() + 2;
+    let length2 = (if optional_data.is_some() {
+        optional_data.unwrap().len()
     } else {
         0
     }) + length
         + 1;
 
-    let mut bArr3 = vec![0; length2 - 1];
-    bArr3[..bArr.len()].copy_from_slice(bArr);
-    let len2bArr = int_to_byte_array(length2 as i32);
-    bArr3[bArr.len()] = len2bArr[3] & 0xFF;
-    bArr3[bArr.len() + 1] = len2bArr[2] & 0xFF;
-    if bArr2.is_some() {
-        bArr3[length..].copy_from_slice(&bArr2.unwrap());
+    let mut output_arr = vec![0; length2 - 1];
+    output_arr[..cmd.len()].copy_from_slice(cmd);
+    let len_bytes = int_to_byte_array(length2 as i32);
+    output_arr[cmd.len()] = len_bytes[3] & 0xFF;
+    output_arr[cmd.len() + 1] = len_bytes[2] & 0xFF;
+    if optional_data.is_some() {
+        output_arr[length..].copy_from_slice(&optional_data.unwrap());
     }
 
-    return calculate_checksum(&bArr3);
+    return calculate_checksum(&output_arr);
 }
 
 pub(crate) fn int_to_byte_array(num: i32) -> [u8; 4] {
@@ -70,19 +70,19 @@ pub(crate) fn int_to_byte_array(num: i32) -> [u8; 4] {
     ]
 }
 
-pub(crate) fn calculate_checksum(bArr: &[u8]) -> Vec<u8> {
-    let mut res = vec![0; bArr.len() + 1];
-    res[..bArr.len()].copy_from_slice(bArr);
-    res[bArr.len()] = calculate_checksum_byte(bArr);
+pub(crate) fn calculate_checksum(cmd: &[u8]) -> Vec<u8> {
+    let mut res = vec![0; cmd.len() + 1];
+    res[..cmd.len()].copy_from_slice(cmd);
+    res[cmd.len()] = calculate_checksum_byte(cmd);
     return res;
 }
 
-pub fn calculate_checksum_byte(bArr: &[u8]) -> u8 {
-    if (bArr.is_empty()) {
+pub fn calculate_checksum_byte(cmd: &[u8]) -> u8 {
+    if cmd.is_empty() {
         return 0;
     }
     let mut i = 0;
-    for byte in bArr {
+    for byte in cmd {
         i += (byte & 0xFF) as i32;
     }
     return (i & 0xFF).try_into().unwrap();
