@@ -50,10 +50,10 @@ pub(crate) fn build_command_array_with_options_toggle_enabled(
     let mut output_arr = vec![0; length2 - 1];
     output_arr[..cmd.len()].copy_from_slice(cmd);
     let len_bytes = int_to_byte_array(length2 as i32);
-    output_arr[cmd.len()] = len_bytes[3] & 0xFF;
-    output_arr[cmd.len() + 1] = len_bytes[2] & 0xFF;
+    output_arr[cmd.len()] = len_bytes[3];
+    output_arr[cmd.len() + 1] = len_bytes[2];
     if optional_data.is_some() {
-        output_arr[length..].copy_from_slice(&optional_data.unwrap());
+        output_arr[length..].copy_from_slice(optional_data.unwrap());
     }
 
     return calculate_checksum(&output_arr);
@@ -63,10 +63,10 @@ pub(crate) fn int_to_byte_array(num: i32) -> [u8; 4] {
     // let bs: [u8; 4] = num.to_le_bytes();
     // bs
     [
-        (num >> 24) as u8 & 0xff,
-        (num >> 16) as u8 & 0xff,
-        (num >> 8) as u8 & 0xff,
-        num as u8 & 0xff,
+        (num >> 24) as u8,
+        (num >> 16) as u8,
+        (num >> 8) as u8,
+        num as u8,
     ]
 }
 
@@ -74,7 +74,7 @@ pub(crate) fn calculate_checksum(cmd: &[u8]) -> Vec<u8> {
     let mut res = vec![0; cmd.len() + 1];
     res[..cmd.len()].copy_from_slice(cmd);
     res[cmd.len()] = calculate_checksum_byte(cmd);
-    return res;
+    res
 }
 
 pub fn calculate_checksum_byte(cmd: &[u8]) -> u8 {
@@ -85,7 +85,7 @@ pub fn calculate_checksum_byte(cmd: &[u8]) -> u8 {
     for byte in cmd {
         i += (byte & 0xFF) as i32;
     }
-    return (i & 0xFF).try_into().unwrap();
+    (i & 0xFF).try_into().unwrap()
 }
 
 pub(crate) trait Clamp<T> {

@@ -2,14 +2,32 @@ use serde::{ Serialize, Deserialize };
 
 use crate::error::SoundcoreError;
 
-
-
 #[derive(Default, Debug, Serialize, Deserialize)]
 pub struct DeviceInfo {
     pub left_fw: String,
     pub right_fw: String,
     pub sn: String,
 }
+
+#[derive(Default, Debug, Serialize, Deserialize)]
+pub struct DeviceStatus {
+    pub host_device: u8,
+    pub tws_status: bool,
+    pub battery_level: BatteryLevel,
+    pub battery_charging: BatteryCharging,
+    pub anc_status: ANCProfile,
+    pub side_tone_enabled: bool,
+    pub wear_detection_enabled: bool,
+    pub touch_tone_enabled: bool,
+    pub left_eq: EQWave,
+    pub right_eq: EQWave,
+    pub hearid_enabled: bool,
+    pub left_hearid: EQWave,
+    pub right_hearid: EQWave,
+    pub left_hearid_customdata: EQWave,
+    pub right_hearid_customdata: EQWave,
+}
+
 
 #[derive(Default, Debug, Serialize, Deserialize)]
 pub struct BatteryCharging {
@@ -255,16 +273,16 @@ impl EQWaveInt {
 
     pub fn to_bytes(&self) -> [u8; 10] {
         [
-            (self.pos0 as u8) & 255,
-            (self.pos1 as u8) & 255,
-            (self.pos2 as u8) & 255,
-            (self.pos3 as u8) & 255,
-            (self.pos4 as u8) & 255,
-            (self.pos5 as u8) & 255,
-            (self.pos6 as u8) & 255,
-            (self.pos7 as u8) & 255,
-            (self.pos8 as u8) & 255,
-            (self.pos9 as u8) & 255,
+            (self.pos0 as u8),
+            (self.pos1 as u8),
+            (self.pos2 as u8),
+            (self.pos3 as u8),
+            (self.pos4 as u8),
+            (self.pos5 as u8),
+            (self.pos6 as u8),
+            (self.pos7 as u8),
+            (self.pos8 as u8),
+            (self.pos9 as u8),
         ]
     }
 }

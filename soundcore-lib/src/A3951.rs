@@ -1,6 +1,6 @@
 use crate::{utils::{
     build_command_array_with_options_toggle_enabled, i8_to_u8vec, verify_resp, Clamp,
-}, types::{BatteryLevel, BatteryCharging, ANCProfile, EQWave, EQWaveInt, DeviceInfo}, error::SoundcoreError};
+}, types::{BatteryLevel, BatteryCharging, ANCProfile, EQWave, EQWaveInt, DeviceInfo, DeviceStatus}, error::SoundcoreError};
 use serde::{Deserialize, Serialize};
 use std::time::Duration;
 
@@ -71,7 +71,7 @@ impl A3951Device {
         Ok(DeviceInfo::from_bytes(&resp)?)
     }
 
-    pub fn get_status(&self) -> Result<A3951DeviceStatus, SoundcoreError> {
+    pub fn get_status(&self) -> Result<DeviceStatus, SoundcoreError> {
         let cmd = &Self::create_cmd(CMD_DEVICE_STATUS);
         self.send(cmd)?;
         std::thread::sleep(SLEEP_DURATION);
@@ -79,7 +79,7 @@ impl A3951Device {
         if !verify_resp(&resp) {
             return Err(SoundcoreError::ResponseChecksumError);
         }
-        Ok(A3951DeviceStatus::from_bytes(&resp)?)
+        Ok(DeviceStatus::from_bytes(&resp)?)
     }
 
     pub fn get_battery_level(&self) -> Result<BatteryLevel, SoundcoreError> {
@@ -269,32 +269,13 @@ impl DeviceInfo {
     }
 }
 
-#[derive(Default, Debug, Serialize, Deserialize)]
-pub struct A3951DeviceStatus {
-    pub host_device: u8,
-    pub tws_status: bool,
-    pub battery_level: BatteryLevel,
-    pub battery_charging: BatteryCharging,
-    pub anc_status: ANCProfile,
-    pub side_tone_enabled: bool,
-    pub wear_detection_enabled: bool,
-    pub touch_tone_enabled: bool,
-    pub left_eq: EQWave,
-    pub right_eq: EQWave,
-    pub hearid_enabled: bool,
-    pub left_hearid: EQWave,
-    pub right_hearid: EQWave,
-    pub left_hearid_customdata: EQWave,
-    pub right_hearid_customdata: EQWave,
-}
-
-impl A3951DeviceStatus {
-    fn from_bytes(arr: &[u8]) -> Result<A3951DeviceStatus, SoundcoreError> {
+impl DeviceStatus {
+    fn from_bytes(arr: &[u8]) -> Result<DeviceStatus, SoundcoreError> {
         if arr.len() < 93 {
             return Err(SoundcoreError::Unknown);
         }
 
-        Ok(A3951DeviceStatus {
+        Ok(DeviceStatus {
             host_device: arr[9],
             tws_status: arr[10] == 1,
             battery_level: BatteryLevel::from_bytes(&arr[11..13])?,
