@@ -1,4 +1,3 @@
-use soundcore_lib::A3951::{A3951BatteryLevel, A3951BatteryCharging};
 use ts_rs::TS;
 use serde::{Serialize, Deserialize};
 // Run cargo test inside src-tauri to generate the typescript definitions

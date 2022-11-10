@@ -3,13 +3,13 @@
     windows_subsystem = "windows"
 )]
 
-use std::sync::{Mutex, RwLock};
+use std::sync::{Mutex};
 
 
 use client_types::{DeviceSelection, ANCModes};
-use soundcore_lib::A3951::{A3951BatteryLevel, A3951BatteryCharging, A3951DeviceANC};
 #[cfg(target_os = "windows")]
 use soundcore_lib::A3951::A3951Device;
+use soundcore_lib::types::{BatteryLevel, BatteryCharging, DeviceStatus, DeviceInfo, ANCProfile, EQWave};
 use tauri::State;
 
 mod client_types;
@@ -51,7 +51,7 @@ fn init_device(state: State<DeviceState>, device: DeviceSelection) -> Result<Str
 
 #[tauri::command]
 fn connect_uuid(state: State<DeviceState>, mac_addr: String, uuid: String) -> Result<(), String>{
-    let mut state = state.device.lock().unwrap();
+    let state = state.device.lock().unwrap();
     let device_state = state.as_ref();
     match device_state{
         Some(selected_device) => {
@@ -79,7 +79,7 @@ fn connect_uuid(state: State<DeviceState>, mac_addr: String, uuid: String) -> Re
 
 // Generalizing this requires generalizing soundcore-lib types
 #[tauri::command]
-fn get_battery_level(state: State<DeviceState>) -> Result<A3951BatteryLevel, String> {
+fn get_battery_level(state: State<DeviceState>) -> Result<BatteryLevel, String> {
     let device_state = state.device.lock().unwrap();
     match &*device_state {
         Some(device) => {
@@ -105,7 +105,7 @@ fn get_battery_level(state: State<DeviceState>) -> Result<A3951BatteryLevel, Str
 }
 
 #[tauri::command]
-fn get_battery_charging(state: State<DeviceState>) -> Result<A3951BatteryCharging, String> {
+fn get_battery_charging(state: State<DeviceState>) -> Result<BatteryCharging, String> {
     let device_state = state.device.lock().unwrap();
     match &*device_state {
         Some(device) => {
@@ -130,15 +130,57 @@ fn get_battery_charging(state: State<DeviceState>) -> Result<A3951BatteryChargin
     }
 }
 
-// #[tauri::command]
-// fn get_device_status(state: State<DeviceState>) -> Result<String, String> {
-//     todo!()
-// }
+#[tauri::command]
+fn get_device_status(state: State<DeviceState>) -> Result<DeviceStatus, String> {
+    let device_state = state.device.lock().unwrap();
+    match &*device_state {
+        Some(device) => {
+            let device = device.lock().unwrap();
+            match &*device {
+                SupportedDevices::A3951(device) => {
+                    let device_status = device.get_status();
+                    match device_status {
+                        Ok(device_status) => {
+                            Ok(device_status)
+                        },
+                        Err(_) => {
+                            Err("Failed to get device status".to_string())
+                        }
+                    }
+                }
+            }
+        },
+        None => {
+            Err("Device not initialized".to_string())
+        }
+    }
+}
 
-// #[tauri::command]
-// fn get_device_info(state: State<DeviceState>) -> Result<String, String> {
-//     todo!()
-// }
+#[tauri::command]
+fn get_device_info(state: State<DeviceState>) -> Result<DeviceInfo, String> {
+    let device_state = state.device.lock().unwrap();
+    match &*device_state {
+        Some(device) => {
+            let device = device.lock().unwrap();
+            match &*device {
+                SupportedDevices::A3951(device) => {
+                    let device_info = device.get_info();
+                    match device_info {
+                        Ok(device_info) => {
+                            Ok(device_info)
+                        },
+                        Err(_) => {
+                            Err("Failed to get device info".to_string())
+                        }
+                    }
+                }
+            }
+        },
+        None => {
+            Err("Device not initialized".to_string())
+        }
+    }
+}
 
 #[tauri::command]
 fn get_anc_mode(state: State<DeviceState>) -> Result<ANCModes, String> {
@@ -152,12 +194,12 @@ fn get_anc_mode(state: State<DeviceState>) -> Result<ANCModes, String> {
                     match anc_mode {
                         Ok(anc_mode) => {
                             let anc_mode_selected: ANCModes = match anc_mode {
-                                A3951DeviceANC::ANC_INDOOR_MODE => ANCModes::AncIndoorMode,
-                                A3951DeviceANC::ANC_OUTDOOR_MODE => ANCModes::AncOutdoorMode,
-                                A3951DeviceANC::ANC_TRANSPORT_MODE => ANCModes::AncTransportMode,
-                                A3951DeviceANC::NORMAL_MODE => ANCModes::NormalMode,
-                                A3951DeviceANC::TRANSPARENCY_FULLY_TRANSPARENT_MODE => ANCModes::TransparencyFullyTransparentMode,
-                                A3951DeviceANC::TRANSPARENCY_VOCAL_MODE => ANCModes::TransparencyVocalMode,
+                                ANCProfile::ANC_INDOOR_MODE => ANCModes::AncIndoorMode,
+                                ANCProfile::ANC_OUTDOOR_MODE => ANCModes::AncOutdoorMode,
+                                ANCProfile::ANC_TRANSPORT_MODE => ANCModes::AncTransportMode,
+                                ANCProfile::NORMAL_MODE => ANCModes::NormalMode,
+                                ANCProfile::TRANSPARENCY_FULLY_TRANSPARENT_MODE => ANCModes::TransparencyFullyTransparentMode,
+                                ANCProfile::TRANSPARENCY_VOCAL_MODE => ANCModes::TransparencyVocalMode,
                                 custom_val => {
                                     ANCModes::AncCustomValue(custom_val.anc_custom)
                                 }
@@ -186,13 +228,13 @@ fn set_anc_mode(state: State<DeviceState>, mode: ANCModes) -> Result<(), String>
             match &*device {
                 SupportedDevices::A3951(device) => {
                     let mode_to_send = match mode {
-                        ANCModes::NormalMode => A3951DeviceANC::NORMAL_MODE,
-                        ANCModes::AncTransportMode => A3951DeviceANC::ANC_TRANSPORT_MODE,
-                        ANCModes::AncOutdoorMode => A3951DeviceANC::ANC_OUTDOOR_MODE,
-                        ANCModes::AncIndoorMode => A3951DeviceANC::ANC_INDOOR_MODE,
-                        ANCModes::AncCustomValue(value) => A3951DeviceANC::anc_custom_value(value),
-                        ANCModes::TransparencyFullyTransparentMode => A3951DeviceANC::TRANSPARENCY_FULLY_TRANSPARENT_MODE,
-                        ANCModes::TransparencyVocalMode => A3951DeviceANC::TRANSPARENCY_VOCAL_MODE,
+                        ANCModes::NormalMode => ANCProfile::NORMAL_MODE,
+                        ANCModes::AncTransportMode => ANCProfile::ANC_TRANSPORT_MODE,
+                        ANCModes::AncOutdoorMode => ANCProfile::ANC_OUTDOOR_MODE,
+                        ANCModes::AncIndoorMode => ANCProfile::ANC_INDOOR_MODE,
+                        ANCModes::AncCustomValue(value) => ANCProfile::anc_custom_value(value),
+                        ANCModes::TransparencyFullyTransparentMode => ANCProfile::TRANSPARENCY_FULLY_TRANSPARENT_MODE,
+                        ANCModes::TransparencyVocalMode => ANCProfile::TRANSPARENCY_VOCAL_MODE,
                     };
                     match device.set_anc(mode_to_send) {
                         Ok(_) => {
@@ -200,6 +242,31 @@ fn set_anc_mode(state: State<DeviceState>, mode: ANCModes) -> Result<(), String>
                         },
                         Err(_) => {
                             Err("Failed to set ANC mode".to_string())
+                        }
+                    }
+                }
+            }
+        },
+        None => {
+            Err("Device not initialized".to_string())
+        }
+    }
+}
+
+#[tauri::command]
+fn set_eq_wave(state: State<DeviceState>, eq: EQWave) -> Result<(), String>{
+    let device_state = state.device.lock().unwrap();
+    match &*device_state {
+        Some(device) => {
+            let device = device.lock().unwrap();
+            match &*device {
+                SupportedDevices::A3951(device) => {
+                    match device.set_eq(eq) {
+                        Ok(_) => {
+                            Ok(())
+                        },
+                        Err(_) => {
+                            Err("Failed to set EQ wave".to_string())
                         }
                     }
                 }
@@ -222,9 +289,10 @@ fn main() {
     tauri::Builder::default()
         .manage(DeviceState { device: Mutex::new(None), initialized: Mutex::new(false) })
         .invoke_handler(tauri::generate_handler![
-            init_device, connect_uuid, 
+            init_device, connect_uuid,
+            get_device_status, get_device_info,
             get_battery_level, get_battery_charging, 
-            set_anc_mode, get_anc_mode
+            set_anc_mode, get_anc_mode, set_eq_wave
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
