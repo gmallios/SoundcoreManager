@@ -91,7 +91,7 @@ export default function ANCModeCard() {
 
     let [sliderPosition, setSliderPosition] = useState<AllowedSliderPositions>(null);
     let [sliderIcon, setSliderIcon] = useState<string>(NormalIcon);
-
+    let [submenuOpen, setSubmenuOpen] = useState<boolean>(false);
     let [ancModeSelected, setAncModeSelected] = useState<ANCModes | "AncCustomValue">("AncOutdoorMode");
     let [transModeSelected, setTransModeSelected] = useState<ANCModes>("TransparencyFullyTransparentMode");
     let [ancCustomValue, setAncCustomValue] = useState<number | number[] | null>(null);
@@ -136,10 +136,13 @@ export default function ANCModeCard() {
     useEffect(() => {
         if (sliderPosition == "center") {
             sendANCMode("NormalMode");
+            setSubmenuOpen(false);
         } else if (sliderPosition == "left" && ancModeSelected != "AncCustomValue") {
             sendANCMode(ancModeSelected);
+            setSubmenuOpen(true);
         } else if (sliderPosition == "right") {
             sendANCMode(transModeSelected);
+            setSubmenuOpen(true);
         }
     }, [sliderPosition]);
 
@@ -175,7 +178,7 @@ export default function ANCModeCard() {
                     </ANCSliderContainer>
                 </Grid>
                 <Grid item sx={{ paddingTop: "0px !important" }}>
-                    <Collapse in={sliderPosition != "center"} mountOnEnter unmountOnExit>
+                    <Collapse in={submenuOpen}>
                         <ButtonGrid buttonArray={sliderPosition == "left" ? ancButtons : transButtons} setButtonSelected={sliderPosition == "left" ? setAncModeSelected : setTransModeSelected} buttonSelected={sliderPosition == "left" ? ancModeSelected : transModeSelected}>
                             <Collapse in={sliderPosition == "left" && ancModeSelected == "AncCustomValue"}>
                                 {ancCustomValue != null &&

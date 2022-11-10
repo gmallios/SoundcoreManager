@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/tauri";
 import "./App.css";
 import A3951InfoCard from "./components/A3951InfoCard";
@@ -8,7 +8,7 @@ import ANCModeCard from "./components/ANCModeCard";
 import EQCard from "./components/EQCard";
 
 function App() {
-  const { currentANCMode, tryInitialize, getBatteryLevel, getBatteryCharging, connectUUID, deviceConnectionState, getANCMode } = useDeviceStore();
+  const { getDeviceStatus, tryInitialize, getBatteryLevel, getBatteryCharging, connectUUID, deviceConnectionState, getANCMode, deviceStatus, currentANCMode } = useDeviceStore();
 
 
 
@@ -22,15 +22,21 @@ function App() {
   const BATTERY_CHARGING_POLL_RATE = 500;
 
   const [isConnected, setIsConnected] = useState(false);
+  const [isANCFetched, setIsANCFetched] = useState(false);
+  const [isDeviceStatusFetched, setIsDeviceStatusFetched] = useState(false);
 
   useEffect(() => {
     if (deviceConnectionState == DeviceConnectionState.CONNECTED) {
       // Initializes the state
+      getDeviceStatus();
       getBatteryCharging();
       getBatteryLevel();
       getANCMode();
       setIsConnected(true);
 
+
+      // Poll battery level and charging state at different rates,
+      // since the level changes less frequently in comparison to the charging state
       const batteryLevelInterval = setInterval(() => {
         getBatteryLevel();
       }, BATTERY_LEVEL_POLL_RATE);
@@ -40,21 +46,36 @@ function App() {
       }, BATTERY_CHARGING_POLL_RATE);
 
       return () => {
+        // Clear the intervals on unmount
         clearInterval(batteryLevelInterval);
         clearInterval(batteryChargingInterval);
       };
-    } else if(deviceConnectionState == DeviceConnectionState.DISCONNECTED) {
+    } else if (deviceConnectionState == DeviceConnectionState.DISCONNECTED) {
       setIsConnected(false);
     }
   }, [deviceConnectionState]);
+
+
+  useEffect(() => {
+    if (currentANCMode != undefined) {
+      setIsANCFetched(true);
+    }
+  }, [currentANCMode]); 
+
+  useEffect(() => {
+    if (deviceStatus != undefined) {
+      setIsDeviceStatusFetched(true);
+      console.log(deviceStatus)
+    }
+  }, [deviceStatus]);
 
   return (
     <div>
       {deviceConnectionState == DeviceConnectionState.CONNECTED &&
         <Stack>
           <A3951InfoCard />
-          {isConnected && <ANCModeCard /> }
-          <EQCard />
+          {isANCFetched && <ANCModeCard /> }
+          {isDeviceStatusFetched &&  <EQCard />} 
         </Stack>
       }
     </div>
