@@ -137,8 +137,10 @@ export default function ANCModeCard() {
         if (sliderPosition == "center") {
             sendANCMode("NormalMode");
             setSubmenuOpen(false);
-        } else if (sliderPosition == "left" && ancModeSelected != "AncCustomValue") {
-            sendANCMode(ancModeSelected);
+        } else if (sliderPosition == "left") {
+            if(ancModeSelected != "AncCustomValue") {
+                sendANCMode(ancModeSelected);
+            }
             setSubmenuOpen(true);
         } else if (sliderPosition == "right") {
             sendANCMode(transModeSelected);
@@ -149,6 +151,9 @@ export default function ANCModeCard() {
     useEffect(() => {
         if (sliderPosition == "left") {
             if (ancModeSelected == "AncCustomValue") {
+                if(ancCustomValue == null) {
+                    setAncCustomValue(10);
+                }
                 sendANCMode({ AncCustomValue: ancCustomValue as number });
             } else {
                 sendANCMode(ancModeSelected);
