@@ -143,7 +143,14 @@ const useDeviceStore = create<DeviceStoreState>((set) => ({
   },
   sendEQ: (eq: EQWave) => {
     invoke("set_eq_wave", { eq }).then((_msg) => {
-      //set((state) => ({ ...state, deviceStatus: { ...state.deviceStatus, left_eq: eq, right_eq: eq } }));
+      set((state) => {
+        let newState = { ...state };
+        if (newState.deviceStatus != null) {
+          newState.deviceStatus.left_eq = eq;
+          newState.deviceStatus.right_eq = eq;
+        }
+        return newState;
+      })
     }).catch((err) => {
       console.log(err);
     });
