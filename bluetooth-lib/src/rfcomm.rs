@@ -57,6 +57,7 @@ impl RFCOMM {
             serviceClassId: windows::core::GUID::from(uuid),
             port: 0, // When using uuid, port is 0
         };
+
         unsafe {
             let ret = connect(
                 self.fd,
@@ -101,7 +102,7 @@ impl RFCOMM {
     }
 
     pub fn send(&self, data: &[u8]) -> Result<(), BthError> {
-        if self.connected || self.fd == INVALID_SOCKET {
+        if !self.connected || self.fd == INVALID_SOCKET {
             return Err(BthError::InvalidSocketError);
         }
         unsafe {
@@ -113,7 +114,7 @@ impl RFCOMM {
     }
 
     pub fn recv(&self, num_of_bytes: usize) -> Result<Vec<u8>, BthError> {
-        if self.connected || self.fd == INVALID_SOCKET {
+        if !self.connected || self.fd == INVALID_SOCKET {
             return Err(BthError::InvalidSocketError);
         }
         let mut data: Vec<u8> = vec![0; num_of_bytes];
@@ -126,13 +127,20 @@ impl RFCOMM {
         }
         Ok(data)
     }
+
+    pub fn close(&self) {
+        unsafe {
+            WSACleanup();
+            closesocket(self.fd);
+        }
+    }
 }
 
 impl Drop for RFCOMM {
     fn drop(&mut self) {
         unsafe {
             closesocket(self.fd);
-            WSACleanup();
+            // WSACleanup();
         }
     }
 }
