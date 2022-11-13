@@ -13,6 +13,24 @@ pub struct BluetoothAdrr {
     address: [u8; 6],
 }
 
+impl From<String> for BluetoothAdrr{
+    fn from(address: String) -> Self {
+        let address = address.split(":").map(|x| u8::from_str_radix(x, 16).unwrap()).collect::<Vec<u8>>();
+        Self {
+            address: address.try_into().unwrap(),
+        }
+    }
+}
+
+impl From<&str> for BluetoothAdrr{
+    fn from(address: &str) -> Self {
+        let address = address.split(":").map(|x| u8::from_str_radix(x, 16).unwrap()).collect::<Vec<u8>>();
+        Self {
+            address: address.try_into().unwrap(),
+        }
+    }
+}
+
 impl From<BLUETOOTH_DEVICE_INFO_STRUCT> for BluetoothDevice {
     fn from(device_info: BLUETOOTH_DEVICE_INFO_STRUCT) -> BluetoothDevice {
         BluetoothDevice {
