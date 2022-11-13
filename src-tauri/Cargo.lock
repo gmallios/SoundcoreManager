@@ -124,6 +124,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "bluetooth-lib"
+version = "0.1.0"
+dependencies = [
+ "windows 0.43.0",
+]
+
+[[package]]
 name = "brotli"
 version = "3.3.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2462,13 +2469,15 @@ name = "soundcore-lib"
 version = "0.1.0"
 dependencies = [
  "serde",
- "windows 0.42.0",
+ "windows 0.43.0",
 ]
 
 [[package]]
 name = "soundcore-rs"
 version = "0.0.0"
 dependencies = [
+ "bluetooth-lib",
+ "lazy_static",
  "serde",
  "serde_json",
  "soundcore-lib",
@@ -3443,9 +3452,9 @@ dependencies = [
 
 [[package]]
 name = "windows"
-version = "0.42.0"
+version = "0.43.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0286ba339aa753e70765d521bb0242cc48e1194562bfa2a2ad7ac8a6de28f5d5"
+checksum = "04662ed0e3e5630dfa9b26e4cb823b817f1a9addda855d973a9458c236556244"
 dependencies = [
  "windows_aarch64_gnullvm",
  "windows_aarch64_msvc 0.42.0",
