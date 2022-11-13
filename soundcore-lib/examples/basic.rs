@@ -16,16 +16,16 @@ fn main() {
 
     // Setup send and receive functions for soundcore-lib, we use our own RFCOMM implementation
     // Feel free to use any other implementation
-    let mut send_fn = |data: &[u8]| match comm.send(data) {
+    let send_fn = |data: &[u8]| match comm.send(data) {
         Ok(_) => Ok(()),
         Err(_e) => Err(SoundcoreError::SendError),
     };
-    let mut recv_fn = |num_of_bytes: usize| match comm.recv(num_of_bytes) {
+    let recv_fn = |num_of_bytes: usize| match comm.recv(num_of_bytes) {
         Ok(data) => Ok(data),
         Err(_e) => Err(SoundcoreError::RecvError),
     };
 
-    let mut device = A3951Device::new(&mut send_fn, &mut recv_fn).unwrap();
+    let device = A3951Device::new(&send_fn, &recv_fn).unwrap();
 
     match device.get_info() {
         Ok(info) => println!(
