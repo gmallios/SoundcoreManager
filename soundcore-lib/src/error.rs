@@ -3,6 +3,8 @@ pub enum SoundcoreError {
     Unknown,
     ParseError,
     ResponseChecksumError,
+    SendError,
+    RecvError,
     WinError(String),
 }
 
@@ -19,6 +21,8 @@ impl std::error::Error for SoundcoreError {
             SoundcoreError::ParseError => "Parse Error",
             SoundcoreError::ResponseChecksumError => "Response Checksum Error",
             SoundcoreError::WinError(ref message) => message.as_str(),
+            SoundcoreError::SendError => "Send Error",
+            SoundcoreError::RecvError => "Recv Error",
         }
     }
 }

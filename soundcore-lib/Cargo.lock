@@ -3,6 +3,13 @@
 version = 3
 
 [[package]]
+name = "bluetooth-lib"
+version = "0.1.0"
+dependencies = [
+ "windows",
+]
+
+[[package]]
 name = "proc-macro2"
 version = "1.0.47"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -44,6 +51,7 @@ dependencies = [
 name = "soundcore-lib"
 version = "0.1.0"
 dependencies = [
+ "bluetooth-lib",
  "serde",
  "windows",
 ]
@@ -67,9 +75,9 @@ checksum = "6ceab39d59e4c9499d4e5a8ee0e2735b891bb7308ac83dfb4e80cad195c9f6f3"
 
 [[package]]
 name = "windows"
-version = "0.42.0"
+version = "0.43.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0286ba339aa753e70765d521bb0242cc48e1194562bfa2a2ad7ac8a6de28f5d5"
+checksum = "04662ed0e3e5630dfa9b26e4cb823b817f1a9addda855d973a9458c236556244"
 dependencies = [
  "windows_aarch64_gnullvm",
  "windows_aarch64_msvc",

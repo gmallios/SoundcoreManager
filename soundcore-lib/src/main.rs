@@ -41,46 +41,48 @@ const BYTE_OFF: i32 = -1;
 const OPCODE_BAT: [u8; 7] = [0x08, 0xEE, 0x00, 0x00, 0x00, 0x01, 0x05];
 
 fn main() {
-    let mut device = A3951Device::new().unwrap();
-    device
-        .connect_uuid("AC:12:2F:6A:D2:07", known_uuids[0])
-        .unwrap();
-    let info = device.get_info().unwrap();
-    println!(
-        "SN: {}, Right FW: {}, Left FW: {}",
-        info.sn, info.right_fw, info.left_fw
-    );
-    let status = device.get_status().unwrap();
-    println!(
-        "Left Battery: {:X?}, LeftCharging: {:X?}, Right Battery: {:X?}, RightCharging: {:X?},",
-        status.battery_level.left, status.battery_charging.left, status.battery_level.right, status.battery_charging.right,
-    );
+    // let mut device = A3951Device::new().unwrap();
+    // device
+    //     .connect_uuid("AC:12:2F:6A:D2:07", known_uuids[0])
+    //     .unwrap();
+    // let info = device.get_info().unwrap();
+    // println!(
+    //     "SN: {}, Right FW: {}, Left FW: {}",
+    //     info.sn, info.right_fw, info.left_fw
+    // );
+    // let status = device.get_status().unwrap();
+    // println!(
+    //     "Left Battery: {:X?}, LeftCharging: {:X?}, Right Battery: {:X?}, RightCharging: {:X?},",
+    //     status.battery_level.left, status.battery_charging.left, status.battery_level.right, status.battery_charging.right,
+    // );
 
-    println!("Left EQ: {:X?}", status.left_eq);
-    println!("Right EQ: {:X?}", status.right_eq);
-    println!("ANC Status: {:?}", status.anc_status);
-    println!("ANC Status from get_anc: {:?}", device.get_anc().unwrap());
-    println!("LDAC Status: {}", device.get_ldac_status().unwrap());
+    // println!("Left EQ: {:X?}", status.left_eq);
+    // println!("Right EQ: {:X?}", status.right_eq);
+    // println!("ANC Status: {:?}", status.anc_status);
+    // println!("ANC Status from get_anc: {:?}", device.get_anc().unwrap());
+    // println!("LDAC Status: {}", device.get_ldac_status().unwrap());
     
-    //device.set_anc(A3951DeviceANC::ANC_INDOOR_MODE).unwrap();
+    // //device.set_anc(A3951DeviceANC::ANC_INDOOR_MODE).unwrap();
 
-    let wave = EQWave {
-        pos0: 14.5,
-        pos1: 13.0,
-        pos2: 12.0,
-        pos3: 12.0,
-        pos4: 12.0,
-        pos5: 12.0,
-        pos6: 12.0,
-        pos7: 12.0,
-        pos8: 12.0,
-        pos9: 12.0,
-    };
+    // let wave = EQWave {
+    //     pos0: 14.5,
+    //     pos1: 13.0,
+    //     pos2: 12.0,
+    //     pos3: 12.0,
+    //     pos4: 12.0,
+    //     pos5: 12.0,
+    //     pos6: 12.0,
+    //     pos7: 12.0,
+    //     pos8: 12.0,
+    //     pos9: 12.0,
+    // };
 
-    device.set_eq(wave);
-    let status1 = device.get_status().unwrap();
-    println!("Left EQ: {:X?}", status1.left_eq);
-    println!("Right EQ: {:X?}", status1.right_eq);
+    // device.set_eq(wave);
+    // let status1 = device.get_status().unwrap();
+    // println!("Left EQ: {:X?}", status1.left_eq);
+    // println!("Right EQ: {:X?}", status1.right_eq);
+
+   
 }
 
 // // https://stackoverflow.com/questions/52987181/how-can-i-convert-a-hex-string-to-a-u8-slice

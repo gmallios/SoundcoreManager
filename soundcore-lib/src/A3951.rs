@@ -31,32 +31,28 @@ static SLEEP_DURATION: Duration = std::time::Duration::from_millis(30);
 
 pub const WINAPI_FLAG: SEND_RECV_FLAGS = windows::Win32::Networking::WinSock::SEND_RECV_FLAGS(0);
 
-pub struct A3951Device {
-    sock: SOCKET,
-    //connected: bool,
-    // For future use. Not implemented yet. It will enable us to not handle socket/sending/receiving.
-    // send_fn: Box<dyn FnMut(&[u8]) -> Result<(), A3951Error>>,
-    // recv_fn: Box<dyn FnMut(usize) -> Result<Vec<u8>, Box<dyn std::error::Error>>>,
+
+pub type SendFnType<'a> = &'a (dyn Fn(&[u8]) -> Result<(), SoundcoreError> + Send + Sync);
+pub type RecvFnType<'a> = &'a (dyn Fn(usize) -> Result<Vec<u8>, SoundcoreError> + Send + Sync);
+
+pub struct A3951Device<'a> {
+    send_fn: SendFnType<'a>,
+    recv_fn: RecvFnType<'a>,
 }
 
-impl A3951Device {
-    pub fn new() -> Result<A3951Device, SoundcoreError> {
-        if init_winsock() != 0 {
-            return Err(SoundcoreError::from(windows::core::Error::new(
-                windows::core::HRESULT(0),
-                HSTRING::from("winsock init error"),
-            )));
-        }
+impl A3951Device<'_> {
+    pub fn new<'a>(send_fn: SendFnType<'a>, recv_fn: RecvFnType<'a>) -> Result<A3951Device<'a>, SoundcoreError> {
+        // if init_winsock() != 0 {
+        //     return Err(SoundcoreError::from(windows::core::Error::new(
+        //         windows::core::HRESULT(0),
+        //         HSTRING::from("winsock init error"),
+        //     )));
+        // }
 
         Ok(A3951Device {
-            sock: create_bt_sock()?,
-            //connected: false,
+            send_fn: send_fn,
+            recv_fn: recv_fn,
         })
-    }
-
-    pub fn connect_uuid(&mut self, mac_addr: &str, uuid: &str) -> Result<(), SoundcoreError> {
-        self.sock = try_connect_uuid(self.sock, mac_addr, uuid)?;
-        Ok(())
     }
 
     //TODO: Check for command in response ( 2 bytes )
@@ -220,44 +216,29 @@ impl A3951Device {
     }
 
     fn send(&self, data: &[u8]) -> Result<(), SoundcoreError> {
-        unsafe {
-            if send(self.sock, data, WINAPI_FLAG) == SOCKET_ERROR {
-                return Err(SoundcoreError::from(windows::core::Error::new(
-                    windows::core::HRESULT(0),
-                    HSTRING::from("send error"),
-                )));
-            }
-        }
+        (self.send_fn)(data)?;
         Ok(())
     }
 
     fn recv(&self, num_of_bytes: usize) -> Result<Vec<u8>, SoundcoreError> {
-        let mut resp: Vec<u8> = vec![0; num_of_bytes];
-        unsafe {
-            if recv(self.sock, &mut resp, WINAPI_FLAG) == SOCKET_ERROR {
-                return Err(SoundcoreError::from(windows::core::Error::new(
-                    windows::core::HRESULT(0),
-                    HSTRING::from("recv error"),
-                )));
-            }
-        }
+        let resp = (self.recv_fn)(num_of_bytes)?;
         Ok(resp)
     }
 
-    pub unsafe fn close(&mut self) {
-        closesocket(self.sock);
-        WSACleanup();
-    }
+    // pub unsafe fn close(&mut self) {
+    //     closesocket(self.sock);
+    //     WSACleanup();
+    // }
 }
 
-impl Drop for A3951Device {
-    fn drop(&mut self) {
-        unsafe {
-            closesocket(self.sock);
-            WSACleanup();
-        }
-    }
-}
+// impl Drop for A3951Device<'_> {
+//     fn drop(&mut self) {
+//         unsafe {
+//             closesocket(self.sock);
+//             WSACleanup();
+//         }
+//     }
+// }
 
 impl DeviceInfo {
     fn from_bytes(arr: &[u8]) -> Result<DeviceInfo, std::string::FromUtf8Error> {

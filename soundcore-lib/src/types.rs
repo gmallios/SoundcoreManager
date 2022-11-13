@@ -29,13 +29,13 @@ pub struct DeviceStatus {
 }
 
 
-#[derive(Default, Debug, Serialize, Deserialize)]
+#[derive(Default, Debug, Serialize, Deserialize, Clone, Copy, PartialEq, Eq)]
 pub struct BatteryCharging {
     pub left: bool,
     pub right: bool,
 }
 
-#[derive(Default, Debug, Serialize, Deserialize)]
+#[derive(Default, Debug, Serialize, Deserialize, Clone, Copy, PartialEq, Eq)]
 pub struct BatteryLevel {
     pub left: u8,
     pub right: u8,
