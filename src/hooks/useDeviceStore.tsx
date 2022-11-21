@@ -104,7 +104,7 @@ const useDeviceStore = create<DeviceStoreState>((set) => ({
       set((state) => ({ ...state, deviceConnectionState: DeviceConnectionState.DISCONNECTED }));
     });
   },
-  getDeviceStatus: () => {
+  getDeviceStatus: async () => {
     invoke("get_device_status").then((msg) => {
       set((state) => ({ ...state, deviceStatus: msg as DeviceStatus }));
     }).catch((err) => {
