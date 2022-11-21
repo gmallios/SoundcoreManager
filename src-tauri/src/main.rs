@@ -9,7 +9,8 @@ extern crate lazy_static;
 use std::sync::{Arc, Mutex, RwLock};
 
 use bluetooth_lib::{BluetoothAdrr, RFCOMM};
-use client_types::{ANCModes, DeviceSelection};
+use client_types::{ANCModes, DeviceSelection, BthScanResult};
+use serde::Serialize;
 use soundcore_lib::types::{
     ANCProfile, BatteryCharging, BatteryLevel, DeviceInfo, DeviceStatus, EQWave,
 };
@@ -81,7 +82,7 @@ fn connect_uuid(mac_addr: String, uuid: String) -> Result<(), String> {
 
 // Generalizing this requires generalizing soundcore-lib types
 #[tauri::command]
-fn get_battery_level(state: State<DeviceState>) -> Result<BatteryLevel, String> {
+async fn get_battery_level(state: State<'_, DeviceState<'_>>) -> Result<BatteryLevel, String> {
     let device_state = state.device.lock().unwrap();
     match &*device_state {
         Some(device) => {
@@ -101,7 +102,7 @@ fn get_battery_level(state: State<DeviceState>) -> Result<BatteryLevel, String> 
 }
 
 #[tauri::command]
-fn get_battery_charging(state: State<DeviceState>) -> Result<BatteryCharging, String> {
+async fn get_battery_charging(state: State<'_, DeviceState<'_>>) -> Result<BatteryCharging, String> {
     let device_state = state.device.lock().unwrap();
     match &*device_state {
         Some(device) => {
@@ -121,7 +122,7 @@ fn get_battery_charging(state: State<DeviceState>) -> Result<BatteryCharging, St
 }
 
 #[tauri::command]
-fn get_device_status(state: State<DeviceState>) -> Result<DeviceStatus, String> {
+async fn get_device_status(state: State<'_, DeviceState<'_>>) -> Result<DeviceStatus, String> {
     let device_state = state.device.lock().unwrap();
     match &*device_state {
         Some(device) => {
@@ -141,7 +142,7 @@ fn get_device_status(state: State<DeviceState>) -> Result<DeviceStatus, String> 
 }
 
 #[tauri::command]
-fn get_device_info(state: State<DeviceState>) -> Result<DeviceInfo, String> {
+async fn get_device_info(state: State<'_, DeviceState<'_>>) -> Result<DeviceInfo, String> {
     let device_state = state.device.lock().unwrap();
     match &*device_state {
         Some(device) => {
@@ -161,7 +162,7 @@ fn get_device_info(state: State<DeviceState>) -> Result<DeviceInfo, String> {
 }
 
 #[tauri::command]
-fn get_anc_mode(state: State<DeviceState>) -> Result<ANCModes, String> {
+async fn get_anc_mode(state: State<'_, DeviceState<'_>>) -> Result<ANCModes, String> {
     let device_state = state.device.lock().unwrap();
     match &*device_state {
         Some(device) => {
@@ -200,7 +201,7 @@ fn get_anc_mode(state: State<DeviceState>) -> Result<ANCModes, String> {
 }
 
 #[tauri::command]
-fn set_anc_mode(state: State<DeviceState>, mode: ANCModes) -> Result<(), String> {
+async fn set_anc_mode(state: State<'_, DeviceState<'_>>, mode: ANCModes) -> Result<(), String> {
     let device_state = state.device.lock().unwrap();
     match &*device_state {
         Some(device) => {
@@ -246,6 +247,17 @@ fn set_eq_wave(state: State<DeviceState>, eq: EQWave) -> Result<(), String> {
     }
 }
 
+#[tauri::command]
+fn scan_for_devices() -> Vec<BthScanResult> {
+    let res = bluetooth_lib::BthScanner::new().scan();
+    let mut scan_res: Vec<BthScanResult> = vec![];
+    res.into_iter().for_each(|x| {
+        scan_res.push(BthScanResult::from(x));
+    });
+    scan_res
+}
+
+
 struct DeviceState<'a> {
     device: Arc<Mutex<Option<Mutex<SupportedDevices<'a>>>>>,
     initialized: Mutex<bool>,
@@ -262,6 +274,7 @@ fn main() {
             initialized: Mutex::new(false),
         })
         .invoke_handler(tauri::generate_handler![
+            scan_for_devices,
             init_device,
             connect_uuid,
             get_device_status,

@@ -20,6 +20,25 @@ pub(crate) enum ANCModes {
     TransparencyFullyTransparentMode,
     TransparencyVocalMode,
 }
+
+
+#[derive(TS, Serialize, Deserialize)]
+#[ts(export, export_to = "../src/bindings/ScanResult.d.ts")]
+pub(crate) struct BthScanResult {
+    name: String,
+    address: String,
+    is_connected: bool,
+}
+
+impl From<bluetooth_lib::BluetoothDevice> for BthScanResult {
+    fn from(device: bluetooth_lib::BluetoothDevice) -> Self {
+        Self {
+            name: device.name,
+            address: device.address.to_string(),
+            is_connected: device.connected,
+        }
+    }
+}
 // #[derive(TS, Serialize, Deserialize)]
 // #[ts(export, export_to = "../src/bindings/Result.d.ts")]
 // pub(crate) enum Result {
