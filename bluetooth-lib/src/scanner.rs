@@ -7,7 +7,7 @@ use windows::Win32::{
     Networking::WinSock::{WSACleanup, WSAStartup, WSADATA},
 };
 
-use crate::{util::init_winsock, types::{ BluetoothDevice, BluetoothAdrr }};
+use crate::{util::init_winsock, types::{ BluetoothDevice }};
 
 pub struct BthScanner {
     params: BLUETOOTH_DEVICE_SEARCH_PARAMS,

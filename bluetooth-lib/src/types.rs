@@ -2,15 +2,15 @@ use windows::Win32::Devices::Bluetooth::{BLUETOOTH_ADDRESS_STRUCT, BLUETOOTH_DEV
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct BluetoothDevice {
-    name: String,
-    address: BluetoothAdrr,
-    connected: bool,
-    remembered: bool,
+    pub name: String,
+    pub address: BluetoothAdrr,
+    pub connected: bool,
+    pub remembered: bool,
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct BluetoothAdrr {
-    address: [u8; 6],
+    pub address: [u8; 6],
 }
 
 impl From<String> for BluetoothAdrr{

@@ -4,4 +4,4 @@ mod error;
 mod types;
 mod util;
 
-pub use {scanner::BthScanner, error::BthError, types::BluetoothAdrr, rfcomm::RFCOMM};
+pub use {scanner::BthScanner, error::BthError, types::BluetoothAdrr, types::BluetoothDevice, rfcomm::RFCOMM};
