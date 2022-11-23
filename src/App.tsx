@@ -13,8 +13,6 @@ function App() {
 
 
   useEffect(() => {
-    // tryInitialize("A3951");
-    // connectUUID("AC:12:2F:6A:D2:07", "00001101-0000-1000-8000-00805F9B34FB");
     if(selectedDeviceAddr == null){
       
     }
@@ -76,17 +74,15 @@ function App() {
 
   return (
     <React.Fragment>
-      {deviceConnectionState == DeviceConnectionState.CONNECTED &&
+      {deviceConnectionState == DeviceConnectionState.CONNECTED ? (
         <Stack>
           <A3951InfoCard />
           {isANCFetched && <ANCModeCard />}
           {isDeviceStatusFetched && <EQCard />}
         </Stack>
-      }
-      {selectedDeviceAddr == null &&
+      ) : (
         <DisconnectedScreen />
-      }
-    
+      )}
     </React.Fragment>
   );
 }

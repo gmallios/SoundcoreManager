@@ -1,30 +1,36 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { BthScanResult } from "../bindings/ScanResult";
-import { List, ListItem, ListItemButton, ListItemIcon, ListItemText } from "@mui/material";
-import BluetoothIcon from '@mui/icons-material/Bluetooth';
-import DoneIcon from '@mui/icons-material/Done';
+import { List, SxProps, } from "@mui/material";
+import DeviceListItem from "./DeviceListItem";
 
-export default function DeviceList({ devices }: { devices: BthScanResult[] }) {
 
+interface IDeviceListProps {
+    devices: BthScanResult[];
+    sx: SxProps;
+    setSelectedDevice: (device: BthScanResult) => void;
+}
+
+export default function DeviceList(props: IDeviceListProps) {
+
+    const { devices, sx, setSelectedDevice } = props;
+    const connectedDevices = devices.filter(device => device.is_connected);
     const [selectedIndex, setSelectedIndex] = React.useState<number>(0);
+
+    useEffect(() => {
+        setSelectedDevice(connectedDevices[selectedIndex]);
+    }, [selectedIndex]);
 
     return (
         <React.Fragment>
-            <List>
-                {devices && devices.map((device, index) => (
-                    <ListItem disablePadding key={index}>
-                        <ListItemButton>
-                            <ListItemIcon>
-                                <BluetoothIcon />
-                            </ListItemIcon>
-                            <ListItemText primary={device.name} />
-                            {device.is_connected &&
-                                <ListItemIcon>
-                                    <DoneIcon />
-                                </ListItemIcon>
-                            }
-                        </ListItemButton>
-                    </ListItem>
+            <List sx={sx}>
+                {devices && connectedDevices.map((device, idx) => (
+                    <DeviceListItem 
+                        key={idx}
+                        idx={idx} 
+                        name={device.name} 
+                        isConnected={device.is_connected} 
+                        isSelected={selectedIndex === idx} 
+                        onItemClicked={(_event, idx) => { setSelectedIndex(idx); }} />
                 ))}
             </List>
         </React.Fragment>
