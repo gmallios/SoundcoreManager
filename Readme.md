@@ -24,7 +24,7 @@ A desktop companion app to control and monitor your Soundcore earbuds.
   npm run tauri dev
 ```
 
-### Supported Devices (Not guaranteed)
+## Supported Devices (Not guaranteed)
 
 | Model ID | Name              | Features Supported |
 |----------|-------------------|--------------------|
@@ -37,6 +37,13 @@ A desktop companion app to control and monitor your Soundcore earbuds.
 | A3029    |Life Tune          | Untested           |
 
 Note: Untested devices have similar implementation as a known working model.
+
+## Roadmap
+- Move to an event-based system which uses a seperate thread to poll the device.
+- Add App Settings
+- Persistent device profiles
+- Light UI?
+- Cleanup frontend state
 
 ## License
 
