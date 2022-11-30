@@ -4,18 +4,6 @@ use crate::{utils::{
 use serde::{Deserialize, Serialize};
 use std::time::Duration;
 
-use windows::{
-    self,
-    core::HSTRING,
-    Win32::{
-        Devices::Bluetooth::{AF_BTH, BTHPROTO_RFCOMM, SOCKADDR_BTH},
-        Networking::WinSock::{
-            closesocket, recv, send, WSACleanup, WSAGetLastError, WSAStartup,
-            SEND_RECV_FLAGS, SOCKADDR, SOCKET, SOCKET_ERROR, SOCK_STREAM, WSADATA, 
-        },
-    },
-};
-
 static CMD_DEVICE_STATUS: [i8; 7] = [8, -18, 0, 0, 0, 1, 1];
 static CMD_DEVICE_INFO: [i8; 7] = [8, -18, 0, 0, 0, 1, 5];
 static CMD_DEVICE_BATTERYLEVEL: [i8; 7] = [8, -18, 0, 0, 0, 1, 3];
@@ -29,7 +17,6 @@ static CMD_DEVICE_SETANC: [i8; 7] = [8, -18, 0, 0, 0, 6, -127];
 
 static SLEEP_DURATION: Duration = std::time::Duration::from_millis(30);
 
-pub const WINAPI_FLAG: SEND_RECV_FLAGS = windows::Win32::Networking::WinSock::SEND_RECV_FLAGS(0);
 
 
 pub type SendFnType<'a> = &'a (dyn Fn(&[u8]) -> Result<(), SoundcoreError> + Send + Sync);
@@ -42,13 +29,6 @@ pub struct A3951Device<'a> {
 
 impl A3951Device<'_> {
     pub fn new<'a>(send_fn: SendFnType<'a>, recv_fn: RecvFnType<'a>) -> Result<A3951Device<'a>, SoundcoreError> {
-        // if init_winsock() != 0 {
-        //     return Err(SoundcoreError::from(windows::core::Error::new(
-        //         windows::core::HRESULT(0),
-        //         HSTRING::from("winsock init error"),
-        //     )));
-        // }
-
         Ok(A3951Device {
             send_fn: send_fn,
             recv_fn: recv_fn,
@@ -389,104 +369,3 @@ impl ANCProfile {
         ]
     }
 }
-
-
-fn try_connect_uuid(sock: SOCKET, addr: &str, uuid: &str) -> Result<SOCKET, SoundcoreError> {
-    let saddr: SOCKADDR_BTH = SOCKADDR_BTH {
-        addressFamily: AF_BTH,
-        btAddr: crate::utils::mac_str_to_u64(addr)?, // set your bt mac 0xAC122F6AD207
-        serviceClassId: windows::core::GUID::from(uuid),
-        port: 0,
-    };
-
-    unsafe {
-        let status = windows::Win32::Networking::WinSock::connect(
-            sock,
-            &saddr as *const SOCKADDR_BTH as *const SOCKADDR,
-            std::mem::size_of::<SOCKADDR_BTH>() as i32,
-        );
-        if status == SOCKET_ERROR {
-            let err = WSAGetLastError();
-            println!("Error connect socket: {:?}", err);
-            closesocket(sock);
-            return Err(SoundcoreError::from(windows::core::Error::new(
-                windows::core::HRESULT(0),
-                HSTRING::from("error connecting to socket"),
-            )));
-        }
-    }
-
-    return Ok(sock);
-}
-
-fn create_bt_sock() -> Result<SOCKET, SoundcoreError> {
-    let sock;
-    unsafe {
-        sock = windows::Win32::Networking::WinSock::socket(
-            AF_BTH.into(),
-            SOCK_STREAM.into(),
-            BTHPROTO_RFCOMM.try_into().unwrap(),
-        );
-    }
-    if sock == windows::Win32::Networking::WinSock::INVALID_SOCKET {
-        return Err(SoundcoreError::from(windows::core::Error::new(
-            windows::core::HRESULT(0),
-            HSTRING::from("failed creating socket"),
-        )));
-    }
-    return Ok(sock);
-}
-
-fn init_winsock() -> i32 {
-    let wsa_data = Box::into_raw(Box::new(WSADATA::default()));
-    let i_result: i32;
-    unsafe {
-        i_result = WSAStartup(0x0202, wsa_data);
-    }
-    return i_result;
-}
-
-// Not using this
-// It takes a long time to find working port or it doesnt work at all ¯\_(ツ)_/¯
-// and it requires fixing to return the socket if connection is successfull
-// Maybe find a way to change timeout???
-// pub(crate) fn try_connect(port: u32) -> i32 {
-//     unsafe {
-//         let sock = create_bt_sock();
-
-//         if sock == windows::Win32::Networking::WinSock::INVALID_SOCKET {
-//             println!("Error create sock");
-//             WSACleanup();
-//             return -1;
-//         } else {
-//             println!("Socket created...");
-
-//             let set_result = setsockopt(
-//                 sock,
-//                 SOL_RFCOMM.try_into().unwrap(),
-//                 SO_SNDTIMEO.try_into().unwrap(),
-//                 Some(&[1, 0]),
-//             );
-//             println!("Set timeout: {}", set_result);
-
-//             let mut sa: SOCKADDR_BTH = SOCKADDR_BTH {
-//                 addressFamily: AF_BTH,
-//                 btAddr: 0xAC122F6AD207, // set your bt mac
-//                 serviceClassId: std::mem::zeroed(),
-//                 port: port,
-//             };
-
-//             let status = windows::Win32::Networking::WinSock::connect(
-//                 sock,
-//                 &sa as *const SOCKADDR_BTH as *const SOCKADDR,
-//                 std::mem::size_of::<SOCKADDR_BTH>() as i32,
-//             );
-//             if (status == SOCKET_ERROR) {
-//                 let err = WSAGetLastError();
-//                 println!("Error connect socket: {:?}", err);
-//             }
-//             closesocket(sock);
-//             return status;
-//         }
-//     }
-// }

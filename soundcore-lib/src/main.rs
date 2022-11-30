@@ -4,18 +4,6 @@ use std::{fmt::Write, num::ParseIntError, ops::Add, thread, time::Duration};
 
 use A3951::A3951Device;
 
-use windows::{
-    self,
-    core::HSTRING,
-    Win32::{
-        Devices::Bluetooth::{AF_BTH, BTHPROTO_RFCOMM, SOCKADDR_BTH, SOL_RFCOMM},
-        Networking::WinSock::{
-            closesocket, setsockopt, WSACleanup, WSAGetLastError, WSAStartup, SOCKADDR, SOCKET,
-            SOCKET_ERROR, SOCK_STREAM, SO_RCVTIMEO, SO_SNDTIMEO, TIMEVAL, WSADATA, WSA_ERROR,
-        },
-    },
-};
-
 use crate::types::EQWave;
 
 mod A3951;

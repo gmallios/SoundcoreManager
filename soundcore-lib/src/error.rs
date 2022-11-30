@@ -39,11 +39,6 @@ impl From<std::num::ParseIntError> for SoundcoreError {
     }
 }
 
-impl From<windows::core::Error> for SoundcoreError {
-    fn from(error: windows::core::Error) -> Self {
-        SoundcoreError::WinError(error.to_string())
-    }
-}
 
 impl From<std::string::FromUtf8Error> for SoundcoreError {
     fn from(_error: std::string::FromUtf8Error) -> Self {
