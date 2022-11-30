@@ -9,16 +9,17 @@ extern crate lazy_static;
 use std::sync::{Arc, Mutex, RwLock};
 
 use bluetooth_lib::{BluetoothAdrr, RFCOMM};
-use client_types::{ANCModes, DeviceSelection, BthScanResult};
+use client_types::{ANCModes, BthScanResult, DeviceSelection};
 use serde::Serialize;
 use soundcore_lib::types::{
     ANCProfile, BatteryCharging, BatteryLevel, DeviceInfo, DeviceStatus, EQWave,
 };
 #[cfg(target_os = "windows")]
 use soundcore_lib::A3951::A3951Device;
-use tauri::{Manager, State};
+use tauri::{CustomMenuItem, State, SystemTray, SystemTrayMenu, SystemTrayMenuItem};
 
 mod client_types;
+mod tray;
 
 enum SupportedDevices<'a> {
     A3951(A3951Device<'a>),
@@ -102,7 +103,9 @@ async fn get_battery_level(state: State<'_, DeviceState<'_>>) -> Result<BatteryL
 }
 
 #[tauri::command]
-async fn get_battery_charging(state: State<'_, DeviceState<'_>>) -> Result<BatteryCharging, String> {
+async fn get_battery_charging(
+    state: State<'_, DeviceState<'_>>,
+) -> Result<BatteryCharging, String> {
     let device_state = state.device.lock().unwrap();
     match &*device_state {
         Some(device) => {
@@ -257,7 +260,6 @@ fn scan_for_devices() -> Vec<BthScanResult> {
     scan_res
 }
 
-
 struct DeviceState<'a> {
     device: Arc<Mutex<Option<Mutex<SupportedDevices<'a>>>>>,
     initialized: Mutex<bool>,
@@ -269,6 +271,8 @@ lazy_static! {
 
 fn main() {
     tauri::Builder::default()
+        .system_tray(tray::get_system_tray())
+        .on_system_tray_event(tray::handle_tray_event)
         .manage(DeviceState {
             device: Arc::new(Mutex::new(None)),
             initialized: Mutex::new(false),
@@ -285,6 +289,12 @@ fn main() {
             get_anc_mode,
             set_eq_wave,
         ])
-        .run(tauri::generate_context!())
-        .expect("error while running tauri application");
+        .build(tauri::generate_context!())
+        .expect("error while running tauri application")
+        .run(|_app_handle, event| match event {
+            tauri::RunEvent::ExitRequested { api, .. } => {
+                api.prevent_exit();
+            }
+            _ => {}
+        });
 }

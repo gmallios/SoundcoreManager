@@ -60,6 +60,10 @@
         "title": "Soundcore Manager",
         "width": 600
       }
-    ]
+    ],
+    "systemTray": {
+      "iconPath" : "icons/icon.png",
+      "iconAsTemplate": false
+    }
   }
 }
