@@ -188,6 +188,7 @@ pub(crate) fn handle_tray_event(app: &AppHandle, event: SystemTrayEvent) {
                 .set_title("Hide")
                 .unwrap();
             window.show().unwrap();
+            window.set_focus().unwrap();
         }
         _ => {}
     }
