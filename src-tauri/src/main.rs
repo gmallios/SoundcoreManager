@@ -250,6 +250,15 @@ fn set_eq_wave(state: State<DeviceState>, eq: EQWave) -> Result<(), String> {
 }
 
 #[tauri::command]
+fn close_all(state: State<DeviceState>) -> Result<(), ()> {
+    let mut device_state = state.device.lock().map_err(|_| ())?;
+    *device_state = None;
+    let rfcomm = RFCOMM_STATE.lock().map_err(|_| ())?;
+    rfcomm.close();
+    Ok(())
+}
+
+#[tauri::command]
 fn scan_for_devices() -> Vec<BthScanResult> {
     let res = bluetooth_lib::BthScanner::new().scan();
     let mut scan_res: Vec<BthScanResult> = vec![];
