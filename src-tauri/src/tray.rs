@@ -35,6 +35,7 @@ pub(crate) async fn set_tray_device_status(app_handle: AppHandle, status: TrayDe
         true => {
             /* When connected the menu should be the extended one already */
             conn_status.set_title("Connected").unwrap();
+            battery_level.set_title(format!("Battery Level: L: {}% R: {}%", status.left_status.battery_level*2*10, status.right_status.battery_level*2*10)).unwrap()
         }
         false => {
             conn_status.set_title("Disconnected").unwrap();
@@ -50,13 +51,6 @@ pub(crate) async fn set_tray_device_status(app_handle: AppHandle, status: TrayDe
         crate::client_types::ANCModes::TransparencyVocalMode => "Transparency: Vocal Mode".to_string(),
     };
     anc_status.set_title(anc_text).unwrap();
-    match status.is_connected {
-        true => { battery_level.set_title(format!("Battery Level: L: {}% R: {}%", status.left_status.battery_level*2*10, status.right_status.battery_level*2*10)).unwrap(); },
-        _ => {
-            // Should not happen :C
-            battery_level.set_title("Battery Level: N/A".to_string()).unwrap();
-        }
-    }
 
     match status {
         TrayDeviceStatus {
