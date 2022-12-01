@@ -39,6 +39,24 @@ impl From<bluetooth_lib::BluetoothDevice> for BthScanResult {
         }
     }
 }
+
+#[derive(TS, Serialize, Deserialize)]
+#[ts(export, export_to = "../src/bindings/TrayDeviceStatus.d.ts")]
+pub(crate) struct TrayDeviceStatus {
+    pub is_connected: bool,
+    pub left_status: BatteryStatus,
+    pub right_status: BatteryStatus,
+    pub anc_mode: ANCModes,
+}
+
+#[derive(TS, Serialize, Deserialize)]
+#[ts(export, export_to = "../src/bindings/BatteryStatus.d.ts")]
+pub(crate) struct BatteryStatus {
+    pub is_charging: bool,
+    pub battery_level: u8,
+}
+
+
 // #[derive(TS, Serialize, Deserialize)]
 // #[ts(export, export_to = "../src/bindings/Result.d.ts")]
 // pub(crate) enum Result {

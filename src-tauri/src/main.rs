@@ -6,17 +6,16 @@
 #[macro_use]
 extern crate lazy_static;
 
-use std::sync::{Arc, Mutex, RwLock};
+use std::sync::{Arc, Mutex};
 
 use bluetooth_lib::{BluetoothAdrr, RFCOMM};
 use client_types::{ANCModes, BthScanResult, DeviceSelection};
-use serde::Serialize;
 use soundcore_lib::types::{
     ANCProfile, BatteryCharging, BatteryLevel, DeviceInfo, DeviceStatus, EQWave,
 };
 #[cfg(target_os = "windows")]
 use soundcore_lib::A3951::A3951Device;
-use tauri::{CustomMenuItem, State, SystemTray, SystemTrayMenu, SystemTrayMenuItem};
+use tauri::{State};
 
 mod client_types;
 mod tray;
@@ -260,6 +259,8 @@ fn scan_for_devices() -> Vec<BthScanResult> {
     scan_res
 }
 
+
+
 struct DeviceState<'a> {
     device: Arc<Mutex<Option<Mutex<SupportedDevices<'a>>>>>,
     initialized: Mutex<bool>,
@@ -278,6 +279,8 @@ fn main() {
             initialized: Mutex::new(false),
         })
         .invoke_handler(tauri::generate_handler![
+            tray::set_tray_device_status,
+            tray::set_tray_menu,
             scan_for_devices,
             init_device,
             connect_uuid,
