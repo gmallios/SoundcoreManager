@@ -7,9 +7,10 @@ import ANCModeCard from "./components/ANCModeCard";
 import EQCard from "./components/EQCard";
 import { scanForDevices } from "./hooks/useBluetooth";
 import DisconnectedScreen from "./components/DisconnectedScreen";
+import { ITrayStatus, setTrayMenu, updateTrayStatus } from "./hooks/useTray";
 
 function App() {
-  const { getDeviceStatus, tryInitialize, getBatteryLevel, getBatteryCharging, connectUUID, deviceConnectionState, getANCMode, deviceStatus, currentANCMode } = useDeviceStore();
+  const { getDeviceStatus, batteryCharging, batteryLevel, getBatteryLevel, getBatteryCharging, connectUUID, deviceConnectionState, getANCMode, deviceStatus, currentANCMode } = useDeviceStore();
 
 
   useEffect(() => {
@@ -28,6 +29,7 @@ function App() {
   const [isDeviceStatusFetched, setIsDeviceStatusFetched] = useState<boolean>(false);
 
   useEffect(() => {
+    setTrayMenu(deviceConnectionState);
     if (deviceConnectionState == DeviceConnectionState.CONNECTED) {
       getDeviceStatus();
     } else if (deviceConnectionState == DeviceConnectionState.DISCONNECTED) {
@@ -57,6 +59,13 @@ function App() {
       const batteryChargingInterval = setInterval(() => {
         getBatteryCharging();
         getDeviceStatus();
+        let trayStatus: ITrayStatus = {
+          deviceConnectionState: deviceConnectionState,
+          batteryLevel: batteryLevel,
+          batteryCharging: batteryCharging,
+          anc_mode: currentANCMode,
+        }
+        updateTrayStatus(trayStatus)
       }, BATTERY_CHARGING_POLL_RATE);
 
 
