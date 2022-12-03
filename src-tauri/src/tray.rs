@@ -3,7 +3,7 @@ use tauri::{
     SystemTrayMenuItem,
 };
 
-use crate::client_types::{TrayDeviceStatus, BatteryStatus};
+use crate::frontend_types::{TrayDeviceStatus, BatteryStatus};
 
 /* Sets the tray menu to either the basic or the extended one */
 #[tauri::command]
@@ -42,13 +42,13 @@ pub(crate) async fn set_tray_device_status(app_handle: AppHandle, status: TrayDe
         }
     }
     let anc_text: String = match status.anc_mode {
-        crate::client_types::ANCModes::NormalMode => "ANC: Normal Mode".to_string(),
-        crate::client_types::ANCModes::AncTransportMode => "ANC: Transport Mode".to_string(),
-        crate::client_types::ANCModes::AncOutdoorMode => "ANC: Outdoor Mode".to_string(),
-        crate::client_types::ANCModes::AncIndoorMode => "ANC: Indoor Mode".to_string(),
-        crate::client_types::ANCModes::AncCustomValue(val) => format!("ANC: Custom Value {}", val),
-        crate::client_types::ANCModes::TransparencyFullyTransparentMode => "Transparency: Fully Transparent Mode".to_string(),
-        crate::client_types::ANCModes::TransparencyVocalMode => "Transparency: Vocal Mode".to_string(),
+        crate::frontend_types::ANCModes::NormalMode => "ANC: Normal Mode".to_string(),
+        crate::frontend_types::ANCModes::AncTransportMode => "ANC: Transport Mode".to_string(),
+        crate::frontend_types::ANCModes::AncOutdoorMode => "ANC: Outdoor Mode".to_string(),
+        crate::frontend_types::ANCModes::AncIndoorMode => "ANC: Indoor Mode".to_string(),
+        crate::frontend_types::ANCModes::AncCustomValue(val) => format!("ANC: Custom Value {}", val),
+        crate::frontend_types::ANCModes::TransparencyFullyTransparentMode => "Transparency: Fully Transparent Mode".to_string(),
+        crate::frontend_types::ANCModes::TransparencyVocalMode => "Transparency: Vocal Mode".to_string(),
     };
     anc_status.set_title(anc_text).unwrap();
 

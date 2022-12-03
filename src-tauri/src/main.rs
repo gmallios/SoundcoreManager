@@ -9,19 +9,19 @@ extern crate lazy_static;
 use std::sync::{Arc, Mutex};
 
 use bluetooth_lib::{BluetoothAdrr, RFCOMM};
-use client_types::{ANCModes, BthScanResult, DeviceSelection};
+use frontend_types::{ANCModes, BthScanResult, DeviceSelection};
 use soundcore_lib::types::{
     ANCProfile, BatteryCharging, BatteryLevel, DeviceInfo, DeviceStatus, EQWave,
 };
 #[cfg(target_os = "windows")]
-use soundcore_lib::A3951::A3951Device;
+use soundcore_lib::devices::A3951;
 use tauri::{State};
 
-mod client_types;
+mod frontend_types;
 mod tray;
 
 enum SupportedDevices<'a> {
-    A3951(A3951Device<'a>),
+    A3951(A3951<'a>),
 }
 
 fn send_rfcomm(data: &[u8]) -> Result<(), soundcore_lib::error::SoundcoreError> {
@@ -49,7 +49,7 @@ fn init_device(state: State<DeviceState>, device: DeviceSelection) -> Result<Str
     }
     match device {
         DeviceSelection::A3951 => {
-            let device = A3951Device::new(&send_rfcomm, &recv_rfcomm);
+            let device = A3951::new(&send_rfcomm, &recv_rfcomm);
             match device {
                 Ok(device) => {
                     *device_state = Some(Mutex::new(SupportedDevices::A3951(device)));
