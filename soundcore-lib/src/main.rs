@@ -11,27 +11,7 @@ mod utils;
 mod types;
 mod error;
 mod statics;
-
-enum SoundcoreSupportedDevice {
-    A3951,
-}
-
-enum SoundcoreDevices<'a> {
-    A3951(A3951<'a>),
-}
-
-
-struct SoundcoreDevice {
-
-}
-
-impl SoundcoreDevice {
-    fn new<'a>(modelid: SoundcoreSupportedDevice, send_fn: SendFnType<'a>, recv_fn: RecvFnType<'a>) -> SoundcoreDevices<'a> {
-        match modelid {
-            SoundcoreSupportedDevice::A3951 => SoundcoreDevices::A3951(A3951::new(send_fn, recv_fn).unwrap()),
-        }
-    }
-}
+mod base;
 
 // Modes
 // const TRANSPORT_MODE: &[u8; 14] = b"\x08\xee\x00\x00\x00\x06\x81\x0e\x00\x01\x01\x01\x00\x8e";
@@ -44,16 +24,6 @@ const BYTE_OFF: i32 = -1;
 const OPCODE_BAT: [u8; 7] = [0x08, 0xEE, 0x00, 0x00, 0x00, 0x01, 0x05];
 
 fn main() {
-    let send_fn: SendFnType = &|data: &[u8]| {
-        println!("Sending: {:?}", data);
-        Ok(())
-    };
-    let recv_fn: RecvFnType = &|num| {
-        println!("Receiving: {:?}", num);
-        Ok(vec![0,0,0,0])
-    };
-
-    let device = SoundcoreDevice::new(SoundcoreSupportedDevice::A3951, send_fn, recv_fn);
     // let mut device = A3951Device::new().unwrap();
     // device
     //     .connect_uuid("AC:12:2F:6A:D2:07", known_uuids[0])
