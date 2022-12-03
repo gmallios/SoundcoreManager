@@ -1,35 +1,20 @@
 use crate::{utils::{
     build_command_array_with_options_toggle_enabled, i8_to_u8vec, verify_resp, Clamp,
-}, types::{BatteryLevel, BatteryCharging, ANCProfile, EQWave, EQWaveInt, DeviceInfo, DeviceStatus}, error::SoundcoreError};
-use serde::{Deserialize, Serialize};
+}, types::{BatteryLevel, BatteryCharging, ANCProfile, EQWave, EQWaveInt, DeviceInfo, DeviceStatus, SendFnType, RecvFnType}, error::SoundcoreError, statics::*};
 use std::time::Duration;
-
-static CMD_DEVICE_STATUS: [i8; 7] = [8, -18, 0, 0, 0, 1, 1];
-static CMD_DEVICE_INFO: [i8; 7] = [8, -18, 0, 0, 0, 1, 5];
-static CMD_DEVICE_BATTERYLEVEL: [i8; 7] = [8, -18, 0, 0, 0, 1, 3];
-static CMD_DEVICE_BATTERYCHARGING: [i8; 7] = [8, -18, 0, 0, 0, 1, 4];
-static CMD_DEVICE_LDAC: [i8; 7] = [8, -18, 0, 0, 0, 1, 127]; // NOTE: Last byte is Byte.MAX_VALUE from java. Im not sure about the value
-static CMD_DEVICE_GETEQ: [i8; 7] = [8, -18, 0, 0, 0, 2, 1]; // Not tested yet.
-static CMD_DEVICE_SETEQ_DRC: [i8; 7] = [8, -18, 0, 0, 0, 3, -121]; // This gets used when DRC is supported/enabled.
-static CMD_DEVICE_SETEQ_NODRC: [i8; 7] = [8, -18, 0, 0, 0, 3, -122]; // This gets used when DRC is not supported/enabled.
-static CMD_DEVICE_GETANC: [i8; 7] = [8, -18, 0, 0, 0, 6, 1];
-static CMD_DEVICE_SETANC: [i8; 7] = [8, -18, 0, 0, 0, 6, -127];
 
 static SLEEP_DURATION: Duration = std::time::Duration::from_millis(30);
 
+pub static A3951_RFCOMM_UUID: &str = crate::statics::A3951_RFCOMM_UUID;
 
-
-pub type SendFnType<'a> = &'a (dyn Fn(&[u8]) -> Result<(), SoundcoreError> + Send + Sync);
-pub type RecvFnType<'a> = &'a (dyn Fn(usize) -> Result<Vec<u8>, SoundcoreError> + Send + Sync);
-
-pub struct A3951Device<'a> {
+pub struct A3951<'a> {
     send_fn: SendFnType<'a>,
     recv_fn: RecvFnType<'a>,
 }
 
-impl A3951Device<'_> {
-    pub fn new<'a>(send_fn: SendFnType<'a>, recv_fn: RecvFnType<'a>) -> Result<A3951Device<'a>, SoundcoreError> {
-        Ok(A3951Device {
+impl A3951<'_> {
+    pub fn new<'a>(send_fn: SendFnType<'a>, recv_fn: RecvFnType<'a>) -> Result<A3951<'a>, SoundcoreError> {
+        Ok(A3951 {
             send_fn: send_fn,
             recv_fn: recv_fn,
         })
@@ -37,7 +22,7 @@ impl A3951Device<'_> {
 
     //TODO: Check for command in response ( 2 bytes )
     pub fn get_info(&self) -> Result<DeviceInfo, SoundcoreError> {
-        let cmd = &Self::create_cmd(CMD_DEVICE_INFO);
+        let cmd = &Self::create_cmd(A3951_CMD_DEVICE_INFO);
         self.send(cmd)?;
         std::thread::sleep(SLEEP_DURATION);
         let resp = self.recv(36)?;
@@ -48,7 +33,7 @@ impl A3951Device<'_> {
     }
 
     pub fn get_status(&self) -> Result<DeviceStatus, SoundcoreError> {
-        let cmd = &Self::create_cmd(CMD_DEVICE_STATUS);
+        let cmd = &Self::create_cmd(A3951_CMD_DEVICE_STATUS);
         self.send(cmd)?;
         std::thread::sleep(SLEEP_DURATION);
         let resp = self.recv(97)?;
@@ -59,7 +44,7 @@ impl A3951Device<'_> {
     }
 
     pub fn get_battery_level(&self) -> Result<BatteryLevel, SoundcoreError> {
-        let cmd = &Self::create_cmd(CMD_DEVICE_BATTERYLEVEL);
+        let cmd = &Self::create_cmd(A3951_CMD_DEVICE_BATTERYLEVEL);
         self.send(cmd)?;
         std::thread::sleep(SLEEP_DURATION);
         let resp = self.recv(100)?;
@@ -69,7 +54,7 @@ impl A3951Device<'_> {
         }
 
         if resp[6] == 4 {
-            println!("Device level blink: {:?}", resp);
+            dbg!("Device level blink: {:?}", resp);
             // Case battery level. Ignore for now, more debugging needed.
             // Battery charging "blinks" when this event is triggered.
             return Err(SoundcoreError::Unknown);
@@ -79,7 +64,7 @@ impl A3951Device<'_> {
     }
 
     pub fn get_battery_charging(&self) -> Result<BatteryCharging, SoundcoreError> {
-        let cmd = &Self::create_cmd(CMD_DEVICE_BATTERYCHARGING);
+        let cmd = &Self::create_cmd(A3951_CMD_DEVICE_BATTERYCHARGING);
         self.send(cmd)?;
         std::thread::sleep(SLEEP_DURATION);
         let resp = self.recv(100)?;
@@ -89,7 +74,7 @@ impl A3951Device<'_> {
         }
         // https://prnt.sc/yze5IvvUtYlq Case battery "blink"
         if resp[13] == 255 {
-            println!("Device charging blink: {:?}", resp);
+            dbg!("Device charging blink: {:?}", resp);
             // When "blinking" resp[13] is 255 afaik.
             return Err(SoundcoreError::Unknown);
         }
@@ -98,7 +83,7 @@ impl A3951Device<'_> {
     }
 
     pub fn get_ldac_status(&self) -> Result<bool, SoundcoreError> {
-        let cmd = &Self::create_cmd(CMD_DEVICE_LDAC);
+        let cmd = &Self::create_cmd(A3951_CMD_DEVICE_LDAC);
         self.send(cmd)?;
         std::thread::sleep(SLEEP_DURATION);
         let resp = self.recv(11)?;
@@ -109,7 +94,7 @@ impl A3951Device<'_> {
     }
 
     pub fn get_anc(&self) -> Result<ANCProfile, SoundcoreError> {
-        let cmd = &Self::create_cmd(CMD_DEVICE_GETANC);
+        let cmd = &Self::create_cmd(A3951_CMD_DEVICE_GETANC);
         self.send(cmd)?;
         std::thread::sleep(SLEEP_DURATION);
         let resp = self.recv(14)?;
@@ -120,7 +105,7 @@ impl A3951Device<'_> {
     }
 
     pub fn set_anc(&self, anc_profile: ANCProfile) -> Result<(), SoundcoreError> {
-        let cmd = &Self::create_cmd_with_data(CMD_DEVICE_SETANC, anc_profile.to_bytes().to_vec());
+        let cmd = &Self::create_cmd_with_data(A3951_CMD_DEVICE_SETANC, anc_profile.to_bytes().to_vec());
         self.send(cmd)?;
         std::thread::sleep(SLEEP_DURATION);
         // Validate resp??
@@ -180,7 +165,7 @@ impl A3951Device<'_> {
         /* drc_offset + 56-72 "Corrected" EQ Wave */
         output_arr[drc_offset+56..drc_offset+64].copy_from_slice(&corrected_eq_wave_bytes[0..8]);
         output_arr[drc_offset+64..drc_offset+72].copy_from_slice(&corrected_eq_wave_bytes[0..8]);
-        let cmd = Self::create_cmd_with_data(CMD_DEVICE_SETEQ_DRC, output_arr);
+        let cmd = Self::create_cmd_with_data(A3951_CMD_DEVICE_SETEQ_DRC, output_arr);
         self.send(&cmd)?;
         std::thread::sleep(SLEEP_DURATION);
         let _resp = self.recv(100)?;

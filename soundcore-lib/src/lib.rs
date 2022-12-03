@@ -1,6 +1,6 @@
-#[cfg(target_os = "windows")]
 #[allow(non_snake_case)]
-pub mod A3951;
+pub mod devices;
 mod utils;
 pub mod types;
 pub mod error;
+mod statics;

@@ -1,7 +1,6 @@
 use bluetooth_lib::{RFCOMM};
-use soundcore_lib::{error::SoundcoreError, A3951::A3951Device};
+use soundcore_lib::{error::SoundcoreError, devices::{A3951, A3951_RFCOMM_UUID}};
 
-const UUID: &str = "00001101-0000-1000-8000-00805F9B34FB";
 const BT_ADDR: &str = "AC:12:2F:6A:D2:07";
 
 fn main() {
@@ -12,7 +11,7 @@ fn main() {
 
     let addr = bluetooth_lib::BluetoothAdrr::from(BT_ADDR);
     // Connect to device UUID service
-    comm.connect_uuid(addr, UUID).unwrap();
+    comm.connect_uuid(addr, A3951_RFCOMM_UUID).unwrap();
 
     // Setup send and receive functions for soundcore-lib, we use our own RFCOMM implementation
     // Feel free to use any other implementation
@@ -25,7 +24,7 @@ fn main() {
         Err(_e) => Err(SoundcoreError::RecvError),
     };
 
-    let device = A3951Device::new(&send_fn, &recv_fn).unwrap();
+    let device = A3951::new(&send_fn, &recv_fn).unwrap();
 
     match device.get_info() {
         Ok(info) => println!(

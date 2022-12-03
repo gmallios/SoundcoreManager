@@ -2,6 +2,12 @@ use serde::{ Serialize, Deserialize };
 
 use crate::error::SoundcoreError;
 
+
+pub type SendFnType<'a> = &'a (dyn Fn(&[u8]) -> Result<(), SoundcoreError> + Send + Sync);
+pub type RecvFnType<'a> = &'a (dyn Fn(usize) -> Result<Vec<u8>, SoundcoreError> + Send + Sync);
+pub type CloseSockFnType<'a> = &'a (dyn Fn() + Send + Sync);
+
+
 #[derive(Default, Debug, Serialize, Deserialize)]
 pub struct DeviceInfo {
     pub left_fw: String,

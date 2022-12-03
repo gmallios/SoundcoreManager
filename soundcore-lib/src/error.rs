@@ -10,7 +10,14 @@ pub enum SoundcoreError {
 
 impl std::fmt::Display for SoundcoreError {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{:}", std::error::Error::description(self))
+        match self {
+            SoundcoreError::Unknown => write!(f, "Unknown error"),
+            SoundcoreError::ParseError => write!(f, "Parse error"),
+            SoundcoreError::ResponseChecksumError => write!(f, "Response checksum error"),
+            SoundcoreError::SendError => write!(f, "Send error"),
+            SoundcoreError::RecvError => write!(f, "Recv error"),
+            SoundcoreError::WinError(e) => write!(f, "Win32 error: {}", e),
+        }
     }
 }
 
