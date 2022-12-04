@@ -54,7 +54,7 @@ impl A3951<'_> {
         }
 
         if resp[6] == 4 {
-            dbg!("Device level blink: {:?}", resp);
+            dbg!(format!("Device level blink: {:?}", resp));
             // Case battery level. Ignore for now, more debugging needed.
             // Battery charging "blinks" when this event is triggered.
             return Err(SoundcoreError::Unknown);
@@ -74,7 +74,7 @@ impl A3951<'_> {
         }
         // https://prnt.sc/yze5IvvUtYlq Case battery "blink"
         if resp[13] == 255 {
-            dbg!("Device charging blink: {:?}", resp);
+            dbg!(format!("Device charging blink: {:?}", resp));
             // When "blinking" resp[13] is 255 afaik.
             return Err(SoundcoreError::Unknown);
         }
