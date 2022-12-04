@@ -5,6 +5,7 @@ pub enum SoundcoreError {
     ResponseChecksumError,
     SendError,
     RecvError,
+    FeatureNotSupported(String),
     WinError(String),
 }
 
@@ -16,23 +17,13 @@ impl std::fmt::Display for SoundcoreError {
             SoundcoreError::ResponseChecksumError => write!(f, "Response checksum error"),
             SoundcoreError::SendError => write!(f, "Send error"),
             SoundcoreError::RecvError => write!(f, "Recv error"),
+            SoundcoreError::FeatureNotSupported(feat) => write!(f, "Feature not supported/implemented: {}", feat),
             SoundcoreError::WinError(e) => write!(f, "Win32 error: {}", e),
         }
     }
 }
 
-impl std::error::Error for SoundcoreError {
-    fn description(&self) -> &str {
-        match self {
-            SoundcoreError::Unknown => "Unknown Error",
-            SoundcoreError::ParseError => "Parse Error",
-            SoundcoreError::ResponseChecksumError => "Response Checksum Error",
-            SoundcoreError::WinError(ref message) => message.as_str(),
-            SoundcoreError::SendError => "Send Error",
-            SoundcoreError::RecvError => "Recv Error",
-        }
-    }
-}
+impl std::error::Error for SoundcoreError {}
 
 impl From<std::io::Error> for SoundcoreError {
     fn from(_error: std::io::Error) -> Self {
