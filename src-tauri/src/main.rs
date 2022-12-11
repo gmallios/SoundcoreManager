@@ -271,6 +271,8 @@ fn scan_for_devices() -> Vec<BthScanResult> {
 
 
 struct DeviceState<'a> {
+    /* When soundcore-lib is updated use Box */  
+    //sel_device: Arc<Mutex<Option<Box<dyn soundcore_lib::base::SoundcoreDevice>>>>,
     device: Arc<Mutex<Option<Mutex<SupportedDevices<'a>>>>>,
     initialized: Mutex<bool>,
 }

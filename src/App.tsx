@@ -1,13 +1,16 @@
 import React, { useEffect, useState } from "react";
 import "./App.css";
 import A3951InfoCard from "./components/A3951InfoCard";
+import EQCard from "./components/EQCard";
+import TopBar from "./components/TopBar";
 import useDeviceStore, { DeviceConnectionState } from "./hooks/useDeviceStore";
 import Stack from '@mui/material/Stack';
 import ANCModeCard from "./components/ANCModeCard";
-import EQCard from "./components/EQCard";
 import { scanForDevices } from "./hooks/useBluetooth";
 import DisconnectedScreen from "./components/DisconnectedScreen";
 import { ITrayStatus, setTrayMenu, updateTrayStatus } from "./hooks/useTray";
+import { CircularProgress } from "@mui/material";
+
 
 function App() {
   const { getDeviceStatus, batteryCharging, batteryLevel, getBatteryLevel, getBatteryCharging, connectUUID, deviceConnectionState, getANCMode, deviceStatus, currentANCMode } = useDeviceStore();
@@ -81,13 +84,24 @@ function App() {
     }
   }, [deviceStatus]);
 
+
   return (
     <React.Fragment>
       {deviceConnectionState == DeviceConnectionState.CONNECTED ? (
         <Stack>
-          <A3951InfoCard />
-          {isANCFetched && <ANCModeCard />}
-          {isDeviceStatusFetched && <EQCard />}
+          <TopBar />
+          {isDeviceStatusFetched ? (
+            /* TODO: Create a component which wraps all while-connected components */
+            <React.Fragment>
+              <A3951InfoCard />
+              {isANCFetched && <ANCModeCard />}
+              <EQCard />
+            </React.Fragment>
+          ) : (
+            <div style={{ width: "100vw", height: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <CircularProgress />
+            </div>
+          )}
         </Stack>
       ) : (
         <DisconnectedScreen />

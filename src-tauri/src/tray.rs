@@ -1,9 +1,9 @@
 use tauri::{
     AppHandle, CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu,
-    SystemTrayMenuItem,
+    SystemTrayMenuItem, SystemTraySubmenu,
 };
 
-use crate::frontend_types::{TrayDeviceStatus, BatteryStatus};
+use crate::frontend_types::{ANCModes, BatteryStatus, TrayDeviceStatus};
 
 /* Sets the tray menu to either the basic or the extended one */
 #[tauri::command]
@@ -28,91 +28,107 @@ pub(crate) async fn set_tray_device_status(app_handle: AppHandle, status: TrayDe
     let tray_handle = app_handle.tray_handle();
     /* Update menu items */
     let conn_status = tray_handle.get_item("conn_status");
-    let anc_status = tray_handle.get_item("anc_status");
     let charging_status = tray_handle.get_item("batt_charging_status");
     let battery_level = tray_handle.get_item("batt_level_status");
     match status.is_connected {
         true => {
             /* When connected the menu should be the extended one already */
             conn_status.set_title("Connected").unwrap();
-            battery_level.set_title(format!("Battery Level: L: {}% R: {}%", status.left_status.battery_level*2*10, status.right_status.battery_level*2*10)).unwrap()
+            battery_level
+                .set_title(format!(
+                    "Battery Level: L: {}% R: {}%",
+                    status.left_status.battery_level * 2 * 10,
+                    status.right_status.battery_level * 2 * 10
+                ))
+                .unwrap()
         }
         false => {
             conn_status.set_title("Disconnected").unwrap();
         }
     }
-    let anc_text: String = match status.anc_mode {
-        crate::frontend_types::ANCModes::NormalMode => "ANC: Normal Mode".to_string(),
-        crate::frontend_types::ANCModes::AncTransportMode => "ANC: Transport Mode".to_string(),
-        crate::frontend_types::ANCModes::AncOutdoorMode => "ANC: Outdoor Mode".to_string(),
-        crate::frontend_types::ANCModes::AncIndoorMode => "ANC: Indoor Mode".to_string(),
-        crate::frontend_types::ANCModes::AncCustomValue(val) => format!("ANC: Custom Value {}", val),
-        crate::frontend_types::ANCModes::TransparencyFullyTransparentMode => "Transparency: Fully Transparent Mode".to_string(),
-        crate::frontend_types::ANCModes::TransparencyVocalMode => "Transparency: Vocal Mode".to_string(),
+
+    let anc_items = [
+        "anc_sub_normal_mode",
+        "anc_sub_transport_mode",
+        "anc_sub_outdoor_mode",
+        "anc_sub_indoor_mode",
+        "anc_sub_fully_transparent_mode",
+        "anc_sub_vocal_mode",
+    ];
+
+    let idx_to_enable = match status.anc_mode {
+        ANCModes::NormalMode => 0,
+        ANCModes::AncTransportMode => 1,
+        ANCModes::AncOutdoorMode => 2,
+        ANCModes::AncIndoorMode => 3,
+        ANCModes::TransparencyFullyTransparentMode => 4,
+        ANCModes::TransparencyVocalMode => 5,
+        _ => 0,
     };
-    anc_status.set_title(anc_text).unwrap();
+
+
+    anc_items.iter().enumerate().for_each(|(idx, item)| {
+        let item = tray_handle.get_item(item);
+        if idx == idx_to_enable {
+            item.set_selected(true).unwrap();
+        } else {
+            item.set_selected(false).unwrap();
+        }
+    });
 
     match status {
         TrayDeviceStatus {
             is_connected: true,
             left_status: BatteryStatus {
-                is_charging: true,
-                ..
+                is_charging: true, ..
             },
             right_status: BatteryStatus {
-                is_charging: true,
-                ..
+                is_charging: true, ..
             },
             ..
         } => {
             // Both Charging
             charging_status.set_title("Both Charging").unwrap();
-        },
+        }
         TrayDeviceStatus {
             is_connected: true,
             left_status: BatteryStatus {
-                is_charging: true,
-                ..
+                is_charging: true, ..
             },
             right_status: BatteryStatus {
-                is_charging: false,
-                ..
+                is_charging: false, ..
             },
             ..
         } => {
             // Left Charging
             charging_status.set_title("Left Charging").unwrap();
-        },
+        }
         TrayDeviceStatus {
             is_connected: true,
             left_status: BatteryStatus {
-                is_charging: false,
-                ..
+                is_charging: false, ..
             },
             right_status: BatteryStatus {
-                is_charging: true,
-                ..
+                is_charging: true, ..
             },
             ..
         } => {
             // Right Charging
             charging_status.set_title("Right Charging").unwrap();
-        },
+        }
         TrayDeviceStatus {
             is_connected: true,
             left_status: BatteryStatus {
-                is_charging: false,
-                ..
+                is_charging: false, ..
             },
             right_status: BatteryStatus {
-                is_charging: false,
-                ..
+                is_charging: false, ..
             },
             ..
         } => {
             // Not Charging
             charging_status.set_title("Not Charging").unwrap();
-        },
+        }
         _ => {
             charging_status.set_title("Not Charging").unwrap();
         }
@@ -131,18 +147,46 @@ fn build_base_tray_menu() -> SystemTrayMenu {
         .add_item(quit)
 }
 
+fn build_anc_menu() -> SystemTrayMenu {
+    let normal_mode = CustomMenuItem::new("anc_sub_normal_mode".to_string(), "Normal Mode");
+    let transport_mode =
+        CustomMenuItem::new("anc_sub_transport_mode".to_string(), "ANC: Transport Mode");
+    let outdoor_mode = CustomMenuItem::new("anc_sub_outdoor_mode".to_string(), "ANC: Outdoor Mode");
+    let indoor_mode = CustomMenuItem::new("anc_sub_indoor_mode".to_string(), "ANC: Indoor Mode");
+    let fully_transparent = CustomMenuItem::new(
+        "anc_sub_fully_transparent_mode".to_string(),
+        "Transparency: Fully Transparent Mode",
+    );
+    let vocal_mode =
+        CustomMenuItem::new("anc_sub_vocal_mode".to_string(), "Transparency: Vocal Mode");
+    SystemTrayMenu::new()
+        .add_item(indoor_mode)
+        .add_item(outdoor_mode)
+        .add_item(transport_mode)
+        .add_native_item(SystemTrayMenuItem::Separator)
+        .add_item(normal_mode)
+        .add_native_item(SystemTrayMenuItem::Separator)
+        .add_item(fully_transparent)
+        .add_item(vocal_mode)
+}
+
 /* Menu used while connected */
 fn build_extended_menu() -> SystemTrayMenu {
     let conn_status = CustomMenuItem::new("conn_status".to_string(), "Disconnected").disabled();
-    let anc_status = CustomMenuItem::new("anc_status".to_string(), "ANC: Off").disabled();
-    let batt_charging_status = CustomMenuItem::new("batt_charging_status".to_string(), "Battery: Is it charging?").disabled();
-    let batt_level = CustomMenuItem::new("batt_level_status".to_string(), "Battery: L:?% R:?%").disabled();
+    let anc_submenu = SystemTraySubmenu::new("ANC Profiles", build_anc_menu());
+    let batt_charging_status = CustomMenuItem::new(
+        "batt_charging_status".to_string(),
+        "Battery: Is it charging?",
+    )
+    .disabled();
+    let batt_level =
+        CustomMenuItem::new("batt_level_status".to_string(), "Battery: L:?% R:?%").disabled();
     let hide = CustomMenuItem::new("hide".to_string(), "Hide");
     let quit = CustomMenuItem::new("quit".to_string(), "Quit");
     SystemTrayMenu::new()
         .add_item(conn_status)
         .add_native_item(SystemTrayMenuItem::Separator)
-        .add_item(anc_status)
+        .add_submenu(anc_submenu)
         .add_native_item(SystemTrayMenuItem::Separator)
         .add_item(batt_charging_status)
         .add_item(batt_level)
