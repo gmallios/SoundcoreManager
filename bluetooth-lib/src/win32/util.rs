@@ -6,5 +6,5 @@ pub(crate) fn init_winsock() -> i32 {
     unsafe {
         i_result = WSAStartup(0x0202, wsa_data);
     }
-    return i_result;
+    i_result
 }

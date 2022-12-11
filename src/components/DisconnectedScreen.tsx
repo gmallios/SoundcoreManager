@@ -9,15 +9,12 @@ import useDeviceStore from "../hooks/useDeviceStore";
 
 export default function DisconnectedScreen() {
     const { loading, data } = scanForDevices();
-    const { tryInitialize, connectUUID } = useDeviceStore();
+    const { connectUUID } = useDeviceStore();
     const [selectedDevice, setSelectedDevice] = React.useState<BthScanResult>();
 
-
-
     const handleFabClick = () => {
-        if(selectedDevice){
-            tryInitialize("A3951");
-            connectUUID(selectedDevice.address, "00001101-0000-1000-8000-00805F9B34FB");
+        if (selectedDevice) {
+            connectUUID("A3951", selectedDevice.address);
         }
     };
 

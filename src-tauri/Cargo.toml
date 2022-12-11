@@ -20,7 +20,6 @@ tauri = { version = "1.1", features = ["api-all", "system-tray"] }
 soundcore-lib = { path = "../soundcore-lib/" }
 bluetooth-lib = { path = "../bluetooth-lib/" }
 ts-rs = "6.2"
-lazy_static = "1.4.0"
 
 [features]
 # by default Tauri runs in production mode

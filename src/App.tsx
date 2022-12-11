@@ -5,7 +5,7 @@ import useDeviceStore, { DeviceConnectionState } from "./hooks/useDeviceStore";
 import Stack from '@mui/material/Stack';
 import ANCModeCard from "./components/ANCModeCard";
 import EQCard from "./components/EQCard";
-import { scanForDevices } from "./hooks/useBluetooth";
+import { getIsConnected, scanForDevices } from "./hooks/useBluetooth";
 import DisconnectedScreen from "./components/DisconnectedScreen";
 import { ITrayStatus, setTrayMenu, updateTrayStatus } from "./hooks/useTray";
 
@@ -23,10 +23,12 @@ function App() {
   const BATTERY_LEVEL_POLL_RATE = 10000;
   const BATTERY_CHARGING_POLL_RATE = 500;
 
+  const backend_connected = getIsConnected();
   const [selectedDeviceAddr, setSelectedDeviceAddr] = useState(null);
   const [isConnected, setIsConnected] = useState<boolean>(false);
   const [isANCFetched, setIsANCFetched] = useState<boolean>(false);
   const [isDeviceStatusFetched, setIsDeviceStatusFetched] = useState<boolean>(false);
+
 
   useEffect(() => {
     setTrayMenu(deviceConnectionState);
