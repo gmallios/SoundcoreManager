@@ -6,7 +6,7 @@
     "distDir": "../dist"
   },
   "package": {
-    "productName": "soundcore-rs",
+    "productName": "soundcore-manager",
     "version": "0.0.0"
   },
   "tauri": {
@@ -28,7 +28,7 @@
         "icons/icon.icns",
         "icons/icon.ico"
       ],
-      "identifier": "com.tauri.dev",
+      "identifier": "com.gmallios.soundcoremanager",
       "longDescription": "",
       "macOS": {
         "entitlements": null,
