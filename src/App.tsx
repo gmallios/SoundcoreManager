@@ -6,16 +6,21 @@ import TopBar from "./components/TopBar";
 import useDeviceStore, { DeviceConnectionState } from "./hooks/useDeviceStore";
 import Stack from '@mui/material/Stack';
 import ANCModeCard from "./components/ANCModeCard";
-import EQCard from "./components/EQCard";
 import { getIsConnected, scanForDevices } from "./hooks/useBluetooth";
 import DisconnectedScreen from "./components/DisconnectedScreen";
-import { ITrayStatus, setTrayMenu, updateTrayStatus } from "./hooks/useTray";
+import { ITrayStatus, setTrayMenu, updateTrayStatus, useWindowEvent } from "./hooks/useTray";
 import { CircularProgress } from "@mui/material";
+import { ANCModes } from "./bindings/ANCModes";
+
 
 
 function App() {
-  const { getDeviceStatus, batteryCharging, batteryLevel, getBatteryLevel, getBatteryCharging, connectUUID, deviceConnectionState, getANCMode, deviceStatus, currentANCMode } = useDeviceStore();
+  const { sendANCMode, getDeviceStatus, batteryCharging, batteryLevel, getBatteryLevel, getBatteryCharging, connectUUID, deviceConnectionState, getANCMode, deviceStatus, currentANCMode } = useDeviceStore();
 
+
+  useWindowEvent("anc_sub_change", event => {
+    sendANCMode(event.payload as ANCModes);
+  });
 
   useEffect(() => {
     if(selectedDeviceAddr == null){
@@ -77,6 +82,8 @@ function App() {
 
       setIsConnected(true);
       setIsDeviceStatusFetched(true);
+
+ 
 
       return () => {
         // Clear the intervals on unmount

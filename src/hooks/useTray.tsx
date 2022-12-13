@@ -3,7 +3,9 @@ import { TrayDeviceStatus } from "../bindings/TrayDeviceStatus";
 import { BatteryStatus } from "../bindings/BatteryStatus";
 import { ANCModes } from "../bindings/ANCModes";
 import { DeviceBatteryCharging, DeviceBatteryLevel, DeviceConnectionState } from "./useDeviceStore";
-
+import { useEffect } from "react";
+import { appWindow } from "@tauri-apps/api/window";
+import { Event, listen } from "@tauri-apps/api/event";
 
 export interface ITrayStatus {
     deviceConnectionState: DeviceConnectionState,
@@ -33,4 +35,27 @@ export function updateTrayStatus(data: ITrayStatus) {
 
 export function setTrayMenu(connection_state: DeviceConnectionState) {
     invoke("set_tray_menu", { isConnected: DeviceConnectionState.CONNECTED === connection_state });
+}
+
+/* https://github.com/tauri-apps/tauri/issues/4630 */
+type RemoveListenerBlock = () => void
+
+export function useWindowEvent<Payload>(name: string, callback: (event: Event<Payload>) => void) {
+	return useEffect(() => {
+		let removeListener: RemoveListenerBlock | undefined
+
+		const setUpListener = async () => {
+			removeListener = await listen(name, (event: any) => {
+				callback(event as Event<Payload>)
+			})
+		}
+
+		setUpListener().catch(error => {
+			console.error(`Could not set up window event listener. ${error}`)
+		})
+
+		return () => {
+			removeListener?.()
+		}
+	}, [name, callback])
 }

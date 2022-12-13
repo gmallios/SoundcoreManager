@@ -7,6 +7,7 @@
 use std::sync::{Arc};
 use bluetooth_lib::{Scanner};
 use bluetooth_lib::platform::BthScanner;
+use env_logger::builder;
 use frontend_types::{BthScanResult};
 use soundcore_lib::{base::SoundcoreDevice};
 use tauri::{async_runtime::Mutex};
@@ -45,6 +46,8 @@ struct AppState {
 
 
 fn main() {
+    builder().filter(None, log::LevelFilter::Debug).init();
+
     tauri::Builder::default()
         .system_tray(tray::get_system_tray())
         .on_system_tray_event(tray::handle_tray_event)
