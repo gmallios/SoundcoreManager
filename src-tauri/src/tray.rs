@@ -1,9 +1,16 @@
+use std::sync::Arc;
+
+use log::debug;
+use soundcore_lib::types::ANCProfile;
 use tauri::{
-    AppHandle, CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu,
-    SystemTrayMenuItem, SystemTraySubmenu,
+    async_runtime::spawn, AppHandle, CustomMenuItem, Manager, State, SystemTray, SystemTrayEvent,
+    SystemTrayMenu, SystemTrayMenuItem, SystemTraySubmenu,
 };
 
-use crate::frontend_types::{ANCModes, BatteryStatus, TrayDeviceStatus};
+use crate::{
+    frontend_types::{ANCModes, BatteryStatus, TrayDeviceStatus},
+    AppState,
+};
 
 /* Sets the tray menu to either the basic or the extended one */
 #[tauri::command]
@@ -65,7 +72,6 @@ pub(crate) async fn set_tray_device_status(app_handle: AppHandle, status: TrayDe
         ANCModes::TransparencyVocalMode => 5,
         _ => 0,
     };
-
 
     anc_items.iter().enumerate().for_each(|(idx, item)| {
         let item = tray_handle.get_item(item);
@@ -200,11 +206,29 @@ pub(crate) fn get_system_tray() -> SystemTray {
     SystemTray::new().with_menu(build_base_tray_menu())
 }
 
+fn handle_anc_submenu(app: &AppHandle, id: String) {
+    let anc_mode = match id.as_str() {
+        "anc_sub_normal_mode" => ANCModes::NormalMode,
+        "anc_sub_transport_mode" => ANCModes::AncTransportMode,
+        "anc_sub_outdoor_mode" => ANCModes::AncOutdoorMode,
+        "anc_sub_indoor_mode" => ANCModes::AncIndoorMode,
+        "anc_sub_fully_transparent_mode" => ANCModes::TransparencyFullyTransparentMode,
+        "anc_sub_vocal_mode" => ANCModes::TransparencyVocalMode,
+        _ => ANCModes::NormalMode,
+    };
+    app.emit_all("anc_sub_change", anc_mode).unwrap();
+}
+
 /* Tray event handler */
 pub(crate) fn handle_tray_event(app: &AppHandle, event: SystemTrayEvent) {
     match event {
         SystemTrayEvent::MenuItemClick { id, .. } => {
             let item_handle = app.tray_handle().get_item(&id);
+            debug!("Menu item clicked: {}", id);
+            if id.starts_with("anc_sub") {
+                handle_anc_submenu(&app.clone(), id);
+                return;
+            }
             match id.as_str() {
                 "hide" => {
                     let window = app.get_window("main").unwrap();

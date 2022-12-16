@@ -1,0 +1,34 @@
+[package]
+name = "iobluetooth"
+build = "build.rs"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "client"
+path = "src/client.rs"
+
+[[bin]]
+name = "server"
+path = "src/server.rs"
+
+
+[dependencies]
+# Required for tonic
+async-stream = "0.3"
+futures = "0.3.25"
+prost = "0.11"
+tokio = { version = "1.23.0", features = [ "rt-multi-thread", "time", "fs", "macros", "net"] }
+tokio-stream = { version = "0.1", features = ["net"] }
+tonic = { version = "0.8.3", features = ["tls", "gzip"] }
+tower = { version = "0.4" }
+# Required for mac 
+objc = {  version = "0.2.7" }
+cocoa = "0.24.1"
+core-foundation = "0.9.1"
+libc = "0.2.112"
+log = "0.4.17"
+lazy_static = "1.4.0"
+
+[build-dependencies]
+tonic-build = { version = "0.8.4", features = ["prost"] }

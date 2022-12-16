@@ -47,7 +47,7 @@ pub struct BatteryLevel {
     pub right: u8,
 }
 
-#[derive(Default, Debug, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Default, Debug, Serialize, Deserialize, PartialEq, Eq, Clone, Copy)]
 pub struct ANCProfile {
     pub option: u8,
     pub anc_option: u8,

@@ -6,15 +6,21 @@ import TopBar from "./components/TopBar";
 import useDeviceStore, { DeviceConnectionState } from "./hooks/useDeviceStore";
 import Stack from '@mui/material/Stack';
 import ANCModeCard from "./components/ANCModeCard";
-import { scanForDevices } from "./hooks/useBluetooth";
+import { getIsConnected, scanForDevices } from "./hooks/useBluetooth";
 import DisconnectedScreen from "./components/DisconnectedScreen";
-import { ITrayStatus, setTrayMenu, updateTrayStatus } from "./hooks/useTray";
+import { ITrayStatus, setTrayMenu, updateTrayStatus, useWindowEvent } from "./hooks/useTray";
 import { CircularProgress } from "@mui/material";
+import { ANCModes } from "./bindings/ANCModes";
+
 
 
 function App() {
-  const { getDeviceStatus, batteryCharging, batteryLevel, getBatteryLevel, getBatteryCharging, connectUUID, deviceConnectionState, getANCMode, deviceStatus, currentANCMode } = useDeviceStore();
+  const { sendANCMode, getDeviceStatus, batteryCharging, batteryLevel, getBatteryLevel, getBatteryCharging, connectUUID, deviceConnectionState, getANCMode, deviceStatus, currentANCMode } = useDeviceStore();
 
+
+  useWindowEvent("anc_sub_change", event => {
+    sendANCMode(event.payload as ANCModes);
+  });
 
   useEffect(() => {
     if(selectedDeviceAddr == null){
@@ -26,10 +32,12 @@ function App() {
   const BATTERY_LEVEL_POLL_RATE = 10000;
   const BATTERY_CHARGING_POLL_RATE = 500;
 
+  const backend_connected = getIsConnected();
   const [selectedDeviceAddr, setSelectedDeviceAddr] = useState(null);
   const [isConnected, setIsConnected] = useState<boolean>(false);
   const [isANCFetched, setIsANCFetched] = useState<boolean>(false);
   const [isDeviceStatusFetched, setIsDeviceStatusFetched] = useState<boolean>(false);
+
 
   useEffect(() => {
     setTrayMenu(deviceConnectionState);
@@ -74,6 +82,8 @@ function App() {
 
       setIsConnected(true);
       setIsDeviceStatusFetched(true);
+
+ 
 
       return () => {
         // Clear the intervals on unmount

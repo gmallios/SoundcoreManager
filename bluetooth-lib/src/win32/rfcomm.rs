@@ -1,16 +1,17 @@
+use async_trait::async_trait;
+use log::trace;
 use windows::{
     self,
-    core::HSTRING,
     Win32::{
         Devices::Bluetooth::{AF_BTH, BTHPROTO_RFCOMM, SOCKADDR_BTH},
         Networking::WinSock::{
-            closesocket, connect, recv, send, socket, WSACleanup, WSAGetLastError, WSAStartup,
-            INVALID_SOCKET, SEND_RECV_FLAGS, SOCKADDR, SOCKET, SOCKET_ERROR, SOCK_STREAM, WSADATA,
+            closesocket, connect, recv, send, socket, WSACleanup,
+            INVALID_SOCKET, SEND_RECV_FLAGS, SOCKADDR, SOCKET, SOCKET_ERROR, SOCK_STREAM,
         },
     },
 };
 
-use crate::{types::BluetoothAdrr, error::BthError, util::init_winsock};
+use crate::{types::{BluetoothAdrr, RFCOMMClient}, error::BthError, win32::util::init_winsock};
 
 #[derive(Debug)]
 pub struct RFCOMM {
@@ -18,42 +19,55 @@ pub struct RFCOMM {
     connected: bool,
 }
 
-impl RFCOMM {
-    pub fn new() -> RFCOMM {
+#[async_trait]
+impl RFCOMMClient for RFCOMM {
+    fn new() -> Result<RFCOMM, BthError> {
         init_winsock();
-        RFCOMM {
-            fd: SOCKET::default(),
-            connected: false,
-        }
-    }
-
-    pub fn create_rfcomm_socket(&self) -> Result<RFCOMM, BthError> {
-        let mut fd: SOCKET;
+        let fd: SOCKET;
         unsafe {
             fd = socket(
                 AF_BTH.into(),
                 SOCK_STREAM.into(),
-                BTHPROTO_RFCOMM.try_into().unwrap(),
+                BTHPROTO_RFCOMM.try_into().map_err(|_| BthError::FdInitError)?,
             );
         }
         if fd == INVALID_SOCKET {
-            fd = SOCKET::default();
             return Err(BthError::FdInitError);
         }
+        trace!("RFCOMM win32 socket created");
         Ok(RFCOMM {
-            fd: fd,
+            fd,
             connected: false,
         })
     }
 
-    pub fn connect_uuid(&mut self, bt_addr: BluetoothAdrr, uuid: &str) -> Result<(), BthError> {
+    // fn create_rfcomm_socket(&self) -> Result<RFCOMM, BthError> {
+    //     let mut fd: SOCKET;
+    //     unsafe {
+    //         fd = socket(
+    //             AF_BTH.into(),
+    //             SOCK_STREAM.into(),
+    //             BTHPROTO_RFCOMM.try_into().unwrap(),
+    //         );
+    //     }
+    //     if fd == INVALID_SOCKET {
+    //         fd = SOCKET::default();
+    //         return Err(BthError::FdInitError);
+    //     }
+    //     Ok(RFCOMM {
+    //         fd: fd,
+    //         connected: false,
+    //     })
+    // }
+
+    async fn connect_uuid(&mut self, bt_addr: BluetoothAdrr, uuid: &str) -> Result<(), BthError> {
         if self.fd == INVALID_SOCKET {
             return Err(BthError::InvalidSocketError);
         }
 
         let s_addr: SOCKADDR_BTH = SOCKADDR_BTH {
             addressFamily: AF_BTH,
-            btAddr: u64::from_str_radix(&bt_addr.to_string().replace(":", ""), 16)?,
+            btAddr: u64::from_str_radix(&bt_addr.to_string().replace(':', ""), 16)?,
             serviceClassId: windows::core::GUID::from(uuid),
             port: 0, // When using uuid, port is 0
         };
@@ -70,10 +84,11 @@ impl RFCOMM {
             }
         }
         self.connected = true;
+        trace!("Connected to uuid: {}", uuid);
         return Ok(());
     }
 
-    pub fn connect_port(&mut self, bt_addr: BluetoothAdrr, port: u32) -> Result<(), BthError>{
+    async fn connect_port(&mut self, bt_addr: BluetoothAdrr, port: u32) -> Result<(), BthError>{
         if self.fd == INVALID_SOCKET {
             return Err(BthError::InvalidSocketError);
         }
@@ -82,9 +97,9 @@ impl RFCOMM {
         unsafe {
             let s_addr: SOCKADDR_BTH = SOCKADDR_BTH {
                 addressFamily: AF_BTH,
-                btAddr: u64::from_str_radix(&bt_addr.to_string().replace(":", ""), 16)?,
+                btAddr: u64::from_str_radix(&bt_addr.to_string().replace(':', ""), 16)?,
                 serviceClassId: std::mem::zeroed(),
-                port: port,
+                port,
             };
 
             let ret = connect(
@@ -97,11 +112,12 @@ impl RFCOMM {
                 return Err(BthError::TryConnectError);
             }
         }
+        trace!("Connected to port: {}", port);
         self.connected = true;
         return Ok(());
     }
 
-    pub fn send(&self, data: &[u8]) -> Result<(), BthError> {
+    async fn send(&self, data: &[u8]) -> Result<(), BthError> {
         if !self.connected || self.fd == INVALID_SOCKET {
             return Err(BthError::InvalidSocketError);
         }
@@ -110,10 +126,11 @@ impl RFCOMM {
                 return Err(BthError::SendError);
             }
         }
+        trace!("Sent data: {:?}", data);
         Ok(())
     }
 
-    pub fn recv(&self, num_of_bytes: usize) -> Result<Vec<u8>, BthError> {
+    async fn recv(&self, num_of_bytes: usize) -> Result<Vec<u8>, BthError> {
         if !self.connected || self.fd == INVALID_SOCKET {
             return Err(BthError::InvalidSocketError);
         }
@@ -125,10 +142,11 @@ impl RFCOMM {
                 return Err(BthError::RecvError);
             }
         }
+        trace!("Received data: {:?}", data);
         Ok(data)
     }
 
-    pub fn close(&self) {
+    fn close(&self) {
         unsafe {
             WSACleanup();
             closesocket(self.fd);

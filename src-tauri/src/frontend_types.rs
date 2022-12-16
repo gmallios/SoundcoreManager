@@ -9,7 +9,7 @@ pub(crate) enum DeviceSelection {
 }
 
 
-#[derive(TS, Serialize, Deserialize)]
+#[derive(TS, Serialize, Deserialize, Clone, Copy)]
 #[ts(export, export_to = "../src/bindings/ANCModes.d.ts")]
 pub(crate) enum ANCModes {
     NormalMode,
