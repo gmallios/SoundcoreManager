@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package Searcher;
+
+service BtSearcher {
+    rpc scan (SearchRequest) returns (SearchResponse) {}
+}
+
+message SearchRequest {
+    optional uint64 timeToScan = 1;
+}
+
+message SearchResponse {
+    repeated SearchItem result = 1;
+}
+
+message SearchItem {
+    string name = 1;
+    string addr = 2;
+    bool isConnected = 3;
+}

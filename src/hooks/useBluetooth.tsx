@@ -24,3 +24,18 @@ export function scanForDevices() {
 
     return { data, loading, error };
 }
+
+export function getIsConnected() {
+    const [res, setRes] = useState<boolean>(false);
+    useEffect(() => {
+        const fetchStatus = async () => {
+            invoke("is_connected").then((result) => {
+                setRes(result as boolean);
+            }).catch((err) => {
+                setRes(false);
+            });
+        }
+        fetchStatus();
+    }, []);
+    return { res };
+}

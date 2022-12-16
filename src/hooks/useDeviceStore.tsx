@@ -5,8 +5,8 @@ import { DeviceSelection } from '../bindings/DeviceSelection';
 
 interface DeviceStoreState {
   deviceConnectionState: DeviceConnectionState
-  tryInitialize: (selectedDevice: DeviceSelection) => void,
-  connectUUID: (macAddr: String, uuid: String) => void,
+  setDeviceConnectionState: (state: DeviceConnectionState) => void,
+  connectUUID: (selection: DeviceSelection, addr: String) => void,
   // Get functions
   getBatteryLevel: () => void,
   getBatteryCharging: () => void,
@@ -86,26 +86,21 @@ export interface EQWave {
 /* Move to React Query? */
 const useDeviceStore = create<DeviceStoreState>((set) => ({
   deviceConnectionState: DeviceConnectionState.UNINITIALIZED,
-
-  tryInitialize: (selectedDevice: DeviceSelection) => {
-    invoke("init_device", { device: selectedDevice }).then((_msg) => {
-      set((state) => ({ ...state, deviceConnectionState: DeviceConnectionState.INITIALIZED }));
-    }).catch((err) => {
-      console.log(err);
-      set((state) => ({ ...state, deviceConnectionState: DeviceConnectionState.UNINITIALIZED }));
-    });
+  
+  setDeviceConnectionState: (new_state: DeviceConnectionState) => {
+    set((state) => ({ ...state, deviceConnectionState: new_state }));
   },
-  connectUUID: (macAddr: String, uuid: String) => {
+  connectUUID: (selection: DeviceSelection, addr: String) => {
     set((state) => ({ ...state, deviceConnectionState: DeviceConnectionState.CONNECTING }));
-    invoke("connect_uuid", { macAddr: macAddr, uuid: uuid }).then((_msg) => {
+    invoke("connect", { selection: selection, addr: addr }).then((_msg) => {
       set((state) => ({ ...state, deviceConnectionState: DeviceConnectionState.CONNECTED }));
     }).catch((err) => {
       console.log(err);
       set((state) => ({ ...state, deviceConnectionState: DeviceConnectionState.DISCONNECTED }));
     });
   },
-  getDeviceStatus: async () => {
-    invoke("get_device_status").then((msg) => {
+  getDeviceStatus: () => {
+    invoke("get_status").then((msg) => {
       set((state) => ({ ...state, deviceStatus: msg as DeviceStatus }));
     }).catch((err) => {
       console.log(err);
@@ -126,7 +121,7 @@ const useDeviceStore = create<DeviceStoreState>((set) => ({
     });
   },
   getANCMode: () => {
-    invoke("get_anc_mode").then((msg: any) => {
+    invoke("get_anc").then((msg: any) => {
       let mode = msg as ANCModes;
       set((state) => ({ ...state, currentANCMode: mode }));
     }).catch((err) => {
@@ -135,14 +130,14 @@ const useDeviceStore = create<DeviceStoreState>((set) => ({
   },
 
   sendANCMode: (mode: ANCModes) => {
-    invoke("set_anc_mode", { mode: mode }).then((_msg) => {
+    invoke("set_anc", { mode: mode }).then((_msg) => {
       set((state) => ({ ...state, currentANCMode: mode }));
     }).catch((err) => {
       console.log(err);
     });
   },
   sendEQ: (eq: EQWave) => {
-    invoke("set_eq_wave", { eq }).then((_msg) => {
+    invoke("set_eq", { eq }).then((_msg) => {
       set((state) => {
         let newState = { ...state };
         if (newState.deviceStatus != null) {
