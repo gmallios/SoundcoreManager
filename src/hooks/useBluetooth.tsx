@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/tauri";
 import { BthScanResult } from "../bindings/ScanResult";
+import { useQuery } from "@tanstack/react-query";
 
 export function scanForDevices() {
     const [data, setData] = useState<BthScanResult[]>([]);
@@ -24,6 +25,14 @@ export function scanForDevices() {
 
     return { data, loading, error };
 }
+
+export function useSearch() {
+    return useQuery<BthScanResult[], Error>(["bt_search"], async () => {
+        const res = await invoke("scan_for_devices");
+        return res as BthScanResult[];
+    });
+}
+
 
 export function getIsConnected() {
     const [res, setRes] = useState<boolean>(false);

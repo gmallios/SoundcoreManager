@@ -63,21 +63,21 @@ function App() {
 
       // Poll battery level and charging state at different rates,
       // since the level changes less frequently in comparison to the charging state
-      const batteryLevelInterval = setInterval(() => {
-        getBatteryLevel();
-      }, BATTERY_LEVEL_POLL_RATE);
+      // const batteryLevelInterval = setInterval(() => {
+      //   getBatteryLevel();
+      // }, BATTERY_LEVEL_POLL_RATE);
 
-      const batteryChargingInterval = setInterval(() => {
-        getBatteryCharging();
-        getDeviceStatus();
-        let trayStatus: ITrayStatus = {
-          deviceConnectionState: deviceConnectionState,
-          batteryLevel: batteryLevel,
-          batteryCharging: batteryCharging,
-          anc_mode: currentANCMode,
-        }
-        updateTrayStatus(trayStatus)
-      }, BATTERY_CHARGING_POLL_RATE);
+      // const batteryChargingInterval = setInterval(() => {
+      //   //getBatteryCharging();
+      //   getDeviceStatus();
+      //   let trayStatus: ITrayStatus = {
+      //     deviceConnectionState: deviceConnectionState,
+      //     batteryLevel: batteryLevel,
+      //     batteryCharging: batteryCharging,
+      //     anc_mode: currentANCMode,
+      //   }
+      //   updateTrayStatus(trayStatus)
+      // }, BATTERY_CHARGING_POLL_RATE);
 
 
       setIsConnected(true);
@@ -85,11 +85,11 @@ function App() {
 
  
 
-      return () => {
-        // Clear the intervals on unmount
-        clearInterval(batteryLevelInterval);
-        clearInterval(batteryChargingInterval);
-      };
+      // return () => {
+      //   // Clear the intervals on unmount
+      //   clearInterval(batteryLevelInterval);
+      //   clearInterval(batteryChargingInterval);
+      // };
 
     }
   }, [deviceStatus]);

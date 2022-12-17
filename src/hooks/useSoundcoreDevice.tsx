@@ -1,8 +1,9 @@
 /* Not in use - Draft */
 /* Move to async state react-query and define here async functions to "fetch" */
+import { useQuery } from "@tanstack/react-query";
 import { invoke } from "@tauri-apps/api/tauri";
 import { useEffect, useState } from "react";
-import { DeviceConnectionState } from "./useDeviceStore";
+import { DeviceBatteryCharging, DeviceBatteryLevel, DeviceConnectionState } from "./useDeviceStore";
 
 export enum SupportedModelIDs {
     A3951 = "A3951",
@@ -34,4 +35,24 @@ export function connectWithUUID(macAddr: String, uuid: String) {
     }, []);
 
     return { status, connecting, error };
+}
+
+export function useCharging() {
+    return useQuery<DeviceBatteryCharging, Error>(["charging"], async () => {
+        const result = await invoke("get_battery_charging");
+        return result as DeviceBatteryCharging;
+    }, {
+        refetchInterval: 650,
+        cacheTime: 650,
+    });
+}
+
+export function useBatteryLevel() {
+    return useQuery<DeviceBatteryLevel, Error>(["battery"], async () => {
+        const result = await invoke("get_battery_level");
+        return result as DeviceBatteryLevel;
+    }, {
+        refetchInterval: 2000,
+        cacheTime: 2000,
+    });
 }

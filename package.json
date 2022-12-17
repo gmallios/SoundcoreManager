@@ -16,6 +16,8 @@
     "@fontsource/roboto": "^4.5.8",
     "@mui/icons-material": "^5.10.9",
     "@mui/material": "^5.10.10",
+    "@tanstack/react-query": "^4.20.4",
+    "@tanstack/react-query-devtools": "^4.20.4",
     "@tauri-apps/api": "^1.2.0",
     "chart.js": "^3.9.1",
     "chartjs-plugin-dragdata": "^2.2.4",
