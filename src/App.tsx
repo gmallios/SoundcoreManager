@@ -8,9 +8,11 @@ import Stack from '@mui/material/Stack';
 import ANCModeCard from "./components/ANCModeCard";
 import { getIsConnected, scanForDevices } from "./hooks/useBluetooth";
 import DisconnectedScreen from "./components/DisconnectedScreen";
-import { ITrayStatus, setTrayMenu, updateTrayStatus, useWindowEvent } from "./hooks/useTray";
+import { ITrayStatus, setTrayMenu, useUpdateTray, useWindowEvent } from "./hooks/useTray";
 import { CircularProgress } from "@mui/material";
 import { ANCModes } from "./bindings/ANCModes";
+import { useANC, useBatteryLevel, useCharging } from "./hooks/useSoundcoreDevice";
+import { useMutation } from "@tanstack/react-query";
 
 
 
@@ -23,8 +25,8 @@ function App() {
   });
 
   useEffect(() => {
-    if(selectedDeviceAddr == null){
-      
+    if (selectedDeviceAddr == null) {
+
     }
   }, []);
 
@@ -39,7 +41,27 @@ function App() {
   const [isDeviceStatusFetched, setIsDeviceStatusFetched] = useState<boolean>(false);
 
 
+  const { data: level, isSuccess: isBatteryLevelSuccess } = useBatteryLevel();
+  const { data: charging, isSuccess: isBatteryChargingSuccess } = useCharging();
+  const { data: ancStatus, isSuccess: isANCStatusSuccess } = useANC();
+  const trayMutation = useUpdateTray();
+
+
+
   useEffect(() => {
+    if (level != undefined && charging != undefined && ancStatus != undefined) {
+      let trayStatus: ITrayStatus = {
+        deviceConnectionState: DeviceConnectionState.CONNECTED,
+        batteryLevel: level!,
+        batteryCharging: charging!,
+        anc_mode: ancStatus!,
+      }
+      trayMutation.mutate(trayStatus);
+    }
+  }, [level, charging, ancStatus]);
+
+  useEffect(() => {
+    console.log("Device connection state changed to: " + deviceConnectionState);
     setTrayMenu(deviceConnectionState);
     if (deviceConnectionState == DeviceConnectionState.CONNECTED) {
       getDeviceStatus();
@@ -57,8 +79,8 @@ function App() {
 
   useEffect(() => {
     if (deviceStatus != undefined && DeviceConnectionState.CONNECTED) {
-      getBatteryCharging();
-      getBatteryLevel();
+      // getBatteryCharging();
+      // getBatteryLevel();
       getANCMode();
 
       // Poll battery level and charging state at different rates,
@@ -69,27 +91,25 @@ function App() {
 
       // const batteryChargingInterval = setInterval(() => {
       //   //getBatteryCharging();
-      //   getDeviceStatus();
-      //   let trayStatus: ITrayStatus = {
-      //     deviceConnectionState: deviceConnectionState,
-      //     batteryLevel: batteryLevel,
-      //     batteryCharging: batteryCharging,
-      //     anc_mode: currentANCMode,
-      //   }
-      //   updateTrayStatus(trayStatus)
+      //   // getDeviceStatus();
+      //   // /* TODO: Create a query which depends on the battery level/state and ANC */
+
+
+      //   // updateTrayStatus(trayStatus)
+
       // }, BATTERY_CHARGING_POLL_RATE);
 
 
       setIsConnected(true);
       setIsDeviceStatusFetched(true);
 
- 
 
-      // return () => {
-      //   // Clear the intervals on unmount
-      //   clearInterval(batteryLevelInterval);
-      //   clearInterval(batteryChargingInterval);
-      // };
+
+      return () => {
+        // Clear the intervals on unmount
+        // clearInterval(batteryLevelInterval);
+        // clearInterval(batteryChargingInterval);
+      };
 
     }
   }, [deviceStatus]);
@@ -109,7 +129,7 @@ function App() {
             </React.Fragment>
           ) : (
             <div style={{ width: "100vw", height: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <CircularProgress />
+              <CircularProgress />
             </div>
           )}
         </Stack>

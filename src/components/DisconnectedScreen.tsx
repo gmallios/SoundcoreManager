@@ -4,7 +4,7 @@ import { scanForDevices, useSearch } from "../hooks/useBluetooth";
 import DeviceList from "./DeviceList";
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { BthScanResult } from "../bindings/ScanResult";
-import useDeviceStore from "../hooks/useDeviceStore";
+import useDeviceStore, { DeviceConnectionState } from "../hooks/useDeviceStore";
 import { invoke } from "@tauri-apps/api";
 import { useQuery } from "@tanstack/react-query";
 
@@ -15,8 +15,12 @@ export default function DisconnectedScreen() {
     const { isLoading, data } = useSearch();
     const { connectUUID } = useDeviceStore();
     const [selectedDevice, setSelectedDevice] = React.useState<BthScanResult>();
+    const { setDeviceConnectionState } = useDeviceStore();
 
 
+    useEffect(() => {
+        setDeviceConnectionState(DeviceConnectionState.DISCONNECTED);
+    }, []);
 
     const handleFabClick = () => {
         if (selectedDevice) {

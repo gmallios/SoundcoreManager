@@ -32,6 +32,7 @@ pub(crate) async fn set_tray_menu(app_handle: AppHandle, is_connected: bool) {
 /* Also fixes the issue where when the window is hidden the setIntervals from the FE are not timed properly  */
 #[tauri::command]
 pub(crate) async fn set_tray_device_status(app_handle: AppHandle, status: TrayDeviceStatus) {
+    debug!("Updating tray menu: {:?}", status);
     let tray_handle = app_handle.tray_handle();
     /* Update menu items */
     let conn_status = tray_handle.get_item("conn_status");

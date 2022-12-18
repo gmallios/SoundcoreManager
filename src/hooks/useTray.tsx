@@ -6,15 +6,25 @@ import { DeviceBatteryCharging, DeviceBatteryLevel, DeviceConnectionState } from
 import { useEffect } from "react";
 import { appWindow } from "@tauri-apps/api/window";
 import { Event, listen } from "@tauri-apps/api/event";
+import { useMutation } from "@tanstack/react-query";
+import { useANC, useBatteryLevel, useCharging } from "./useSoundcoreDevice";
 
 export interface ITrayStatus {
     deviceConnectionState: DeviceConnectionState,
     batteryLevel: DeviceBatteryLevel,
     batteryCharging: DeviceBatteryCharging,
     anc_mode: ANCModes | null,
-} 
+}
 
-export function updateTrayStatus(data: ITrayStatus) {
+export const useUpdateTray = () => {
+    return useMutation({
+        mutationFn: (newTray: ITrayStatus) => {
+            return updateTrayStatus(newTray);
+        }
+    })
+};
+
+function updateTrayStatus(data: ITrayStatus) {
     let { deviceConnectionState, batteryLevel, batteryCharging, anc_mode } = data;
     let left_batt: BatteryStatus = {
         is_charging: batteryCharging.left,
@@ -30,32 +40,37 @@ export function updateTrayStatus(data: ITrayStatus) {
         right_status: right_batt,
         anc_mode: anc_mode != null ? anc_mode : "NormalMode",
     }
-    invoke("set_tray_device_status", { status });
+    console.log(status);
+    return invoke("set_tray_device_status", { status });
 }
 
 export function setTrayMenu(connection_state: DeviceConnectionState) {
     invoke("set_tray_menu", { isConnected: DeviceConnectionState.CONNECTED === connection_state });
 }
 
+// export const useUpdateTray = useMutation(async (status: ITrayStatus) => {
+//     invoke("set_tray_device_status", { status });
+// });
+
 /* https://github.com/tauri-apps/tauri/issues/4630 */
 type RemoveListenerBlock = () => void
 
 export function useWindowEvent<Payload>(name: string, callback: (event: Event<Payload>) => void) {
-	return useEffect(() => {
-		let removeListener: RemoveListenerBlock | undefined
+    return useEffect(() => {
+        let removeListener: RemoveListenerBlock | undefined
 
-		const setUpListener = async () => {
-			removeListener = await listen(name, (event: any) => {
-				callback(event as Event<Payload>)
-			})
-		}
+        const setUpListener = async () => {
+            removeListener = await listen(name, (event: any) => {
+                callback(event as Event<Payload>)
+            })
+        }
 
-		setUpListener().catch(error => {
-			console.error(`Could not set up window event listener. ${error}`)
-		})
+        setUpListener().catch(error => {
+            console.error(`Could not set up window event listener. ${error}`)
+        })
 
-		return () => {
-			removeListener?.()
-		}
-	}, [name, callback])
+        return () => {
+            removeListener?.()
+        }
+    }, [name, callback])
 }
