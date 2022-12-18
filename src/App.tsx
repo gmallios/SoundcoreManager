@@ -11,19 +11,16 @@ import DisconnectedScreen from "./components/DisconnectedScreen";
 import { ITrayStatus, setTrayMenu, useUpdateTray, useWindowEvent } from "./hooks/useTray";
 import { CircularProgress } from "@mui/material";
 import { ANCModes } from "./bindings/ANCModes";
-import { useANC, useBatteryLevel, useCharging } from "./hooks/useSoundcoreDevice";
+import { useANC, useBatteryLevel, useCharging, useUpdateANC } from "./hooks/useSoundcoreDevice";
 import { useMutation } from "@tanstack/react-query";
 
 
 
 function App() {
-  const { sendANCMode, getDeviceStatus, batteryCharging, batteryLevel, getBatteryLevel, getBatteryCharging, connectUUID, deviceConnectionState, getANCMode, deviceStatus, currentANCMode } = useDeviceStore();
+  const { getDeviceStatus, batteryCharging, batteryLevel, getBatteryLevel, getBatteryCharging, connectUUID, deviceConnectionState, deviceStatus, currentANCMode } = useDeviceStore();
 
 
-  useWindowEvent("anc_sub_change", event => {
-    sendANCMode(event.payload as ANCModes);
-  });
-
+ 
   useEffect(() => {
     if (selectedDeviceAddr == null) {
 
@@ -45,7 +42,12 @@ function App() {
   const { data: charging, isSuccess: isBatteryChargingSuccess } = useCharging();
   const { data: ancStatus, isSuccess: isANCStatusSuccess } = useANC();
   const trayMutation = useUpdateTray();
+  const ancMutation = useUpdateANC();
 
+
+  useWindowEvent("anc_sub_change", event => {
+    ancMutation.mutate(event.payload as ANCModes);
+  });
 
 
   useEffect(() => {
@@ -81,7 +83,6 @@ function App() {
     if (deviceStatus != undefined && DeviceConnectionState.CONNECTED) {
       // getBatteryCharging();
       // getBatteryLevel();
-      getANCMode();
 
       // Poll battery level and charging state at different rates,
       // since the level changes less frequently in comparison to the charging state
@@ -124,7 +125,7 @@ function App() {
             /* TODO: Create a component which wraps all while-connected components */
             <React.Fragment>
               <A3951InfoCard />
-              {isANCFetched && <ANCModeCard />}
+              {isANCStatusSuccess && <ANCModeCard />}
               <EQCard />
             </React.Fragment>
           ) : (

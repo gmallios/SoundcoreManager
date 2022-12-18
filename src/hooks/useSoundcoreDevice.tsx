@@ -58,8 +58,7 @@ export function useBatteryLevel() {
         const result = await invoke("get_battery_level");
         return result as DeviceBatteryLevel;
     }, {
-        refetchInterval: 2000,
-        cacheTime: 2000,
+        refetchInterval: 5000,
         enabled: deviceConnectionState == DeviceConnectionState.CONNECTED,
     });
 }
@@ -70,8 +69,7 @@ export function useStatus() {
         const result = await invoke("get_status");
         return result as DeviceStatus;
     }, {
-        refetchInterval: 2000,
-        cacheTime: 2000,
+        refetchInterval: 5000,
         enabled: deviceConnectionState == DeviceConnectionState.CONNECTED,
     });
 }
@@ -82,7 +80,7 @@ export function useANC() {
         const result = await invoke("get_anc");
         return result as ANCModes;
     }, {
-        refetchInterval: 5000,
+        refetchInterval: 2000,
         enabled: deviceConnectionState == DeviceConnectionState.CONNECTED,
     });
 }

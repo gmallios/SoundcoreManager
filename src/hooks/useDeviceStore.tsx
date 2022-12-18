@@ -10,10 +10,8 @@ interface DeviceStoreState {
   // Get functions
   getBatteryLevel: () => void,
   getBatteryCharging: () => void,
-  getANCMode: () => void,
   getDeviceStatus: () => void,
   // Set functions
-  sendANCMode: (mode: ANCModes) => void,
   sendEQ: (eq: EQWave) => void,
   // Earbud state
   currentANCMode: ANCModes | null,
@@ -116,22 +114,6 @@ const useDeviceStore = create<DeviceStoreState>((set) => ({
   getBatteryCharging: () => {
     invoke("get_battery_charging").then((msg: any) => {
       set((state) => ({ ...state, batteryCharging: msg }));
-    }).catch((err) => {
-      console.log(err);
-    });
-  },
-  getANCMode: () => {
-    invoke("get_anc").then((msg: any) => {
-      let mode = msg as ANCModes;
-      set((state) => ({ ...state, currentANCMode: mode }));
-    }).catch((err) => {
-      console.log(err);
-    });
-  },
-
-  sendANCMode: (mode: ANCModes) => {
-    invoke("set_anc", { mode: mode }).then((_msg) => {
-      set((state) => ({ ...state, currentANCMode: mode }));
     }).catch((err) => {
       console.log(err);
     });

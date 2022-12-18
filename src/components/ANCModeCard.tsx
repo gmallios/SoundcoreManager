@@ -5,7 +5,7 @@ import NormalIcon from "../assets/ambient_icon_off.png";
 import TransIcon from "../assets/ambient_icon_trans.png";
 import useDeviceStore from "../hooks/useDeviceStore";
 import { ANCModes } from "../bindings/ANCModes";
-import { useUpdateANC } from "../hooks/useSoundcoreDevice";
+import { useANC, useUpdateANC } from "../hooks/useSoundcoreDevice";
 
 const width = window.innerWidth - 35;
 
@@ -88,7 +88,7 @@ const ANCSliderButton = styled(Button, {
 
 export default function ANCModeCard() {
 
-    const { currentANCMode } = useDeviceStore();
+    const { data: currentANCMode, isSuccess } = useANC();
 
     let [sliderPosition, setSliderPosition] = useState<AllowedSliderPositions>(null);
     let [sliderIcon, setSliderIcon] = useState<string>(NormalIcon);
@@ -114,26 +114,23 @@ export default function ANCModeCard() {
         ];
 
     useEffect(() => {
-        if (currentANCMode != null) {
-            if (currentANCMode == "NormalMode") {
-                setSliderPosition("center");
-            } else if (currentANCMode == "TransparencyFullyTransparentMode" || currentANCMode == "TransparencyVocalMode") {
-                setSliderPosition("right");
-                setTransModeSelected(currentANCMode);
+        if(currentANCMode == "NormalMode") {
+            setSliderPosition("center");
+        } else if(currentANCMode == "TransparencyFullyTransparentMode" || currentANCMode == "TransparencyVocalMode") {
+            setSliderPosition("right");
+            setTransModeSelected(currentANCMode);
+        } else {
+            setSliderPosition("left");
+            if (typeof currentANCMode === "object") {
+                setAncCustomValue(currentANCMode.AncCustomValue);
+                setAncModeSelected("AncCustomValue");
             } else {
-                setSliderPosition("left");
-                if (typeof currentANCMode === "object") {
-                    setAncCustomValue(currentANCMode.AncCustomValue);
-                    setAncModeSelected("AncCustomValue");
-                } else {
-                    setAncModeSelected(currentANCMode);
-                }
+                setAncModeSelected(currentANCMode!);
             }
         }
-    }, []);
+    }, [currentANCMode]);
 
 
-    // TODO: Load persisted values
     useEffect(() => {
         if (sliderPosition == "center") {
             ancMutation.mutate("NormalMode");
