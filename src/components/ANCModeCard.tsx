@@ -89,6 +89,7 @@ const ANCSliderButton = styled(Button, {
 export default function ANCModeCard() {
 
     const { data: currentANCMode, isSuccess } = useANC();
+    let ancMutation = useUpdateANC();
 
     let [sliderPosition, setSliderPosition] = useState<AllowedSliderPositions>(null);
     let [sliderIcon, setSliderIcon] = useState<string>(NormalIcon);
@@ -96,7 +97,6 @@ export default function ANCModeCard() {
     let [ancModeSelected, setAncModeSelected] = useState<ANCModes | "AncCustomValue">("AncOutdoorMode");
     let [transModeSelected, setTransModeSelected] = useState<ANCModes>("TransparencyFullyTransparentMode");
     let [ancCustomValue, setAncCustomValue] = useState<number | number[] | null>(null);
-    let ancMutation = useUpdateANC();
 
 
     let ancButtons: Array<[string, ANCModes | "AncCustomValue"]> =
@@ -114,9 +114,12 @@ export default function ANCModeCard() {
         ];
 
     useEffect(() => {
-        if(currentANCMode == "NormalMode") {
+        /* Update component from current ANC mode */
+        if (!isSuccess) return;
+
+        if (currentANCMode == "NormalMode") {
             setSliderPosition("center");
-        } else if(currentANCMode == "TransparencyFullyTransparentMode" || currentANCMode == "TransparencyVocalMode") {
+        } else if (currentANCMode == "TransparencyFullyTransparentMode" || currentANCMode == "TransparencyVocalMode") {
             setSliderPosition("right");
             setTransModeSelected(currentANCMode);
         } else {
@@ -128,7 +131,7 @@ export default function ANCModeCard() {
                 setAncModeSelected(currentANCMode!);
             }
         }
-    }, [currentANCMode]);
+    }, [isSuccess]);
 
 
     useEffect(() => {
@@ -136,7 +139,7 @@ export default function ANCModeCard() {
             ancMutation.mutate("NormalMode");
             setSubmenuOpen(false);
         } else if (sliderPosition == "left") {
-            if(ancModeSelected != "AncCustomValue") {
+            if (ancModeSelected != "AncCustomValue") {
                 ancMutation.mutate(ancModeSelected);
             }
             setSubmenuOpen(true);
@@ -149,7 +152,7 @@ export default function ANCModeCard() {
     useEffect(() => {
         if (sliderPosition == "left") {
             if (ancModeSelected == "AncCustomValue") {
-                if(ancCustomValue == null) {
+                if (ancCustomValue == null) {
                     setAncCustomValue(10);
                 }
                 ancMutation.mutate({ AncCustomValue: ancCustomValue as number });
