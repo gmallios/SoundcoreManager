@@ -1,15 +1,14 @@
-use std::sync::Arc;
+
 
 use log::debug;
-use soundcore_lib::types::ANCProfile;
+
 use tauri::{
-    async_runtime::spawn, AppHandle, CustomMenuItem, Manager, State, SystemTray, SystemTrayEvent,
+    AppHandle, CustomMenuItem, Manager, SystemTray, SystemTrayEvent,
     SystemTrayMenu, SystemTrayMenuItem, SystemTraySubmenu,
 };
 
 use crate::{
     frontend_types::{ANCModes, BatteryStatus, TrayDeviceStatus},
-    AppState,
 };
 
 /* Sets the tray menu to either the basic or the extended one */
