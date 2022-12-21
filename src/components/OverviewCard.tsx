@@ -18,7 +18,7 @@ import BatteryChargingFullIcon from '@mui/icons-material/BatteryChargingFull';
 import BatteryUnknownIcon from '@mui/icons-material/BatteryUnknown';
 import { useBatteryLevel, useCharging } from "../hooks/useSoundcoreDevice";
 
-export default function A3951InfoCard() {
+export default function OverviewCard() {
     const chargingQuery = useCharging();
     const levelQuery = useBatteryLevel();
 
@@ -41,8 +41,8 @@ export default function A3951InfoCard() {
         //   <Button size="small">Learn More</Button>
         // </CardActions> */}
         // </Card>
-        <Box>
-            <Paper sx={{ display: "flex", margin: 1.5, justifyContent: "center", alignItems: "center" }} elevation={0}>
+        <Box sx={{display: "block", pt: 3, maxWidth: "300px", margin: "auto"}}>
+            <Paper sx={{ display: "flex", margin: 1.5, justifyContent: "center", alignItems: "center"}} elevation={0}>
                 <EarbudItem img={A3951ImgLeft} alignTo="left" batteryLevel={levelQuery.data?.left} batteryCharging={chargingQuery.data?.left} />
                 <EarbudItem img={A3951ImgRight} alignTo="right" batteryLevel={levelQuery.data?.right} batteryCharging={chargingQuery.data?.right} />
             </Paper>

@@ -1,12 +1,11 @@
 import React, { useEffect } from "react";
 import { CircularProgress, Fab, Stack, Typography } from "@mui/material";
-import { scanForDevices, useSearch } from "../hooks/useBluetooth";
+import { useSearch } from "../hooks/useBluetooth";
 import DeviceList from "./DeviceList";
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { BthScanResult } from "../bindings/ScanResult";
 import useDeviceStore, { DeviceConnectionState } from "../hooks/useDeviceStore";
-import { invoke } from "@tauri-apps/api";
-import { useQuery } from "@tanstack/react-query";
+
 
 
 
@@ -24,6 +23,7 @@ export default function DisconnectedScreen() {
 
     const handleFabClick = () => {
         if (selectedDevice) {
+            console.log("Connecting to: " + selectedDevice.address)
             connectUUID("A3951", selectedDevice.address);
         }
     };

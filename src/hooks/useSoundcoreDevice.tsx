@@ -4,7 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { invoke } from "@tauri-apps/api/tauri";
 import { useEffect, useState } from "react";
 import { ANCModes } from "../bindings/ANCModes";
-import useDeviceStore, { DeviceBatteryCharging, DeviceBatteryLevel, DeviceConnectionState, DeviceStatus } from "./useDeviceStore";
+import useDeviceStore, { DeviceBatteryCharging, DeviceBatteryLevel, DeviceConnectionState, DeviceStatus, EQWave } from "./useDeviceStore";
 
 
 
@@ -92,6 +92,23 @@ export function useUpdateANC() {
         onMutate: async (newMode: ANCModes) => {
             await queryClient.cancelQueries({queryKey: ["anc"]});
             queryClient.setQueryData<ANCModes>(["anc"], newMode);
+        },
+    });
+}
+
+export function useUpdateEQ() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (newEQ: EQWave) => { return invoke("set_eq", { eq: newEQ }); },
+        onMutate: async (newEQ: EQWave) => {
+            await queryClient.cancelQueries({queryKey: ["status"]});
+            queryClient.setQueryData<DeviceStatus>(["status"], old => {
+                return {
+                    ...old!,
+                    left_eq: newEQ,
+                    right_eq: newEQ,
+                }
+            });
         },
     });
 }
