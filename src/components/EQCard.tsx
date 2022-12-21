@@ -14,6 +14,7 @@ import {
 } from 'chart.js';
 import { Paper } from "@mui/material";
 import useDeviceStore, { EQWave } from "../hooks/useDeviceStore";
+import { useStatus, useUpdateEQ } from "../hooks/useSoundcoreDevice";
 
 ChartJS.register(
   CategoryScale,
@@ -84,7 +85,8 @@ export default function EQCard() {
 
   const labels = ["100", "200", "400", "800", "1.6k", "3.2k", "6.4k", "12.8kHz"];
   const [dataSet, setDataSet] = useState([0, 0, 0, 0, 0, 0, 0, 0]); /* Values are in dB -6 to 6 */
-  const { deviceStatus, sendEQ } = useDeviceStore();
+  const { data: status, isSuccess } = useStatus();
+  const updateEQ = useUpdateEQ();
   const [isDataLoaded, setIsDataLoaded] = useState(false);
 
   function scale(number: number, inMin: number, inMax: number, outMin: number, outMax: number) {
@@ -93,14 +95,15 @@ export default function EQCard() {
 
 
   useEffect(() => {
-    if (deviceStatus != undefined) {
+    if (status != undefined) {
       const newDataSet: number[] = [];
-      Object.keys(deviceStatus.left_eq).forEach((key, _index) => {
-        newDataSet.push(scale(deviceStatus.left_eq[key as keyof EQWave], 6, 18, -6, 6));
+      Object.keys(status.left_eq).forEach((key, _index) => {
+        newDataSet.push(scale(status.left_eq[key as keyof EQWave], 6, 18, -6, 6));
       });
       setDataSet(newDataSet.slice(0, 8));
+      setIsDataLoaded(true);
     }
-  }, []);
+  }, [isSuccess]);
 
   useEffect(() => {
     const eq: EQWave = {
@@ -115,14 +118,9 @@ export default function EQCard() {
       pos8: 12,
       pos9: 12,
     };
-    sendEQ(eq);
+    updateEQ.mutate(eq);
   }, [dataSet]);
 
-  useEffect(() => {
-    if (deviceStatus != null) {
-      setIsDataLoaded(true);
-    }
-  }, [deviceStatus]);
 
   const data = {
     labels: labels,

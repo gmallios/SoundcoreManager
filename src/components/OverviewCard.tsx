@@ -16,9 +16,18 @@ import BatteryCharging80Icon from '@mui/icons-material/BatteryCharging80';
 import BatteryFullIcon from '@mui/icons-material/BatteryFull';
 import BatteryChargingFullIcon from '@mui/icons-material/BatteryChargingFull';
 import BatteryUnknownIcon from '@mui/icons-material/BatteryUnknown';
+import { useBatteryLevel, useCharging } from "../hooks/useSoundcoreDevice";
 
-export default function A3951InfoCard() {
-    const { batteryLevel, batteryCharging } = useDeviceStore();
+export default function OverviewCard() {
+    const chargingQuery = useCharging();
+    const levelQuery = useBatteryLevel();
+
+    if(levelQuery.isLoading || chargingQuery.isLoading) {
+        return(
+            <div></div>
+        );
+    }
+
     return (
         // As card
         // <Card sx={{ minWidth: 275, margin: 1.5 }}>
@@ -32,16 +41,16 @@ export default function A3951InfoCard() {
         //   <Button size="small">Learn More</Button>
         // </CardActions> */}
         // </Card>
-        <Box>
-            <Paper sx={{ display: "flex", margin: 1.5, justifyContent: "center", alignItems: "center" }} elevation={0}>
-                <EarbudItem img={A3951ImgLeft} alignTo="left" batteryLevel={batteryLevel.left} batteryCharging={batteryCharging.left} />
-                <EarbudItem img={A3951ImgRight} alignTo="right" batteryLevel={batteryLevel.right} batteryCharging={batteryCharging.right} />
+        <Box sx={{display: "block", pt: 3, maxWidth: "300px", margin: "auto"}}>
+            <Paper sx={{ display: "flex", margin: 1.5, justifyContent: "center", alignItems: "center"}} elevation={0}>
+                <EarbudItem img={A3951ImgLeft} alignTo="left" batteryLevel={levelQuery.data?.left} batteryCharging={chargingQuery.data?.left} />
+                <EarbudItem img={A3951ImgRight} alignTo="right" batteryLevel={levelQuery.data?.right} batteryCharging={chargingQuery.data?.right} />
             </Paper>
         </Box>
     )
 }
 
-function EarbudItem({ alignTo, batteryLevel, batteryCharging, img }: { alignTo: "left" | "right", batteryLevel: number, batteryCharging: boolean, img: string }) {
+function EarbudItem({ alignTo, batteryLevel, batteryCharging, img }: { alignTo: "left" | "right", batteryLevel: number | undefined, batteryCharging: boolean | undefined, img: string }) {
     return (
         <Grid item>
             <Grid container spacing={1} justifyContent="center" alignItems="center">

@@ -9,7 +9,7 @@ pub(crate) enum DeviceSelection {
 }
 
 
-#[derive(TS, Serialize, Deserialize, Clone, Copy)]
+#[derive(TS, Serialize, Deserialize, Clone, Copy, Debug)]
 #[ts(export, export_to = "../src/bindings/ANCModes.d.ts")]
 pub(crate) enum ANCModes {
     NormalMode,
@@ -40,7 +40,7 @@ impl From<bluetooth_lib::BluetoothDevice> for BthScanResult {
     }
 }
 
-#[derive(TS, Serialize, Deserialize)]
+#[derive(TS, Serialize, Deserialize, Debug)]
 #[ts(export, export_to = "../src/bindings/TrayDeviceStatus.d.ts")]
 pub(crate) struct TrayDeviceStatus {
     pub is_connected: bool,
@@ -49,7 +49,7 @@ pub(crate) struct TrayDeviceStatus {
     pub anc_mode: ANCModes,
 }
 
-#[derive(TS, Serialize, Deserialize)]
+#[derive(TS, Serialize, Deserialize, Debug)]
 #[ts(export, export_to = "../src/bindings/BatteryStatus.d.ts")]
 pub(crate) struct BatteryStatus {
     pub is_charging: bool,

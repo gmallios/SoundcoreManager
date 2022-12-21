@@ -1,5 +1,5 @@
 [package]
-name = "soundcore-rs"
+name = "soundcoremanager"
 version = "0.0.0"
 description = ""
 authors = ["Grigorios Mallios"]

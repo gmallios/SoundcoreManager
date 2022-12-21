@@ -1,24 +1,34 @@
 import React, { useEffect } from "react";
 import { CircularProgress, Fab, Stack, Typography } from "@mui/material";
-import { scanForDevices } from "../hooks/useBluetooth";
+import { useSearch } from "../hooks/useBluetooth";
 import DeviceList from "./DeviceList";
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { BthScanResult } from "../bindings/ScanResult";
-import useDeviceStore from "../hooks/useDeviceStore";
+import useDeviceStore, { DeviceConnectionState } from "../hooks/useDeviceStore";
+
+
 
 
 export default function DisconnectedScreen() {
-    const { loading, data } = scanForDevices();
+    //const { loading, data } = scanForDevices();
+    const { isLoading, data } = useSearch();
     const { connectUUID } = useDeviceStore();
     const [selectedDevice, setSelectedDevice] = React.useState<BthScanResult>();
+    const { setDeviceConnectionState } = useDeviceStore();
+
+
+    useEffect(() => {
+        setDeviceConnectionState(DeviceConnectionState.DISCONNECTED);
+    }, []);
 
     const handleFabClick = () => {
         if (selectedDevice) {
+            console.log("Connecting to: " + selectedDevice.address)
             connectUUID("A3951", selectedDevice.address);
         }
     };
 
-    if (loading) {
+    if (isLoading) {
         return (
             <div style={{ width: "100vw", height: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
                 <CircularProgress />
