@@ -64,12 +64,12 @@ pub trait SoundcoreEQ: Sync + Send {
 }
 #[async_trait]
 pub trait SoundcoreLDAC: Sync + Send {
-    async fn set_ldac(&self) -> Result<(), SoundcoreError> {
+    async fn set_ldac(&self, toggle: bool) -> Result<(), SoundcoreError> {
         Err(SoundcoreError::FeatureNotSupported(
             "LDAC - set_ldac".to_string(),
         ))
     }
-    async fn get_ldac(&self) -> Result<(), SoundcoreError> {
+    async fn get_ldac(&self) -> Result<bool, SoundcoreError> {
         Err(SoundcoreError::FeatureNotSupported(
             "LDAC - get_ldac".to_string(),
         ))

@@ -15,6 +15,7 @@ use crate::{
 /* Sets the tray menu to either the basic or the extended one */
 #[tauri::command]
 pub(crate) async fn set_tray_menu(app_handle: AppHandle, is_connected: bool) {
+    debug!("Setting tray menu to connected status: {}", is_connected);
     let tray_handle = app_handle.tray_handle();
     /* Set appropriate menu */
     match is_connected {
@@ -32,7 +33,19 @@ pub(crate) async fn set_tray_menu(app_handle: AppHandle, is_connected: bool) {
 /* Also fixes the issue where when the window is hidden the setIntervals from the FE are not timed properly  */
 #[tauri::command]
 pub(crate) async fn set_tray_device_status(app_handle: AppHandle, status: TrayDeviceStatus) {
+    debug!("Updating tray menu: {:?}", status);
     let tray_handle = app_handle.tray_handle();
+    /* Try to fix PoisonError bug which occurs randomly while refreshing the app */
+    /* Remove set_tray_menu and use only this command? */
+    match status.is_connected {
+        true => {
+            tray_handle.set_menu(build_extended_menu()).unwrap();
+        }
+        false => {
+            tray_handle.set_menu(build_base_tray_menu()).unwrap();
+            return;
+        }
+    }
     /* Update menu items */
     let conn_status = tray_handle.get_item("conn_status");
     let charging_status = tray_handle.get_item("batt_charging_status");

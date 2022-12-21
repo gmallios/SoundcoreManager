@@ -5,6 +5,7 @@ import NormalIcon from "../assets/ambient_icon_off.png";
 import TransIcon from "../assets/ambient_icon_trans.png";
 import useDeviceStore from "../hooks/useDeviceStore";
 import { ANCModes } from "../bindings/ANCModes";
+import { useANC, useUpdateANC } from "../hooks/useSoundcoreDevice";
 
 const width = window.innerWidth - 35;
 
@@ -87,7 +88,8 @@ const ANCSliderButton = styled(Button, {
 
 export default function ANCModeCard() {
 
-    const { sendANCMode, currentANCMode } = useDeviceStore();
+    const { data: currentANCMode, isSuccess } = useANC();
+    let ancMutation = useUpdateANC();
 
     let [sliderPosition, setSliderPosition] = useState<AllowedSliderPositions>(null);
     let [sliderIcon, setSliderIcon] = useState<string>(NormalIcon);
@@ -95,7 +97,6 @@ export default function ANCModeCard() {
     let [ancModeSelected, setAncModeSelected] = useState<ANCModes | "AncCustomValue">("AncOutdoorMode");
     let [transModeSelected, setTransModeSelected] = useState<ANCModes>("TransparencyFullyTransparentMode");
     let [ancCustomValue, setAncCustomValue] = useState<number | number[] | null>(null);
-
 
 
     let ancButtons: Array<[string, ANCModes | "AncCustomValue"]> =
@@ -113,37 +114,37 @@ export default function ANCModeCard() {
         ];
 
     useEffect(() => {
-        if (currentANCMode != null) {
-            if (currentANCMode == "NormalMode") {
-                setSliderPosition("center");
-            } else if (currentANCMode == "TransparencyFullyTransparentMode" || currentANCMode == "TransparencyVocalMode") {
-                setSliderPosition("right");
-                setTransModeSelected(currentANCMode);
+        /* Update component from current ANC mode */
+        if (!isSuccess) return;
+
+        if (currentANCMode == "NormalMode") {
+            setSliderPosition("center");
+        } else if (currentANCMode == "TransparencyFullyTransparentMode" || currentANCMode == "TransparencyVocalMode") {
+            setSliderPosition("right");
+            setTransModeSelected(currentANCMode);
+        } else {
+            setSliderPosition("left");
+            if (typeof currentANCMode === "object") {
+                setAncCustomValue(currentANCMode.AncCustomValue);
+                setAncModeSelected("AncCustomValue");
             } else {
-                setSliderPosition("left");
-                if (typeof currentANCMode === "object") {
-                    setAncCustomValue(currentANCMode.AncCustomValue);
-                    setAncModeSelected("AncCustomValue");
-                } else {
-                    setAncModeSelected(currentANCMode);
-                }
+                setAncModeSelected(currentANCMode!);
             }
         }
-    }, []);
+    }, [isSuccess]);
 
 
-    // TODO: Load persisted values
     useEffect(() => {
         if (sliderPosition == "center") {
-            sendANCMode("NormalMode");
+            ancMutation.mutate("NormalMode");
             setSubmenuOpen(false);
         } else if (sliderPosition == "left") {
-            if(ancModeSelected != "AncCustomValue") {
-                sendANCMode(ancModeSelected);
+            if (ancModeSelected != "AncCustomValue") {
+                ancMutation.mutate(ancModeSelected);
             }
             setSubmenuOpen(true);
         } else if (sliderPosition == "right") {
-            sendANCMode(transModeSelected);
+            ancMutation.mutate(transModeSelected);
             setSubmenuOpen(true);
         }
     }, [sliderPosition]);
@@ -151,19 +152,19 @@ export default function ANCModeCard() {
     useEffect(() => {
         if (sliderPosition == "left") {
             if (ancModeSelected == "AncCustomValue") {
-                if(ancCustomValue == null) {
+                if (ancCustomValue == null) {
                     setAncCustomValue(10);
                 }
-                sendANCMode({ AncCustomValue: ancCustomValue as number });
+                ancMutation.mutate({ AncCustomValue: ancCustomValue as number });
             } else {
-                sendANCMode(ancModeSelected);
+                ancMutation.mutate(ancModeSelected);
             }
         }
     }, [ancModeSelected, ancCustomValue]);
 
     useEffect(() => {
         if (sliderPosition == "right") {
-            sendANCMode(transModeSelected);
+            ancMutation.mutate(transModeSelected);
         }
     }, [transModeSelected]);
 
