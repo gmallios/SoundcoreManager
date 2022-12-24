@@ -11,7 +11,7 @@ impl Scanner for BthScanner {
     }
     
     async fn scan(&mut self) -> Vec<BluetoothDevice> {
-        let devices = scan();
+        let devices = scan().await;
         let mut res = Vec::new();
         for dev in devices {
             res.push(BluetoothDevice {

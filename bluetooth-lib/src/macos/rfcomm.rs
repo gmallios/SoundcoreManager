@@ -1,19 +1,15 @@
 use std::{sync::Arc, cell::{Ref, RefCell}};
-use crate::platform::RFCOMMClient;
 use async_trait::async_trait;
-use iobluetooth::{open_rfcomm, scan, send_rfcomm, recv_rfcomm};
 use tokio::runtime::{Runtime, Handle};
+
+use crate::{RFCOMMClient, BthError};
 
 pub struct RFCOMM {
 }
 
 #[async_trait]
 impl RFCOMMClient for RFCOMM {
-    fn new() -> Self {
-        RFCOMM {}
-    }
-
-    fn create_rfcomm_socket(&self) -> Result<Self, crate::BthError> {
+    fn new() -> Result<Self, BthError> {
         Ok(RFCOMM {})
     }
 

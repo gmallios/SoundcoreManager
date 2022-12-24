@@ -3,21 +3,22 @@
     windows_subsystem = "windows"
 )]
 
-
-use std::sync::{Arc};
-use bluetooth_lib::{Scanner};
 use bluetooth_lib::platform::BthScanner;
+use bluetooth_lib::Scanner;
 use env_logger::builder;
-use frontend_types::{BthScanResult};
-use soundcore_lib::{base::SoundcoreDevice};
-use tauri::{async_runtime::Mutex};
+use frontend_types::BthScanResult;
+use soundcore_lib::base::SoundcoreDevice;
+use std::sync::Arc;
+use tauri::api::process::Command;
+use tauri::async_runtime::Mutex;
 
-pub(crate) mod frontend_types;
-pub(crate) mod utils;
-mod tray;
 mod device;
+pub(crate) mod frontend_types;
+mod tray;
+pub(crate) mod utils;
 
-
+#[cfg(target_os = "macos")]
+mod server;
 
 // #[tauri::command]
 // fn close_all(state: State<DeviceState>) -> Result<(), ()> {
@@ -38,15 +39,19 @@ async fn scan_for_devices() -> Vec<BthScanResult> {
     scan_res
 }
 
-
-
 struct AppState {
     device: Arc<Mutex<Option<Box<dyn SoundcoreDevice>>>>,
 }
 
-
 fn main() {
-    builder().filter(None, log::LevelFilter::Debug).init();
+    #[cfg(target_os = "macos")]
+    server::launch_server();
+
+    builder().filter(None, log::LevelFilter::Debug)
+        .filter_module("h2", log::LevelFilter::Off)
+        .filter_module("hyper", log::LevelFilter::Off)
+        .filter_module("tower", log::LevelFilter::Off)
+        .init();
 
     tauri::Builder::default()
         .system_tray(tray::get_system_tray())
