@@ -49,6 +49,7 @@ export function useCharging() {
         refetchInterval: 500,
         cacheTime: 500,
         enabled: deviceConnectionState == DeviceConnectionState.CONNECTED,
+        refetchIntervalInBackground: true
     });
 }
 
@@ -60,6 +61,7 @@ export function useBatteryLevel() {
     }, {
         refetchInterval: 5000,
         enabled: deviceConnectionState == DeviceConnectionState.CONNECTED,
+        refetchIntervalInBackground: true
     });
 }
 
