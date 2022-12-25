@@ -6,7 +6,7 @@
     "distDir": "../dist"
   },
   "package": {
-    "productName": "soundcore-manager",
+    "productName": "Soundcore Manager",
     "version": "0.0.0"
   },
   "tauri": {
