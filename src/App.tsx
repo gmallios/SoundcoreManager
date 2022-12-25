@@ -20,6 +20,8 @@ function App() {
   const { data: charging, isSuccess: isBatteryChargingSuccess } = useCharging();
   const { data: ancStatus, isSuccess: isANCStatusSuccess } = useANC();
   const { data: devStatus, isSuccess: isStatusSuccess } = useStatus();
+  const isDataSuccess = isBatteryLevelSuccess && isBatteryChargingSuccess && isANCStatusSuccess && isStatusSuccess;
+  const isDataNotNull = level != undefined && charging != undefined && ancStatus != undefined && devStatus != undefined;
   const trayMutation = useUpdateTray();
   const ancMutation = useUpdateANC();
 
@@ -31,7 +33,7 @@ function App() {
 
   /* Update tray status on every change */
   useEffect(() => {
-    if (level != undefined && charging != undefined && ancStatus != undefined) {
+    if (isDataNotNull) {
       let trayStatus: ITrayStatus = {
         deviceConnectionState: DeviceConnectionState.CONNECTED,
         batteryLevel: level!,
@@ -53,7 +55,7 @@ function App() {
     <React.Fragment>
       {deviceConnectionState != DeviceConnectionState.DISCONNECTED ? (
         <Stack>
-          {isStatusSuccess ? (
+          {isDataNotNull ? (
             /* TODO: Create a component which wraps all while-connected components */
             <React.Fragment>
               <AppBar />

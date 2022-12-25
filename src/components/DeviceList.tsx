@@ -14,7 +14,8 @@ export default function DeviceList(props: IDeviceListProps) {
     const { devices, sx, setSelectedDevice } = props;
 
     if (devices) {
-        const connectedDevices = devices.filter(device => device.is_connected);
+        // const connectedDevices = devices.filter(device => device.is_connected);
+        const connectedDevices = devices;
         const [selectedIndex, setSelectedIndex] = React.useState<number>(0);
 
         useEffect(() => {

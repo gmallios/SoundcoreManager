@@ -47,9 +47,7 @@ export function useCharging() {
         return result as DeviceBatteryCharging;
     }, {
         refetchInterval: 500,
-        cacheTime: 500,
         enabled: deviceConnectionState == DeviceConnectionState.CONNECTED,
-        refetchIntervalInBackground: true
     });
 }
 
@@ -61,7 +59,6 @@ export function useBatteryLevel() {
     }, {
         refetchInterval: 5000,
         enabled: deviceConnectionState == DeviceConnectionState.CONNECTED,
-        refetchIntervalInBackground: true
     });
 }
 
@@ -71,7 +68,7 @@ export function useStatus() {
         const result = await invoke("get_status");
         return result as DeviceStatus;
     }, {
-        refetchInterval: 10000,
+        refetchInterval: 5000,
         enabled: deviceConnectionState == DeviceConnectionState.CONNECTED,
     });
 }

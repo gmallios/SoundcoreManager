@@ -88,9 +88,9 @@ fn main() {
                 if cfg!(target_os = "macos"){
                     match event {
                         tauri::WindowEvent::CloseRequested { api, .. } => {
+                            api.prevent_close();
                             let win = app_handle.get_window(label.as_str()).unwrap();
                             win.hide().unwrap();
-                            api.prevent_close();
                             /* Fix show/hide tray item */
                             let item = app_handle.tray_handle().get_item("hide");
                             item.set_title("Show").unwrap();
