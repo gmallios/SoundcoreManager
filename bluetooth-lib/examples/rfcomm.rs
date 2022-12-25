@@ -2,7 +2,7 @@ use bluetooth_lib::{platform::RFCOMM, RFCOMMClient};
 
 #[tokio::main]
 async fn main() {
-    let mut rfcomm = RFCOMM::new().unwrap();
+    let mut rfcomm = RFCOMM::new().await.unwrap();
     rfcomm
         .connect_uuid(
             "AC:12:2F:6A:D2:07".into(),

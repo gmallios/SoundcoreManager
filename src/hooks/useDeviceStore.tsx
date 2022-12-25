@@ -7,6 +7,7 @@ interface DeviceStoreState {
   deviceConnectionState: DeviceConnectionState
   setDeviceConnectionState: (state: DeviceConnectionState) => void,
   connectUUID: (selection: DeviceSelection, addr: String) => void,
+  close: () => void,
 }
 
 export enum DeviceConnectionState {
@@ -87,6 +88,14 @@ const useDeviceStore = create<DeviceStoreState>((set) => ({
       set((state) => ({ ...state, deviceConnectionState: DeviceConnectionState.DISCONNECTED }));
     });
   },
+  close: () => {
+    invoke("close").then((_msg) => {
+      set((state) => ({ ...state, deviceConnectionState: DeviceConnectionState.DISCONNECTED }));
+    }).catch((err) => {
+      console.log(err);
+      set((state) => ({ ...state, deviceConnectionState: DeviceConnectionState.DISCONNECTED }));
+    });
+  }
 }))
 
 export default useDeviceStore;

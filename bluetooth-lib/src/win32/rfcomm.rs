@@ -21,7 +21,7 @@ pub struct RFCOMM {
 
 #[async_trait]
 impl RFCOMMClient for RFCOMM {
-    fn new() -> Result<RFCOMM, BthError> {
+    async fn new() -> Result<RFCOMM, BthError> {
         init_winsock();
         let fd: SOCKET;
         unsafe {
@@ -146,7 +146,7 @@ impl RFCOMMClient for RFCOMM {
         Ok(data)
     }
 
-    fn close(&self) {
+    async fn close(&self) {
         unsafe {
             WSACleanup();
             closesocket(self.fd);

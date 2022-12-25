@@ -10,4 +10,6 @@ async fn main() {
     let dev =  A3951::default().init(addr).await.unwrap();
     let info = dev.get_status().await.unwrap();
     println!("Device info: {:?}", info);
+    let charging = dev.get_battery_charging().await.unwrap();
+    println!("Charging: {:?}", charging);
 }

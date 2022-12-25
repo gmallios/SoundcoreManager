@@ -35,7 +35,7 @@ impl Default for A3951 {
 #[async_trait]
 impl SoundcoreDevice for A3951 {
     async fn init(&self, btaddr: BluetoothAdrr) -> Result<Box<dyn SoundcoreDevice>, SoundcoreError> {
-        let mut rfcomm = RFCOMM::new()?;
+        let mut rfcomm = RFCOMM::new().await?;
         rfcomm
             .connect_uuid(btaddr.clone(), A3951_RFCOMM_UUID)
             .await?;
@@ -45,7 +45,7 @@ impl SoundcoreDevice for A3951 {
     async fn close(&self) -> Result<(), SoundcoreError> {
         match &self.rfcomm {
             Some(rfcomm) => {
-                rfcomm.close();
+                rfcomm.close().await;
                 Ok(())
             }
             None => Err(SoundcoreError::NotConnected),

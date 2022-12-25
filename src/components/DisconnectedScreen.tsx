@@ -14,11 +14,12 @@ export default function DisconnectedScreen() {
     const { isLoading, data } = useSearch();
     const { connectUUID } = useDeviceStore();
     const [selectedDevice, setSelectedDevice] = React.useState<BthScanResult>();
-    const { setDeviceConnectionState } = useDeviceStore();
+    const { setDeviceConnectionState, close } = useDeviceStore();
 
 
     useEffect(() => {
-        setDeviceConnectionState(DeviceConnectionState.DISCONNECTED);
+        // setDeviceConnectionState(DeviceConnectionState.DISCONNECTED);
+        close();
     }, []);
 
     const handleFabClick = () => {

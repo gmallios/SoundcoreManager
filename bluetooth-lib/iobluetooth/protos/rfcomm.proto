@@ -4,6 +4,7 @@ package RFCOMM;
 
 service RFCOMM {
   rpc OpenRFCOMMChannel(OpenRFCOMMChannelRequest) returns (OpenRFCOMMChannelResponse);
+  rpc CloseRFCOMMChannel(CloseRFCOMMChannelRequest) returns (CloseRFCOMMChannelResponse);
   rpc SendRFCOMMData(SendRFCOMMDataRequest) returns (SendRFCOMMDataResponse);
   rpc RecvRFCOMMData(RecvRFCOMMDataRequest) returns (RecvRFCOMMDataResponse);
 }
@@ -16,6 +17,10 @@ message OpenRFCOMMChannelRequest {
 message OpenRFCOMMChannelResponse {
   bool success = 1;
 }
+
+message CloseRFCOMMChannelRequest {}
+
+message CloseRFCOMMChannelResponse {}
 
 message SendRFCOMMDataRequest {
   bytes data = 1;

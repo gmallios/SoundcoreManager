@@ -15,12 +15,12 @@ pub trait Scanner {
 
 #[async_trait]
 pub trait RFCOMMClient: Sized {
-    fn new() -> Result<Self, BthError>;
+    async fn new() -> Result<Self, BthError>;
     async fn connect_uuid(&mut self, bt_addr: BluetoothAdrr, uuid: &str) -> Result<(), BthError>;
     async fn connect_port(&mut self, address: BluetoothAdrr, port: u32) -> Result<(), BthError>;
     async fn send(&self, data: &[u8]) -> Result<(), BthError>;
     async fn recv(&self, num_of_bytes: usize) -> Result<Vec<u8>, BthError>;
-    fn close(&self);
+    async fn close(&self);
 }
 
 #[derive(Clone, Eq, PartialEq)]

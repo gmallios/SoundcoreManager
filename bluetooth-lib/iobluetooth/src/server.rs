@@ -14,8 +14,10 @@ use Searcher::{
 use util::{IOBluetoothRFCOMMChannel, IOBluetoothSDPServiceRecord};
 use RFCOMM::{
     rfcomm_server::{Rfcomm, RfcommServer},
-    OpenRfcommChannelRequest, OpenRfcommChannelResponse, RecvRfcommDataRequest,
-    RecvRfcommDataResponse, SendRfcommDataRequest, SendRfcommDataResponse,
+    OpenRfcommChannelRequest, OpenRfcommChannelResponse,
+    CloseRfcommChannelRequest, CloseRfcommChannelResponse, 
+    RecvRfcommDataRequest, RecvRfcommDataResponse, 
+    SendRfcommDataRequest, SendRfcommDataResponse,
 };
 
 extern crate lazy_static;
@@ -73,7 +75,7 @@ fn on_data_cb(data: &[u8]) {
     let mut stack = DATA_STACK
         .lock()
         .unwrap();
-    stack.push_back(data.to_vec());
+    stack.push_front(data.to_vec());
 }
 
 #[tonic::async_trait]
@@ -90,9 +92,9 @@ impl Rfcomm for RfcommService {
             .lock()
             .map_err(|_| Status::new(Code::Internal, "Channel MutexGuard error"))?;
 
-        if channel.is_open() {
-            return Err(Status::already_exists("RFCOMM Channel is already open, close it first."));
-        }
+        // if channel.is_open() {
+        //     return Err(Status::already_exists("RFCOMM Channel is already open, close it first."));
+        // }
         *dev = IOBTDevice::new(args.addr.as_str());
         // if dev.is_connected() {
         //     dev.close_connection();
@@ -116,6 +118,21 @@ impl Rfcomm for RfcommService {
         /* Wait for channel to open, so that if we do a write/read req channel is initialized */
         std::thread::sleep(Duration::from_millis(1000));
         Ok(Response::new(reply))
+    }
+
+    async fn close_rfcomm_channel(
+        &self,
+        _request: Request<CloseRfcommChannelRequest>,
+    ) -> Result<Response<CloseRfcommChannelResponse>, Status> {
+        let mut channel = RFCOMM_CHANNEL
+            .lock()
+            .map_err(|_| Status::new(Code::Internal, "Channel MutexGuard error"))?;
+        if channel.is_open() {
+            channel.close_channel();
+        }
+        let reply = CloseRfcommChannelResponse {};
+        Ok(Response::new(reply))
+        
     }
 
     async fn send_rfcomm_data(
@@ -156,7 +173,7 @@ impl Rfcomm for RfcommService {
 }
 
 /* We should use 1 thread for tokio */
-#[tokio::main(worker_threads = 1)]
+#[tokio::main]
 async fn launch_rpc_server() {
     let address = "[::1]:8080".parse().unwrap();
     let search_svc = SearchService::default();

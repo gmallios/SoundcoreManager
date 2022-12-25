@@ -22,11 +22,11 @@ export default function OverviewCard() {
     const chargingQuery = useCharging();
     const levelQuery = useBatteryLevel();
 
-    if(levelQuery.isLoading || chargingQuery.isLoading) {
-        return(
-            <div></div>
-        );
-    }
+    // if(levelQuery.isLoading || chargingQuery.isLoading) {
+    //     return(
+    //         <div></div>
+    //     );
+    // }
 
     return (
         // As card

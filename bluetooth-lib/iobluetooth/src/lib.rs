@@ -13,6 +13,9 @@ pub mod rfcomm {
     tonic::include_proto!("RFCOMM");
 }
 
+pub use tonic::transport::Channel as TonicTransportChannel;
+pub use tonic::Request;
+
 /* TODO: Create helper for starting daemon(server) */
 /* TODO: Use scan() as base for tokio runtime detection and handling */
 
@@ -83,7 +86,6 @@ pub mod rfcomm {
 //         }
 //     }
 // }
-
 pub async fn scan() -> Vec<SearchItem> {
     let request = tonic::Request::new(SearchRequest {
         time_to_scan: Some(5),

@@ -69,7 +69,7 @@ export function useStatus() {
         const result = await invoke("get_status");
         return result as DeviceStatus;
     }, {
-        refetchInterval: 5000,
+        refetchInterval: 10000,
         enabled: deviceConnectionState == DeviceConnectionState.CONNECTED,
     });
 }
