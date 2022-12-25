@@ -1,9 +1,10 @@
 pub fn launch_server() {
     #[cfg(debug_assertions)]
-    let _cmd = std::process::Command::new("killall")
+    let mut cmd = std::process::Command::new("killall")
         .arg("server")
         .spawn()
         .expect("failed to spawn killall command");
+    let _res = cmd.wait().expect("failed to wait for killall command");
 
 
     use tauri::api::process::CommandEvent::{Stdout, Stderr, Error};
