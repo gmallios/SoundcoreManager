@@ -12,7 +12,6 @@ fn main() {
 }
 
 fn build_iobluetooth() {
-
     /* TODO: Rerun if server.rs changes */
     // println!("cargo:rerun-if-changed=../bluetooth-lib/iobluetooth/src/server.rs"); Does not work
 
@@ -32,23 +31,16 @@ fn build_iobluetooth() {
         let mut basedir = PathBuf::from(env::current_dir().unwrap());
         basedir.pop();
         let src = Path::join(&basedir, "bluetooth-lib/iobluetooth/target/release/server");
-        if build_type == "debug" {
-            /* In the case of debug we need the server in the same dir as our executable */
-            let target_dir = get_output_path();
-            let dest = Path::join(&target_dir, "server");
-            std::fs::copy(src, dest).expect("Failed to copy iobluetooth server");
-        } else {
-            /* Add target triple to server - Required by Tauri to bundle it */
-            let target = std::env::var("TARGET").unwrap();
-            std::fs::rename(
-                src,
-                Path::join(
-                    &basedir,
-                    format!("bluetooth-lib/iobluetooth/target/release/server-{}", target),
-                ),
-            )
-            .expect("Failed to rename iobluetooth server");
-        }
+        /* Add target triple to server - Required by Tauri to bundle it */
+        let target = std::env::var("TARGET").unwrap();
+        std::fs::rename(
+            src,
+            Path::join(
+                &basedir,
+                format!("bluetooth-lib/iobluetooth/target/release/server-{}", target),
+            ),
+        )
+        .expect("Failed to rename iobluetooth server");
     } else {
         panic!("Failed to build iobluetooth server!");
     }
