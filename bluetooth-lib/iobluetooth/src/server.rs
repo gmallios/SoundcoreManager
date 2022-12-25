@@ -68,14 +68,21 @@ lazy_static! {
     static ref DEVICE: Arc<Mutex<IOBTDevice>> = Arc::new(Mutex::new(IOBTDevice::default()));
     static ref RFCOMM_CHANNEL: Arc<Mutex<IOBluetoothRFCOMMChannel>> =
         Arc::new(Mutex::new(IOBluetoothRFCOMMChannel::default()));
-    static ref DATA_STACK: Arc<Mutex<VecDeque<Vec<u8>>>> = Arc::new(Mutex::new(VecDeque::new())); 
+    static ref DATA_STACK: Arc<Mutex<VecDeque<Vec<u8>>>> = Arc::new(Mutex::new(VecDeque::new()));
+    static ref LAST_MSG_SEND: Arc<Mutex<bool>> = Arc::new(Mutex::new(false)); 
 }
 
 fn on_data_cb(data: &[u8]) {
-    let mut stack = DATA_STACK
+    let mut last_msg_send = LAST_MSG_SEND
         .lock()
         .unwrap();
-    stack.push_front(data.to_vec());
+    if *last_msg_send {
+        let mut stack = DATA_STACK
+            .lock()
+            .unwrap();
+        stack.push_front(data.to_vec());
+        *last_msg_send = false;
+    }
 }
 
 #[tonic::async_trait]
@@ -143,8 +150,12 @@ impl Rfcomm for RfcommService {
         let channel = RFCOMM_CHANNEL
             .lock()
             .map_err(|_| Status::new(Code::Internal, "Channel MutexGuard error"))?;
+        let mut last_msg_send = LAST_MSG_SEND
+            .lock()
+            .map_err(|_| Status::new(Code::Internal, "Last msg send MutexGuard error"))?;
         if channel.is_open() {
             channel.write_sync(&args.data);
+            *last_msg_send = true;
             let reply = SendRfcommDataResponse { success: true };
             /* Wait for data to actually be sent */
             std::thread::sleep(Duration::from_millis(200));

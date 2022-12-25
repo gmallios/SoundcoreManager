@@ -28,4 +28,5 @@ pub fn launch_server() {
                 }
             }
         });
+    std::thread::sleep(std::time::Duration::from_secs(1));
 }

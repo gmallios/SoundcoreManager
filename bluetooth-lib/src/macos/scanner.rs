@@ -16,6 +16,7 @@ impl Scanner for BthScanner {
         });
         let mut client = BtSearcherClient::connect("http://[::1]:8080").await.unwrap();
         let resp = client.scan(request).await.unwrap();
+        drop(client);
         let devices = resp.into_inner().result;
         let mut res = Vec::new();
         for dev in devices {

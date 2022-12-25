@@ -11,6 +11,7 @@ use soundcore_lib::base::SoundcoreDevice;
 use std::sync::Arc;
 use tauri::api::process::Command;
 use tauri::async_runtime::Mutex;
+use tauri::Manager;
 
 mod device;
 pub(crate) mod frontend_types;
@@ -47,7 +48,8 @@ fn main() {
     #[cfg(target_os = "macos")]
     server::launch_server();
 
-    builder().filter(None, log::LevelFilter::Debug)
+    builder()
+        .filter(None, log::LevelFilter::Debug)
         .filter_module("h2", log::LevelFilter::Off)
         .filter_module("hyper", log::LevelFilter::Off)
         .filter_module("tower", log::LevelFilter::Off)
@@ -77,9 +79,25 @@ fn main() {
         ])
         .build(tauri::generate_context!())
         .expect("error while running tauri application")
-        .run(|_app_handle, event| match event {
+        .run(|app_handle, event| match event {
             tauri::RunEvent::ExitRequested { api, .. } => {
                 api.prevent_exit();
+            },
+            /* Prevent window from closing - Primarily for macOS since we rely heavily on the window */
+            tauri::RunEvent::WindowEvent { label, event, .. } => {
+                if cfg!(target_os = "macos"){
+                    match event {
+                        tauri::WindowEvent::CloseRequested { api, .. } => {
+                            let win = app_handle.get_window(label.as_str()).unwrap();
+                            win.hide().unwrap();
+                            api.prevent_close();
+                            /* Fix show/hide tray item */
+                            let item = app_handle.tray_handle().get_item("hide");
+                            item.set_title("Show").unwrap();
+                        }
+                        _ => {}
+                    }
+                }
             }
             _ => {}
         });
