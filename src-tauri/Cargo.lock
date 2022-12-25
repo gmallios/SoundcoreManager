@@ -1447,6 +1447,7 @@ dependencies = [
  "cocoa",
  "core-foundation",
  "futures",
+ "itertools",
  "lazy_static",
  "libc",
  "log",

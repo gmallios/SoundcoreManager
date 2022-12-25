@@ -19,7 +19,7 @@ pub struct RFCOMM {
 #[async_trait]
 impl RFCOMMClient for RFCOMM {
     async fn new() -> Result<Self, BthError> {
-        let client = RfcommClient::connect("http://[::1]:8080").await;
+        let client = RfcommClient::connect("http://[::1]:55777").await;
         match client {
             Ok(c) => Ok(RFCOMM { client: c }),
             Err(_e) => Err(BthError::FdInitError),

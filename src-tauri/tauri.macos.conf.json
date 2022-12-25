@@ -16,7 +16,7 @@
         "sidecar": true,
         "scope": [
           {
-            "name": "../bluetooth-lib/iobluetooth/target/release/server",
+            "name": "../bluetooth-lib/iobluetooth/target/release/soundcoremanager-iobtserver",
             "sidecar": true
           }
         ]
@@ -29,7 +29,7 @@
       "deb": {
         "depends": []
       },
-      "externalBin": ["../bluetooth-lib/iobluetooth/target/release/server"],
+      "externalBin": ["../bluetooth-lib/iobluetooth/target/release/soundcoremanager-iobtserver"],
       "icon": [
         "icons/32x32.png",
         "icons/128x128.png",

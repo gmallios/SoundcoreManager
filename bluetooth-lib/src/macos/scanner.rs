@@ -1,6 +1,6 @@
 use crate::types::{Scanner, BluetoothDevice, BluetoothAdrr};
 use async_trait::async_trait;
-use iobluetooth::{searcher::{SearchRequest, bt_searcher_client::BtSearcherClient}, scan};
+use iobluetooth::searcher::{SearchRequest, bt_searcher_client::BtSearcherClient};
 
 pub struct BthScanner {}
 
@@ -14,7 +14,7 @@ impl Scanner for BthScanner {
         let request = iobluetooth::Request::new(SearchRequest{
             time_to_scan: Some(5)
         });
-        let mut client = BtSearcherClient::connect("http://[::1]:8080").await.unwrap();
+        let mut client = BtSearcherClient::connect("http://[::1]:55777").await.unwrap();
         let resp = client.scan(request).await.unwrap();
         drop(client);
         let devices = resp.into_inner().result;

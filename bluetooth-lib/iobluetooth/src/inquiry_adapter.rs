@@ -3,6 +3,8 @@ use std::{
     time::{Duration, Instant},
 };
 
+use itertools::Itertools;
+
 use cocoa::{
     base::id,
     foundation::{NSDate, NSRunLoop},
@@ -92,5 +94,5 @@ pub fn search(duration: Option<Duration>) -> Vec<IOBTDevice> {
         }
     }
     /* Collect results */
-    SCAN_RESULTS.lock().unwrap().clone()
+    SCAN_RESULTS.lock().unwrap().clone().into_iter().unique_by(|d| d.address()).collect()
 }

@@ -1,14 +1,14 @@
 pub fn launch_server() {
     #[cfg(debug_assertions)]
     let mut cmd = std::process::Command::new("killall")
-        .arg("server")
+        .arg("soundcoremanager-iobtserver")
         .spawn()
         .expect("failed to spawn killall command");
     let _res = cmd.wait().expect("failed to wait for killall command");
 
 
     use tauri::api::process::CommandEvent::{Stdout, Stderr, Error};
-    let (mut rx, mut _tx) = tauri::api::process::Command::new_sidecar("server")
+    let (mut rx, mut _tx) = tauri::api::process::Command::new_sidecar("soundcoremanager-iobtserver")
         .expect("failed to create server command")
         .spawn()
         .expect("failed to spawn server command");

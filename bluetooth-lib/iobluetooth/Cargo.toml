@@ -9,11 +9,12 @@ name = "client"
 path = "src/client.rs"
 
 [[bin]]
-name = "server"
+name = "soundcoremanager-iobtserver"
 path = "src/server.rs"
 
 
 [dependencies]
+itertools = "0.10.5"
 # Required for tonic
 async-stream = "0.3"
 futures = "0.3.25"
