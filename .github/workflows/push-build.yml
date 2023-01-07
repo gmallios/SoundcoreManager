@@ -43,9 +43,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           
-      - name: Archive code coverage results
+      - name: Upload build artifact
         uses: actions/upload-artifact@v3
         with:
           name: soundcore-manager
-          path: ${{ steps.tauri-build.artifactPaths }}
+          path: ${{ steps.tauri-build.outputs.artifactPaths }}
         
