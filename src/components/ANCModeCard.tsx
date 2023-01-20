@@ -169,7 +169,7 @@ export default function ANCModeCard() {
     }, [transModeSelected]);
 
     return (
-        <Paper elevation={0} sx={{ marginTop: 1, marginBottom: 1, display: "flex", minWidth: 275, justifyContent: "center", alignItems: "center" }}>
+        <Paper elevation={0} sx={{ marginTop: 0, marginBottom: 1, display: "flex", minWidth: 275, justifyContent: "center", alignItems: "center" }}>
             <Grid sx={{ paddingLeft: 0, justifyContent: "center" }}>
                 <Grid item>
                     <ANCSliderContainer>

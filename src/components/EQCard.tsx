@@ -144,8 +144,8 @@ export default function EQCard() {
   };
 
   return (
-    <><Paper sx={{ display: "flex", margin: 3, justifyContent: "center", alignItems: "center" }}>
+    <Paper sx={{ display: "flex", margin: 3, justifyContent: "center", alignItems: "center" }}>
       {isDataLoaded && <><Line data={data} options={options} /></>}
-    </Paper><Button onClick={resetEQ}>Reset EQ</Button></>
+    </Paper>
   );
 }

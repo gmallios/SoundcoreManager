@@ -2,6 +2,7 @@ import { Box, Card, CardContent, Grid, Paper, Typography } from "@mui/material";
 import useDeviceStore from "../hooks/useDeviceStore";
 import A3951ImgLeft from "./../assets/a3951_img_device_left.webp";
 import A3951ImgRight from "./../assets/a3951_img_device_right_edited.webp";
+import A3027Img from "./../assets/a3027_img_device.webp";
 
 
 import BatteryAlertIcon from '@mui/icons-material/BatteryAlert';
@@ -17,10 +18,11 @@ import BatteryFullIcon from '@mui/icons-material/BatteryFull';
 import BatteryChargingFullIcon from '@mui/icons-material/BatteryChargingFull';
 import BatteryUnknownIcon from '@mui/icons-material/BatteryUnknown';
 import { useBatteryLevel, useCharging } from "../hooks/useSoundcoreDevice";
+import { DeviceSelection } from "../bindings/DeviceSelection";
 
 export default function OverviewCard() {
-    const chargingQuery = useCharging();
-    const levelQuery = useBatteryLevel();
+
+    const deviceModel = useDeviceStore(state => state.deviceModel);
 
     // if(levelQuery.isLoading || chargingQuery.isLoading) {
     //     return(
@@ -41,34 +43,56 @@ export default function OverviewCard() {
         //   <Button size="small">Learn More</Button>
         // </CardActions> */}
         // </Card>
-        <Box sx={{display: "block", pt: 3, maxWidth: "300px", margin: "auto"}}>
-            <Paper sx={{ display: "flex", margin: 1.5, justifyContent: "center", alignItems: "center"}} elevation={0}>
-                <EarbudItem img={A3951ImgLeft} alignTo="left" batteryLevel={levelQuery.data?.left} batteryCharging={chargingQuery.data?.left} />
-                <EarbudItem img={A3951ImgRight} alignTo="right" batteryLevel={levelQuery.data?.right} batteryCharging={chargingQuery.data?.right} />
+        <Box sx={{ display: "block", pt: 3, maxWidth: "300px", margin: "auto", mb: 0, mt: 1.5 }}>
+            <Paper sx={{ display: "flex", margin: 1.5, justifyContent: "center", alignItems: "center" }} elevation={0}>
+                {OverviewItem(deviceModel)}
             </Paper>
         </Box>
     )
 }
 
-function EarbudItem({ alignTo, batteryLevel, batteryCharging, img }: { alignTo: "left" | "right", batteryLevel: number | undefined, batteryCharging: boolean | undefined, img: string }) {
+function OverviewItem(deviceModel: DeviceSelection) {
+    const chargingQuery = useCharging();
+    const levelQuery = useBatteryLevel();
+
+    switch (deviceModel) {
+        case "A3951":
+            return (
+                <>
+                    <A3951EarbudItem img={A3951ImgLeft} imgSize={80} alignTo="left" batteryLevel={levelQuery.data?.left} batteryCharging={chargingQuery.data?.left} />
+                    <A3951EarbudItem img={A3951ImgRight} imgSize={80} alignTo="right" batteryLevel={levelQuery.data?.right} batteryCharging={chargingQuery.data?.right} />
+                </>
+            );
+        case "A3027":
+            return (
+                <A3951EarbudItem img={A3027Img} imgSize={90} alignTo="right" batteryLevel={levelQuery.data?.left} batteryCharging={chargingQuery.data?.left} />
+            );
+        default:
+            return (
+                <h1>Something went wrong...</h1>
+            );
+    }
+}
+
+function A3951EarbudItem({ alignTo, batteryLevel, batteryCharging, img, imgSize }: { alignTo: "left" | "right", batteryLevel: number | undefined, batteryCharging: boolean | undefined, img: string, imgSize: number }) {
     return (
         <Grid item>
             <Grid container spacing={1} justifyContent="center" alignItems="center">
                 {alignTo == "left" &&
-                    <EarpiceInfo batteryLevel={batteryLevel} batteryCharging={batteryCharging} />
+                    <EarbudBattery batteryLevel={batteryLevel} batteryCharging={batteryCharging} />
                 }
                 <Grid item>
-                    <img src={img} alt="A3951" height={80} />
+                    <img src={img} alt="A3951" height={imgSize} />
                 </Grid>
                 {alignTo == "right" &&
-                    <EarpiceInfo batteryLevel={batteryLevel} batteryCharging={batteryCharging} />
+                    <EarbudBattery batteryLevel={batteryLevel} batteryCharging={batteryCharging} />
                 }
             </Grid>
         </Grid>
     )
 }
 
-function EarpiceInfo({ batteryLevel, batteryCharging }: any) {
+function EarbudBattery({ batteryLevel, batteryCharging }: any) {
     let icon = null;
     //0-5
     switch (batteryLevel) {
