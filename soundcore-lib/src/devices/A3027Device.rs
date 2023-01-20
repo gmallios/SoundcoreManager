@@ -81,18 +81,18 @@ impl SoundcoreDevice for A3027 {
     async fn get_status(&self) -> Result<DeviceStatus, SoundcoreError> {
         self.build_and_send_cmd(A3951_CMD_DEVICE_STATUS, None).await?;
         let resp = self.recv(97).await?;
-        if !verify_resp(&resp) {
-            return Err(SoundcoreError::ResponseChecksumError);
-        }
+        // if !verify_resp(&resp) {
+        //     return Err(SoundcoreError::ResponseChecksumError);
+        // }
         Ok(Self::decode(&resp)?)
     }
 
     async fn get_info(&self) -> Result<DeviceInfo, SoundcoreError> {
         self.build_and_send_cmd(A3951_CMD_DEVICE_INFO, None).await?;
         let resp = self.recv(36).await?;
-        if !verify_resp(&resp) {
-            return Err(SoundcoreError::ResponseChecksumError);
-        }
+        // if !verify_resp(&resp) {
+        //     return Err(SoundcoreError::ResponseChecksumError);
+        // }
         Ok(Self::decode(&resp)?)
     }
     async fn get_battery_level(&self) -> Result<BatteryLevel, SoundcoreError> {
