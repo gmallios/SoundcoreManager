@@ -40,4 +40,4 @@ jobs:
         with:
           name: SoundcoreManager-${{ matrix.platform }}
           path: |
-            src-tauri/target/${{ matrix.platform }}/release/*.exe
+            src-tauri/target/${{ matrix.target }}/release/*.exe
