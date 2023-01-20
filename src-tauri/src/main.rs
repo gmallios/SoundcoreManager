@@ -81,7 +81,9 @@ fn main() {
         .expect("error while running tauri application")
         .run(|app_handle, event| match event {
             tauri::RunEvent::ExitRequested { api, .. } => {
-                api.prevent_exit();
+                if cfg!(target_os = "macos"){
+                    api.prevent_exit();
+                }
             },
             /* Prevent window from closing - Primarily for macOS since we rely heavily on the window */
             tauri::RunEvent::WindowEvent { label, event, .. } => {
