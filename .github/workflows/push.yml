@@ -15,6 +15,7 @@ jobs:
       - name: Rust cache
         uses: swatinem/rust-cache@v2
         with:
+          cache-on-failure: "true"
           workspaces: './src-tauri -> target'
 
       - name: Sync node version and setup cache
