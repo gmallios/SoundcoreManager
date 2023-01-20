@@ -12,7 +12,10 @@ jobs:
     runs-on: ${{ matrix.platform }}
     steps:
       - uses: actions/checkout@v3
-      
+
+      - name: install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+
       - name: Set up cargo cache
         uses: actions/cache@v3
         continue-on-error: false
@@ -22,7 +25,7 @@ jobs:
             ~/.cargo/registry/index/
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
-            target/            
+            src-tauri/target/            
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: ${{ runner.os }}-cargo
 
@@ -32,13 +35,12 @@ jobs:
       #     cache-on-failure: "true"
       #     workspaces: './src-tauri -> target'
 
-      - name: Sync node version and setup cache
+      - name: Sync node version
         uses: actions/setup-node@v3
         with:
           node-version: 'lts/*'
           cache: 'npm' # Set this to npm, yarn or pnpm.
-      - name: install Rust stable
-        uses: dtolnay/rust-toolchain@stable
+      
         
       - name: install dependencies (ubuntu only)
         if: matrix.platform == 'ubuntu-20.04'
