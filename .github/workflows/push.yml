@@ -38,6 +38,6 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
-          name: SoundcoreManager-${{ matrix.platform }}
+          name: SoundcoreManager- ${{ matrix.platform }}
           path: |
             src-tauri/target/${{ matrix.target }}/release/*.exe
