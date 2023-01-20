@@ -245,31 +245,61 @@ impl DeviceInfo {
     }
 }
 
+// impl DeviceStatus {
+//     fn from_bytes(arr: &[u8]) -> Result<DeviceStatus, SoundcoreError> {
+//         if arr.len() < 93 {
+//             return Err(SoundcoreError::Unknown);
+//         }
+
+//         Ok(DeviceStatus {
+//             host_device: arr[9],
+//             tws_status: arr[10] == 1,
+//             battery_level: BatteryLevel::from_bytes(&arr[11..13])?,
+//             battery_charging: BatteryCharging::from_bytes(&arr[13..15])?,
+//             left_eq: EQWave::from_bytes(&arr[17..25])?,
+//             right_eq: EQWave::from_bytes(&arr[25..33])?,
+//             hearid_enabled: arr[35] == 1,
+//             left_hearid: EQWave::from_bytes(&arr[36..44])?,
+//             right_hearid: EQWave::from_bytes(&arr[44..52])?,
+//             left_hearid_customdata: EQWave::from_bytes(&arr[58..66])?,
+//             right_hearid_customdata: EQWave::from_bytes(&arr[66..74])?,
+//             anc_status: ANCProfile::from_bytes(&arr[86..90])?,
+//             side_tone_enabled: arr[90] == 1,
+//             wear_detection_enabled: arr[91] == 1,
+//             touch_tone_enabled: arr[92] == 1,
+//         })
+//     }
+// }
+
+/* Temporary A3027 Parsing  */
 impl DeviceStatus {
     fn from_bytes(arr: &[u8]) -> Result<DeviceStatus, SoundcoreError> {
         if arr.len() < 93 {
             return Err(SoundcoreError::Unknown);
         }
+        let chargeArr = vec![arr[10], arr[10]];
+        let levelArr = vec![arr[9], arr[9]];
 
         Ok(DeviceStatus {
             host_device: arr[9],
             tws_status: arr[10] == 1,
-            battery_level: BatteryLevel::from_bytes(&arr[11..13])?,
-            battery_charging: BatteryCharging::from_bytes(&arr[13..15])?,
-            left_eq: EQWave::from_bytes(&arr[17..25])?,
-            right_eq: EQWave::from_bytes(&arr[25..33])?,
-            hearid_enabled: arr[35] == 1,
-            left_hearid: EQWave::from_bytes(&arr[36..44])?,
-            right_hearid: EQWave::from_bytes(&arr[44..52])?,
-            left_hearid_customdata: EQWave::from_bytes(&arr[58..66])?,
-            right_hearid_customdata: EQWave::from_bytes(&arr[66..74])?,
-            anc_status: ANCProfile::from_bytes(&arr[86..90])?,
-            side_tone_enabled: arr[90] == 1,
-            wear_detection_enabled: arr[91] == 1,
-            touch_tone_enabled: arr[92] == 1,
+            battery_level: BatteryLevel::from_bytes(&*levelArr)?,
+            battery_charging: BatteryCharging::from_bytes(&*chargeArr)?,
+            left_eq: EQWave::from_bytes(&arr[13..21])?,
+            right_eq: EQWave::from_bytes(&arr[13..21])?,
+            hearid_enabled: arr[23] == 1,
+            left_hearid: EQWave::from_bytes(&arr[24..32])?,
+            right_hearid: EQWave::from_bytes(&arr[32..40])?,
+            left_hearid_customdata: EQWave::default(),
+            right_hearid_customdata: EQWave::default(),
+            anc_status: ANCProfile::from_bytes(&arr[44..48])?,
+            side_tone_enabled: false,
+            wear_detection_enabled: arr[69] == 1,
+            touch_tone_enabled: false,
         })
     }
 }
+
 
 impl BatteryLevel {
     fn from_bytes(arr: &[u8]) -> Result<BatteryLevel, SoundcoreError> {
