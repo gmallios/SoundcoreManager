@@ -16,14 +16,13 @@ use std::time::Duration;
 
 static SLEEP_DURATION: Duration = std::time::Duration::from_millis(30);
 
-pub static A3951_RFCOMM_UUID: &str = crate::statics::A3951_RFCOMM_UUID;
 
-pub struct A3951 {
+pub struct A3027 {
     btaddr: Option<BluetoothAdrr>,
     rfcomm: Option<RFCOMM>,
 }
 
-impl Default for A3951 {
+impl Default for A3027 {
     fn default() -> Self {
         Self {
             btaddr: None,
@@ -33,13 +32,13 @@ impl Default for A3951 {
 }
 
 #[async_trait]
-impl SoundcoreDevice for A3951 {
+impl SoundcoreDevice for A3027 {
     async fn init(&self, btaddr: BluetoothAdrr) -> Result<Box<dyn SoundcoreDevice>, SoundcoreError> {
         let mut rfcomm = RFCOMM::new().await?;
         rfcomm
             .connect_uuid(btaddr.clone(), A3951_RFCOMM_UUID)
             .await?;
-        Ok(Box::new(A3951 { btaddr: Some(btaddr), rfcomm: Some(rfcomm) }))
+        Ok(Box::new(A3027 { btaddr: Some(btaddr), rfcomm: Some(rfcomm) }))
     }
 
     async fn close(&self) -> Result<(), SoundcoreError> {
@@ -97,43 +96,16 @@ impl SoundcoreDevice for A3951 {
         Ok(Self::decode(&resp)?)
     }
     async fn get_battery_level(&self) -> Result<BatteryLevel, SoundcoreError> {
-        self.build_and_send_cmd(A3951_CMD_DEVICE_BATTERYLEVEL, None).await?;
-        let resp = self.recv(100).await?;
-
-        if !verify_resp(&resp[0..12]) {
-            return Err(SoundcoreError::ResponseChecksumError);
-        }
-
-        if resp[6] == 4 {
-            debug!("Device battery level blink: {:?}", resp);
-            // Case battery level. Ignore for now, more debugging needed.
-            // Battery charging "blinks" when this event is triggered.
-            return Err(SoundcoreError::Unknown);
-        }
-
-        Ok(Self::decode(&resp[9..11])?)
+        Ok(self.get_status().await?.battery_level)
     }
 
     async fn get_battery_charging(&self) -> Result<BatteryCharging, SoundcoreError> {
-        self.build_and_send_cmd(A3951_CMD_DEVICE_BATTERYCHARGING, None).await?;
-        let resp = self.recv(100).await?;
-
-        if !verify_resp(&resp[0..12]) {
-            return Err(SoundcoreError::ResponseChecksumError);
-        }
-        // https://prnt.sc/yze5IvvUtYlq Case battery "blink"
-        if resp[13] == 255 {
-            debug!("Device battery charging blink: {:?}", resp);
-            // When "blinking" resp[13] is 255 afaik.
-            return Err(SoundcoreError::Unknown);
-        }
-
-        Ok(Self::decode(&resp[9..11])?)
+        Ok(self.get_status().await?.battery_charging)
     }
 }
 
 #[async_trait]
-impl SoundcoreANC for A3951 {
+impl SoundcoreANC for A3027 {
     async fn set_anc(&self, profile: ANCProfile) -> Result<(), crate::error::SoundcoreError> {
         self.build_and_send_cmd(A3951_CMD_DEVICE_SETANC, Some(&profile.to_bytes()))
             .await?;
@@ -153,7 +125,7 @@ impl SoundcoreANC for A3951 {
 }
 
 #[async_trait]
-impl SoundcoreEQ for A3951 {
+impl SoundcoreEQ for A3027 {
     async fn set_eq(&self, wave: EQWave) -> Result<(), SoundcoreError> {
         let drc_supported = true;
         let eq_index: i32 = 65278; /* Custom EQ Index */
@@ -219,7 +191,7 @@ impl SoundcoreEQ for A3951 {
 }
 
 #[async_trait]
-impl SoundcoreLDAC for A3951 {
+impl SoundcoreLDAC for A3027 {
     async fn get_ldac(&self) -> Result<bool, SoundcoreError> {
         self.build_and_send_cmd(A3951_CMD_DEVICE_GETLDAC, None).await?;
         let resp = self.recv(11).await?;
@@ -233,10 +205,9 @@ impl SoundcoreLDAC for A3951 {
         unimplemented!()
     }
 }
-impl SoundcoreHearID for A3951 {}
+impl SoundcoreHearID for A3027 {}
 
-
-impl ResponseDecoder<DeviceInfo> for A3951 {
+impl ResponseDecoder<DeviceInfo> for A3027 {
     fn decode(arr: &[u8]) -> Result<DeviceInfo, SoundcoreError> {
         Ok(DeviceInfo {
             left_fw: String::from_utf8(arr[9..14].to_vec())?,
@@ -246,35 +217,36 @@ impl ResponseDecoder<DeviceInfo> for A3951 {
     }
 }
 
-
-impl ResponseDecoder<DeviceStatus> for A3951 {
+impl ResponseDecoder<DeviceStatus> for A3027 {
     fn decode(arr: &[u8]) -> Result<DeviceStatus, SoundcoreError> {
         if arr.len() < 93 {
-            return Err(SoundcoreError::RecvError);
+            return Err(SoundcoreError::Unknown);
         }
+        let chargeArr = vec![arr[10], arr[10]];
+        let levelArr = vec![arr[9], arr[9]];
 
         Ok(DeviceStatus {
             host_device: arr[9],
             tws_status: arr[10] == 1,
-            battery_level: Self::decode(&arr[11..13])?,
-            battery_charging: Self::decode(&arr[13..15])?,
-            left_eq: EQWave::decode(&arr[17..25])?,
-            right_eq: EQWave::decode(&arr[25..33])?,
-            hearid_enabled: arr[35] == 1,
-            left_hearid: EQWave::decode(&arr[36..44])?,
-            right_hearid: EQWave::decode(&arr[44..52])?,
-            left_hearid_customdata: EQWave::decode(&arr[58..66])?,
-            right_hearid_customdata: EQWave::decode(&arr[66..74])?,
-            anc_status: ANCProfile::decode(&arr[86..90])?,
-            side_tone_enabled: arr[90] == 1,
-            wear_detection_enabled: arr[91] == 1,
-            touch_tone_enabled: arr[92] == 1,
+            battery_level: Self::decode(&*levelArr)?,
+            battery_charging: Self::decode(&*chargeArr)?,
+            left_eq: EQWave::decode(&arr[13..21])?,
+            right_eq: EQWave::decode(&arr[13..21])?,
+            hearid_enabled: arr[23] == 1,
+            left_hearid: EQWave::decode(&arr[24..32])?,
+            right_hearid: EQWave::decode(&arr[32..40])?,
+            left_hearid_customdata: EQWave::default(),
+            right_hearid_customdata: EQWave::default(),
+            anc_status: ANCProfile::decode(&arr[44..48])?,
+            side_tone_enabled: false,
+            wear_detection_enabled: arr[69] == 1,
+            touch_tone_enabled: false,
         })
     }
 }
 
 
-impl ResponseDecoder<BatteryLevel> for A3951 {
+impl ResponseDecoder<BatteryLevel> for A3027 {
     fn decode(arr: &[u8]) -> Result<BatteryLevel, SoundcoreError> {
         if arr.len() < 2 {
             return Err(SoundcoreError::Unknown);
@@ -287,7 +259,7 @@ impl ResponseDecoder<BatteryLevel> for A3951 {
     }
 }
 
-impl ResponseDecoder<BatteryCharging> for A3951 {
+impl ResponseDecoder<BatteryCharging> for A3027 {
     fn decode(arr: &[u8]) -> Result<BatteryCharging, SoundcoreError> {
         if arr.len() < 2 {
             return Err(SoundcoreError::Unknown);
@@ -297,92 +269,5 @@ impl ResponseDecoder<BatteryCharging> for A3951 {
             left: arr[0] == 1,
             right: arr[1] == 1,
         })
-    }
-}
-
-impl ANCProfile {
-    pub const NORMAL_MODE: ANCProfile = ANCProfile {
-        option: 2,
-        anc_option: 0,
-        transparency_option: 0,
-        anc_custom: 6,
-    };
-
-    pub const ANC_TRANSPORT_MODE: ANCProfile = ANCProfile {
-        option: 0,
-        anc_option: 0,
-        transparency_option: 1,
-        anc_custom: 6,
-    };
-
-    pub const ANC_OUTDOOR_MODE: ANCProfile = ANCProfile {
-        option: 0,
-        anc_option: 1,
-        transparency_option: 1,
-        anc_custom: 6,
-    };
-
-    pub const ANC_INDOOR_MODE: ANCProfile = ANCProfile {
-        option: 0,
-        anc_option: 2,
-        transparency_option: 1,
-        anc_custom: 6,
-    };
-
-    pub const TRANSPARENCY_FULLY_TRANSPARENT_MODE: ANCProfile = ANCProfile {
-        option: 1,
-        anc_option: 0,
-        transparency_option: 0,
-        anc_custom: 6,
-    };
-
-    pub const TRANSPARENCY_VOCAL_MODE: ANCProfile = ANCProfile {
-        option: 1,
-        anc_option: 0,
-        transparency_option: 1,
-        anc_custom: 6,
-    };
-
-    pub fn anc_custom_value(val: u8) -> ANCProfile {
-        ANCProfile {
-            option: 0,
-            anc_option: 3,
-            transparency_option: 1,
-            anc_custom: Clamp::clamp(val, 0, 10),
-        }
-    }
-
-    pub fn decode(arr: &[u8]) -> Result<ANCProfile, std::string::FromUtf8Error> {
-        let anc_custom: u8;
-
-        if arr[3] == 255 {
-            anc_custom = 255;
-        } else {
-            anc_custom = Clamp::clamp(arr[3], 0, 10);
-        }
-
-        Ok(ANCProfile {
-            option: Clamp::clamp(arr[0], 0, 2),
-            anc_option: Clamp::clamp(arr[1], 0, 3),
-            transparency_option: arr[2],
-            anc_custom,
-        })
-    }
-
-    pub fn to_bytes(&self) -> [u8; 4] {
-        let anc_custom: u8;
-
-        if self.anc_custom == 255 {
-            anc_custom = 255;
-        } else {
-            anc_custom = Clamp::clamp(self.anc_custom, 0, 10);
-        }
-
-        [
-            Clamp::clamp(self.option, 0, 2),
-            Clamp::clamp(self.anc_option, 0, 3),
-            self.transparency_option,
-            anc_custom,
-        ]
     }
 }
