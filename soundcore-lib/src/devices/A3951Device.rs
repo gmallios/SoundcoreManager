@@ -97,38 +97,11 @@ impl SoundcoreDevice for A3951 {
         Ok(DeviceInfo::from_bytes(&resp)?)
     }
     async fn get_battery_level(&self) -> Result<BatteryLevel, SoundcoreError> {
-        self.build_and_send_cmd(A3951_CMD_DEVICE_BATTERYLEVEL, None).await?;
-        let resp = self.recv(100).await?;
-
-        if !verify_resp(&resp[0..12]) {
-            return Err(SoundcoreError::ResponseChecksumError);
-        }
-
-        if resp[6] == 4 {
-            debug!("Device battery level blink: {:?}", resp);
-            // Case battery level. Ignore for now, more debugging needed.
-            // Battery charging "blinks" when this event is triggered.
-            return Err(SoundcoreError::Unknown);
-        }
-
-        Ok(BatteryLevel::from_bytes(&resp[9..11])?)
+        Ok(self.get_status().await?.battery_level)
     }
 
     async fn get_battery_charging(&self) -> Result<BatteryCharging, SoundcoreError> {
-        self.build_and_send_cmd(A3951_CMD_DEVICE_BATTERYCHARGING, None).await?;
-        let resp = self.recv(100).await?;
-
-        if !verify_resp(&resp[0..12]) {
-            return Err(SoundcoreError::ResponseChecksumError);
-        }
-        // https://prnt.sc/yze5IvvUtYlq Case battery "blink"
-        if resp[13] == 255 {
-            debug!("Device battery charging blink: {:?}", resp);
-            // When "blinking" resp[13] is 255 afaik.
-            return Err(SoundcoreError::Unknown);
-        }
-
-        Ok(BatteryCharging::from_bytes(&resp[9..11])?)
+        Ok(self.get_status().await?.battery_charging)
     }
 }
 
