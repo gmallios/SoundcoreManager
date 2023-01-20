@@ -127,7 +127,7 @@ impl SoundcoreANC for A3027 {
 #[async_trait]
 impl SoundcoreEQ for A3027 {
     async fn set_eq(&self, wave: EQWave) -> Result<(), SoundcoreError> {
-        let drc_supported = true;
+        let drc_supported = false;
         let eq_index: i32 = 65278; /* Custom EQ Index */
         let eq_hindex = 0; /* I don't know what this is, doesn't seem to change across EQ Indexes and EQ values and is constant */
         let arr_len = match drc_supported {
