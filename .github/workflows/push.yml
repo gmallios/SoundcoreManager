@@ -1,4 +1,4 @@
-name: 'Push - Build & Release'
+name: 'Push Build'
 
 on: push
 
@@ -12,12 +12,19 @@ jobs:
     runs-on: ${{ matrix.platform }}
     steps:
       - uses: actions/checkout@v3
-      - name: setup node
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: './src-tauri -> target'
+
+      - name: Sync node version and setup cache
         uses: actions/setup-node@v3
         with:
-          node-version: 16
+          node-version: 'lts/*'
+          cache: 'npm' # Set this to npm, yarn or pnpm.
       - name: install Rust stable
         uses: dtolnay/rust-toolchain@stable
+        
       - name: install dependencies (ubuntu only)
         if: matrix.platform == 'ubuntu-20.04'
         run: |
@@ -31,6 +38,6 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
-          name: SoundcoreManager-${{ matrix.target }}
+          name: SoundcoreManager-${{ matrix.platform }}
           path: |
-            src-tauri/target/${{ matrix.target }}/release/*.exe
+            src-tauri/target/${{ matrix.platform }}/release/*.exe
