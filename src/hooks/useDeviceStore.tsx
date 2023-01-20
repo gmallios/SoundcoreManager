@@ -81,7 +81,6 @@ const useDeviceStore = create<DeviceStoreState>((set) => ({
   connectUUID: (selection: DeviceSelection, addr: String) => {
     set((state) => ({ ...state, deviceConnectionState: DeviceConnectionState.CONNECTING }));
     invoke("connect", { selection: selection, addr: addr }).then((_msg) => {
-      console.log("con")
       set((state) => ({ ...state, deviceConnectionState: DeviceConnectionState.CONNECTED }));
     }).catch((err) => {
       console.log(err);

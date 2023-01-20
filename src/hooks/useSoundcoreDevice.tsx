@@ -43,8 +43,13 @@ export function connectWithUUID(macAddr: String, uuid: String) {
 export function useCharging() {
     const { deviceConnectionState } = useDeviceStore();
     return useQuery<DeviceBatteryCharging, Error>(["charging"], async () => {
-        const result = await invoke("get_battery_charging");
-        return result as DeviceBatteryCharging;
+        try {
+            const result = await invoke("get_battery_charging");
+            return result as DeviceBatteryCharging;
+        } catch (err) {
+            console.error("Charging Error: " + err);
+            return { left: false, right: false } as DeviceBatteryCharging;
+        }
     }, {
         refetchInterval: 500,
         enabled: deviceConnectionState == DeviceConnectionState.CONNECTED,
@@ -54,8 +59,13 @@ export function useCharging() {
 export function useBatteryLevel() {
     const { deviceConnectionState } = useDeviceStore();
     return useQuery<DeviceBatteryLevel, Error>(["battery"], async () => {
-        const result = await invoke("get_battery_level");
-        return result as DeviceBatteryLevel;
+        try {
+            const result = await invoke("get_battery_level");
+            return result as DeviceBatteryLevel;
+        } catch (err) {
+            console.error("Battery Error: " + err);
+            return { left: 0, right: 0 } as DeviceBatteryLevel;
+        }
     }, {
         refetchInterval: 5000,
         enabled: deviceConnectionState == DeviceConnectionState.CONNECTED,
@@ -89,7 +99,7 @@ export function useUpdateANC() {
     return useMutation({
         mutationFn: (newMode: ANCModes) => { return invoke("set_anc", { mode: newMode }); },
         onMutate: async (newMode: ANCModes) => {
-            await queryClient.cancelQueries({queryKey: ["anc"]});
+            await queryClient.cancelQueries({ queryKey: ["anc"] });
             queryClient.setQueryData<ANCModes>(["anc"], newMode);
         },
     });
@@ -100,7 +110,7 @@ export function useUpdateEQ() {
     return useMutation({
         mutationFn: (newEQ: EQWave) => { return invoke("set_eq", { eq: newEQ }); },
         onMutate: async (newEQ: EQWave) => {
-            await queryClient.cancelQueries({queryKey: ["status"]});
+            await queryClient.cancelQueries({ queryKey: ["status"] });
             queryClient.setQueryData<DeviceStatus>(["status"], old => {
                 return {
                     ...old!,

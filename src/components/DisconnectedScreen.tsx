@@ -25,7 +25,7 @@ export default function DisconnectedScreen() {
     const handleFabClick = () => {
         if (selectedDevice) {
             console.log("Connecting to: " + selectedDevice.address)
-            connectUUID("A3951", selectedDevice.address);
+            connectUUID(selectedDevice.name == "Soundcore Liberty Air 2 Pro" ? "A3951" : "A3027", selectedDevice.address);
         }
     };
 

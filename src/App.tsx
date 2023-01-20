@@ -33,7 +33,7 @@ function App() {
 
   /* Update tray status on every change */
   useEffect(() => {
-    if (isDataNotNull) {
+    if (isDataSuccess) {
       let trayStatus: ITrayStatus = {
         deviceConnectionState: DeviceConnectionState.CONNECTED,
         batteryLevel: level!,
@@ -55,7 +55,7 @@ function App() {
     <React.Fragment>
       {deviceConnectionState != DeviceConnectionState.DISCONNECTED ? (
         <Stack>
-          {isDataNotNull ? (
+          {isStatusSuccess ? (
             /* TODO: Create a component which wraps all while-connected components */
             <React.Fragment>
               <AppBar />
