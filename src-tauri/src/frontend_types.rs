@@ -5,6 +5,7 @@ use serde::{Serialize, Deserialize};
 #[ts(export, export_to = "../src/bindings/DeviceSelection.d.ts")]
 pub(crate) enum DeviceSelection {
     A3951,
+    A3027,
     None
 }
 
