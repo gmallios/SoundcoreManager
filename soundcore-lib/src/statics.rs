@@ -20,3 +20,5 @@ pub(crate) static A3951_CMD_DEVICE_GETANC: [i8; 7] = [8, -18, 0, 0, 0, 6, 1];
 pub(crate) static A3951_CMD_DEVICE_SETANC: [i8; 7] = [8, -18, 0, 0, 0, 6, -127];
 
 
+pub(crate) static A3027_CMD_DEVICE_SETEQ: [i8; 7] = [8, -18, 0, 0, 0, 2, -127];
+
