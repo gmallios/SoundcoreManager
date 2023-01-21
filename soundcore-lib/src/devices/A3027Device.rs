@@ -177,7 +177,8 @@ impl SoundcoreEQ for A3027 {
         /* drc_offset + 56-72 "Corrected" EQ Wave */
         wave_out[drc_offset + 56..drc_offset + 64].copy_from_slice(&corrected_eq_wave_bytes[0..8]);
         wave_out[drc_offset + 64..drc_offset + 72].copy_from_slice(&corrected_eq_wave_bytes[0..8]);
-        self.build_and_send_cmd(A3951_CMD_DEVICE_SETEQ_DRC, Some(&wave_out))
+        /* A3027 Doesn't appear to be using DRC */
+        self.build_and_send_cmd(A3951_CMD_DEVICE_SETEQ_NODRC, Some(&wave_out))
             .await?;
         let _resp = self.recv(100).await?;
         Ok(())
