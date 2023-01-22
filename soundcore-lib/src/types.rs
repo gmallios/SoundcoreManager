@@ -299,4 +299,17 @@ impl EQWaveInt {
             (self.pos9 as u8),
         ]
     }
+
+    pub fn to_8bytes(&self) -> [u8; 8] {
+        [
+            (self.pos0 as u8),
+            (self.pos1 as u8),
+            (self.pos2 as u8),
+            (self.pos3 as u8),
+            (self.pos4 as u8),
+            (self.pos5 as u8),
+            (self.pos6 as u8),
+            (self.pos7 as u8),
+        ]
+    }
 }

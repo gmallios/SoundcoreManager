@@ -127,56 +127,13 @@ impl SoundcoreANC for A3027 {
 #[async_trait]
 impl SoundcoreEQ for A3027 {
     async fn set_eq(&self, wave: EQWave) -> Result<(), SoundcoreError> {
-        let drc_supported = false;
+        /* Original Java method name: SendEQ_NoDrc_Not_A3951_A3930 */
+        let mut wave_out = vec![0; 10];
         let eq_index: i32 = 65278; /* Custom EQ Index */
-        let eq_hindex = 0; /* I don't know what this is, doesn't seem to change across EQ Indexes and EQ values and is constant */
-        let arr_len = match drc_supported {
-            /* 76: DRC 74: No DRC */
-            true => 76,
-            false => 74,
-        };
-        let drc_offset = match drc_supported {
-            true => 4,
-            false => 2,
-        };
-        let mut wave_out: Vec<u8> = vec![0; arr_len];
-
-        wave_out[0] = eq_index as u8 & 0xFF;
-        wave_out[1] = ((eq_index >> 8) & 0xFF) as u8;
-
-        if drc_supported {
-            /* hindex is used on DRC models */
-            wave_out[2] = eq_hindex as u8 & 0xFF;
-            wave_out[3] = ((eq_hindex >> 8) & 0xFF) as u8;
-        }
-
-        /* used for both left and right EQs */
-        let corrected_eq_wave = EQWave::transform_to_realeq(wave);
-        let eq_wave_bytes = EQWaveInt::from_eq_wave(wave).to_bytes();
-        let corrected_eq_wave_bytes = EQWaveInt::from_eq_wave(corrected_eq_wave).to_bytes();
-        let hearid_wave_bytes = EQWaveInt::from_eq_wave(EQWave::HEARD_ID_DEFAULT).to_bytes();
-
-        /* drc_offset - drc_offset + 16 EQ Wave */
-        wave_out[drc_offset..drc_offset + 8].copy_from_slice(&eq_wave_bytes[0..8]);
-        wave_out[drc_offset + 8..drc_offset + 16].copy_from_slice(&eq_wave_bytes[0..8]);
-        /* Straight from Soundcore spaghetti */
-        wave_out[drc_offset + 16] = ((-1 & -1) & 255) as u8;
-        wave_out[drc_offset + 17] = ((-1 & -1) & 255) as u8;
-        wave_out[drc_offset + 18] = (0 & 255) as u8;
-        /* drc_offset + 19-35 HearID EQ Wave */
-        wave_out[drc_offset + 19..drc_offset + 27].copy_from_slice(&hearid_wave_bytes[0..8]);
-        wave_out[drc_offset + 27..drc_offset + 35].copy_from_slice(&hearid_wave_bytes[0..8]);
-
-        wave_out[drc_offset + 35..drc_offset + 39].copy_from_slice(&[0, 0, 0, 0]);
-        wave_out[drc_offset + 39] = (0 & 255) as u8; /* HearID type */
-
-        /* drc_offset + 40-56 HearID Customer EQ Wave (IDK what this means, hearid data is not reversed atm) */
-        wave_out[drc_offset + 40..drc_offset + 48].copy_from_slice(&hearid_wave_bytes[0..8]);
-        wave_out[drc_offset + 48..drc_offset + 56].copy_from_slice(&hearid_wave_bytes[0..8]);
-
-        /* drc_offset + 56-72 "Corrected" EQ Wave */
-        wave_out[drc_offset + 56..drc_offset + 64].copy_from_slice(&corrected_eq_wave_bytes[0..8]);
-        wave_out[drc_offset + 64..drc_offset + 72].copy_from_slice(&corrected_eq_wave_bytes[0..8]);
+        let eq_wave = EQWaveInt::from_eq_wave(wave).to_8bytes(); 
+        wave_out[0] = eq_index as u8;
+        wave_out[1] = (eq_index >> 8) as u8;
+        wave_out[2..10].copy_from_slice(&eq_wave);
 
         /* A3027 Doesn't appear to be using DRC */
         self.build_and_send_cmd(A3027_CMD_DEVICE_SETEQ, Some(&wave_out))
@@ -188,7 +145,6 @@ impl SoundcoreEQ for A3027 {
     async fn get_eq(&self) -> Result<EQWave, SoundcoreError> {
         Ok(self.get_status().await?.left_eq) /* Return both left and right? */
     }
-
 
 }
 
