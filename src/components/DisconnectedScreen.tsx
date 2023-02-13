@@ -6,6 +6,7 @@ import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { BthScanResult } from "../bindings/ScanResult";
 import useDeviceStore, { DeviceConnectionState } from "../hooks/useDeviceStore";
 import { DeviceSelection } from "../bindings/DeviceSelection";
+import { setTrayMenu } from "../hooks/useTray";
 
 
 
@@ -22,9 +23,11 @@ export default function DisconnectedScreen() {
         shallow: true
     }));
 
-
+   
+    
     useEffect(() => {
         // setDeviceConnectionState(DeviceConnectionState.DISCONNECTED);
+        setTrayMenu(DeviceConnectionState.DISCONNECTED);
         close();
         updateDeviceModel("None");
     }, []);

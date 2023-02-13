@@ -1,15 +1,11 @@
-
-
 use log::debug;
 
 use tauri::{
-    AppHandle, CustomMenuItem, Manager, SystemTray, SystemTrayEvent,
-    SystemTrayMenu, SystemTrayMenuItem, SystemTraySubmenu,
+    AppHandle, CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu,
+    SystemTrayMenuItem, SystemTraySubmenu,
 };
 
-use crate::{
-    frontend_types::{ANCModes, BatteryStatus, TrayDeviceStatus},
-};
+use crate::frontend_types::{ANCModes, BatteryStatus, DeviceSelection, TrayDeviceStatus};
 
 /* Sets the tray menu to either the basic or the extended one */
 #[tauri::command]
@@ -19,7 +15,9 @@ pub(crate) async fn set_tray_menu(app_handle: AppHandle, is_connected: bool) {
     /* Set appropriate menu */
     match is_connected {
         true => {
-            tray_handle.set_menu(build_extended_menu()).unwrap();
+            tray_handle
+                .set_menu(build_extended_menu(&DeviceSelection::None))
+                .unwrap();
         }
         false => {
             tray_handle.set_menu(build_base_tray_menu()).unwrap();
@@ -38,7 +36,9 @@ pub(crate) async fn set_tray_device_status(app_handle: AppHandle, status: TrayDe
     /* Remove set_tray_menu and use only this command? */
     match status.is_connected {
         true => {
-            tray_handle.set_menu(build_extended_menu()).unwrap();
+            tray_handle
+                .set_menu(build_extended_menu(&status.device_selection))
+                .unwrap();
         }
         false => {
             tray_handle.set_menu(build_base_tray_menu()).unwrap();
@@ -165,7 +165,7 @@ fn build_base_tray_menu() -> SystemTrayMenu {
         .add_item(quit)
 }
 
-fn build_anc_menu() -> SystemTrayMenu {
+fn build_anc_menu(device: &DeviceSelection) -> SystemTrayMenu {
     let normal_mode = CustomMenuItem::new("anc_sub_normal_mode".to_string(), "Normal Mode");
     let transport_mode =
         CustomMenuItem::new("anc_sub_transport_mode".to_string(), "ANC: Transport Mode");
@@ -177,21 +177,33 @@ fn build_anc_menu() -> SystemTrayMenu {
     );
     let vocal_mode =
         CustomMenuItem::new("anc_sub_vocal_mode".to_string(), "Transparency: Vocal Mode");
-    SystemTrayMenu::new()
-        .add_item(indoor_mode)
-        .add_item(outdoor_mode)
-        .add_item(transport_mode)
-        .add_native_item(SystemTrayMenuItem::Separator)
-        .add_item(normal_mode)
-        .add_native_item(SystemTrayMenuItem::Separator)
-        .add_item(fully_transparent)
-        .add_item(vocal_mode)
+
+    match device {
+        DeviceSelection::A3951 => SystemTrayMenu::new()
+            .add_item(indoor_mode)
+            .add_item(outdoor_mode)
+            .add_item(transport_mode)
+            .add_native_item(SystemTrayMenuItem::Separator)
+            .add_item(normal_mode)
+            .add_native_item(SystemTrayMenuItem::Separator)
+            .add_item(fully_transparent)
+            .add_item(vocal_mode),
+        DeviceSelection::A3027 => SystemTrayMenu::new()
+            .add_item(indoor_mode)
+            .add_item(outdoor_mode)
+            .add_item(transport_mode)
+            .add_native_item(SystemTrayMenuItem::Separator)
+            .add_item(normal_mode)
+            .add_native_item(SystemTrayMenuItem::Separator)
+            .add_item(fully_transparent),
+        DeviceSelection::None => SystemTrayMenu::new(),
+    }
 }
 
 /* Menu used while connected */
-fn build_extended_menu() -> SystemTrayMenu {
+fn build_extended_menu(device: &DeviceSelection) -> SystemTrayMenu {
     let conn_status = CustomMenuItem::new("conn_status".to_string(), "Disconnected").disabled();
-    let anc_submenu = SystemTraySubmenu::new("ANC Profiles", build_anc_menu());
+    let anc_submenu = SystemTraySubmenu::new("ANC Profiles", build_anc_menu(device));
     let batt_charging_status = CustomMenuItem::new(
         "batt_charging_status".to_string(),
         "Battery: Is it charging?",

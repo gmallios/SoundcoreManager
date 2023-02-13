@@ -2,7 +2,7 @@ use ts_rs::TS;
 use serde::{Serialize, Deserialize};
 use typeshare::typeshare;
 // Run cargo test inside src-tauri to generate the typescript definitions
-#[derive(TS, Serialize, Deserialize)]
+#[derive(TS, Serialize, Deserialize, Debug)]
 #[ts(export, export_to = "../src/bindings/DeviceSelection.d.ts")]
 pub(crate) enum DeviceSelection {
     A3951,
@@ -49,6 +49,7 @@ pub(crate) struct TrayDeviceStatus {
     pub left_status: BatteryStatus,
     pub right_status: BatteryStatus,
     pub anc_mode: ANCModes,
+    pub device_selection: DeviceSelection,
 }
 
 #[derive(TS, Serialize, Deserialize, Debug)]

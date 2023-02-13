@@ -33,21 +33,20 @@ function App() {
 
   /* Update tray status on every change */
   useEffect(() => {
-    if (isDataSuccess) {
       let trayStatus: ITrayStatus = {
         deviceConnectionState: DeviceConnectionState.CONNECTED,
         batteryLevel: level!,
         batteryCharging: charging!,
         anc_mode: ancStatus!,
+        device_selection: deviceModel
       }
       trayMutation.mutate(trayStatus);
-    }
-  }, [level, charging, ancStatus]);
+  }, [level, charging, ancStatus, deviceConnectionState]);
 
-  useEffect(() => {
-    console.log("Device connection state changed to: " + deviceConnectionState);
-    setTrayMenu(deviceConnectionState);
-  }, [deviceConnectionState]);
+  // useEffect(() => {
+  //   console.log("Device connection state changed to: " + deviceConnectionState);
+  //   setTrayMenu(deviceConnectionState);
+  // }, [deviceConnectionState]);
 
   console.log(deviceModel);
 
