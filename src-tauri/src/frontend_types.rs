@@ -1,5 +1,6 @@
 use ts_rs::TS;
 use serde::{Serialize, Deserialize};
+use typeshare::typeshare;
 // Run cargo test inside src-tauri to generate the typescript definitions
 #[derive(TS, Serialize, Deserialize)]
 #[ts(export, export_to = "../src/bindings/DeviceSelection.d.ts")]
@@ -72,4 +73,21 @@ pub(crate) struct BatteryStatus {
 //     pub(crate) charging: A3951BatteryCharging
 // }
 
+#[typeshare]
+#[derive(Serialize, Deserialize)]
+pub struct DeviceFeatures {
+    pub profiles: Vec<SupportedANCProfiles>,
+}
 
+
+#[typeshare]
+#[derive(Serialize, Deserialize)]
+pub enum SupportedANCProfiles {
+    Normal,
+    AncTransportMode,
+    AncOutdoorMode,
+    AncIndoorMode,
+    AncCustomValue,
+    TransparencyFullyTransparentMode,
+    TransparencyVocalMode,
+}

@@ -8,7 +8,8 @@
     "build-bindings": "cargo test --manifest-path ./src-tauri/Cargo.toml",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "tauri": "tauri"
+    "tauri": "tauri",
+    "typeshare": "typeshare ./src-tauri --lang=typescript --output-file=./src/types/soundcore.d.ts"
   },
   "dependencies": {
     "@emotion/react": "^11.10.4",

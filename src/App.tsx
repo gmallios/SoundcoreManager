@@ -5,7 +5,7 @@ import EQCard from "./components/EQCard";
 import AppBar from "./components/AppBar";
 import useDeviceStore, { DeviceConnectionState } from "./hooks/useDeviceStore";
 import Stack from '@mui/material/Stack';
-import ANCModeCard from "./components/ANCModeCard";
+import ANCModeCard from "./components/ANCModeCard/ANCModeCard";
 import DisconnectedScreen from "./components/DisconnectedScreen";
 import { ITrayStatus, setTrayMenu, useUpdateTray, useWindowEvent } from "./hooks/useTray";
 import { CircularProgress } from "@mui/material";
@@ -14,7 +14,7 @@ import { useANC, useBatteryLevel, useCharging, useStatus, useUpdateANC } from ".
 
 
 function App() {
-  const { deviceConnectionState } = useDeviceStore();
+  const { deviceConnectionState, deviceModel } = useDeviceStore();
 
   const { data: level, isSuccess: isBatteryLevelSuccess } = useBatteryLevel();
   const { data: charging, isSuccess: isBatteryChargingSuccess } = useCharging();
@@ -49,7 +49,7 @@ function App() {
     setTrayMenu(deviceConnectionState);
   }, [deviceConnectionState]);
 
-
+  console.log(deviceModel);
 
   return (
     <React.Fragment>
@@ -60,7 +60,7 @@ function App() {
             <React.Fragment>
               <AppBar />
               <OverviewCard />
-              <ANCModeCard />
+              <ANCModeCard model={deviceModel}/>
               <EQCard />
             </React.Fragment>
           ) : (
