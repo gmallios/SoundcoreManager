@@ -1,10 +1,10 @@
 [package]
 name = "soundcoremanager"
-version = "0.1.0"
-description = ""
+version = "0.1.1"
+description = "A Tauri desktop app for managing Soundcore devices"
 authors = ["Grigorios Mallios"]
-license = ""
-repository = ""
+license = "MIT"
+repository = "https://github.com/gmallios/SoundcoreManager"
 edition = "2021"
 rust-version = "1.57"
 build = "build.rs"

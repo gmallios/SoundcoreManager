@@ -2976,7 +2976,7 @@ dependencies = [
 
 [[package]]
 name = "soundcoremanager"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "bluetooth-lib",
  "env_logger",
