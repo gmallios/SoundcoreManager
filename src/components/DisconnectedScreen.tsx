@@ -5,6 +5,7 @@ import DeviceList from "./DeviceList";
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { BthScanResult } from "../bindings/ScanResult";
 import useDeviceStore, { DeviceConnectionState } from "../hooks/useDeviceStore";
+import { DeviceSelection } from "../bindings/DeviceSelection";
 
 
 
@@ -15,17 +16,25 @@ export default function DisconnectedScreen() {
     const { connectUUID } = useDeviceStore();
     const [selectedDevice, setSelectedDevice] = React.useState<BthScanResult>();
     const { setDeviceConnectionState, close } = useDeviceStore();
+    const { updateDeviceModel } = useDeviceStore((state) => ({
+        deviceModel: state.deviceModel,
+        updateDeviceModel: state.updateDeviceModel,
+        shallow: true
+    }));
 
 
     useEffect(() => {
         // setDeviceConnectionState(DeviceConnectionState.DISCONNECTED);
         close();
+        updateDeviceModel("None");
     }, []);
 
     const handleFabClick = () => {
         if (selectedDevice) {
+            let deviceModel: DeviceSelection = selectedDevice.name == "Soundcore Liberty Air 2 Pro" ? "A3951" : "A3027"; /* TODO: Scale this up to multiple modelIds */
+            updateDeviceModel(deviceModel);
             console.log("Connecting to: " + selectedDevice.address)
-            connectUUID("A3951", selectedDevice.address);
+            connectUUID(deviceModel, selectedDevice.address);
         }
     };
 

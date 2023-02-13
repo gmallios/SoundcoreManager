@@ -5,7 +5,7 @@ use crate::{
 };
 use soundcore_lib::{
     base::SoundcoreDevice,
-    devices::A3951,
+    devices::{A3951, A3027},
     types::{BatteryCharging, BatteryLevel, DeviceInfo, DeviceStatus, EQWave},
     BluetoothAdrr,
 };
@@ -51,7 +51,15 @@ pub(crate) async fn connect(
                 .map_err(|e| e.to_string())?;
             let mut a = state.device.lock().await;
             *a = Some(device);
-        }
+        },
+        DeviceSelection::A3027 => {
+            let device = A3027::default()
+                .init(BluetoothAdrr::from(addr))
+                .await
+                .map_err(|e| e.to_string())?;
+            let mut a = state.device.lock().await;
+            *a = Some(device);
+        },
         DeviceSelection::None => return Err("No device selected".to_string()),
     };
     Ok(())

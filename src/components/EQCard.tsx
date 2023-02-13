@@ -12,7 +12,7 @@ import {
   Legend,
   Filler,
 } from 'chart.js';
-import { Paper } from "@mui/material";
+import { Button, Paper } from "@mui/material";
 import useDeviceStore, { EQWave } from "../hooks/useDeviceStore";
 import { useStatus, useUpdateEQ } from "../hooks/useSoundcoreDevice";
 
@@ -93,6 +93,10 @@ export default function EQCard() {
     return (number - inMin) * (outMax - outMin) / (inMax - inMin) + outMin;
   }
 
+  function resetEQ() {
+    setDataSet([0, 0, 0, 0, 0, 0, 0, 0]);
+  }
+
 
   useEffect(() => {
     if (status != undefined) {
@@ -140,8 +144,8 @@ export default function EQCard() {
   };
 
   return (
-    <Paper sx={{ display: "flex", margin: 3, justifyContent: "center", alignItems: "center" }} >
-      { isDataLoaded && <Line data={data} options={options} />}
+    <Paper sx={{ display: "flex", margin: 3, justifyContent: "center", alignItems: "center" }}>
+      {isDataLoaded && <><Line data={data} options={options} /></>}
     </Paper>
   );
 }

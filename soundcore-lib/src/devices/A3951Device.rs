@@ -8,7 +8,7 @@ use crate::{
     error::SoundcoreError,
     statics::*,
     types::{
-        ANCProfile, BatteryCharging, BatteryLevel, DeviceInfo, DeviceStatus, EQWave, EQWaveInt
+        ANCProfile, BatteryCharging, BatteryLevel, DeviceInfo, DeviceStatus, EQWave, EQWaveInt, ResponseDecoder
     },
     utils::{build_command_array_with_options_toggle_enabled, i8_to_u8vec, verify_resp, Clamp},
 };
@@ -85,7 +85,7 @@ impl SoundcoreDevice for A3951 {
         if !verify_resp(&resp) {
             return Err(SoundcoreError::ResponseChecksumError);
         }
-        Ok(DeviceStatus::from_bytes(&resp)?)
+        Ok(Self::decode(&resp)?)
     }
 
     async fn get_info(&self) -> Result<DeviceInfo, SoundcoreError> {
@@ -94,7 +94,7 @@ impl SoundcoreDevice for A3951 {
         if !verify_resp(&resp) {
             return Err(SoundcoreError::ResponseChecksumError);
         }
-        Ok(DeviceInfo::from_bytes(&resp)?)
+        Ok(Self::decode(&resp)?)
     }
     async fn get_battery_level(&self) -> Result<BatteryLevel, SoundcoreError> {
         self.build_and_send_cmd(A3951_CMD_DEVICE_BATTERYLEVEL, None).await?;
@@ -111,7 +111,7 @@ impl SoundcoreDevice for A3951 {
             return Err(SoundcoreError::Unknown);
         }
 
-        Ok(BatteryLevel::from_bytes(&resp[9..11])?)
+        Ok(Self::decode(&resp[9..11])?)
     }
 
     async fn get_battery_charging(&self) -> Result<BatteryCharging, SoundcoreError> {
@@ -128,7 +128,7 @@ impl SoundcoreDevice for A3951 {
             return Err(SoundcoreError::Unknown);
         }
 
-        Ok(BatteryCharging::from_bytes(&resp[9..11])?)
+        Ok(Self::decode(&resp[9..11])?)
     }
 }
 
@@ -148,7 +148,7 @@ impl SoundcoreANC for A3951 {
         if !verify_resp(&resp) {
             return Err(SoundcoreError::ResponseChecksumError);
         }
-        Ok(ANCProfile::from_bytes(&resp[9..13])?)
+        Ok(ANCProfile::decode(&resp[9..13])?)
     }
 }
 
@@ -235,8 +235,9 @@ impl SoundcoreLDAC for A3951 {
 }
 impl SoundcoreHearID for A3951 {}
 
-impl DeviceInfo {
-    fn from_bytes(arr: &[u8]) -> Result<DeviceInfo, std::string::FromUtf8Error> {
+
+impl ResponseDecoder<DeviceInfo> for A3951 {
+    fn decode(arr: &[u8]) -> Result<DeviceInfo, SoundcoreError> {
         Ok(DeviceInfo {
             left_fw: String::from_utf8(arr[9..14].to_vec())?,
             right_fw: String::from_utf8(arr[14..19].to_vec())?,
@@ -245,25 +246,26 @@ impl DeviceInfo {
     }
 }
 
-impl DeviceStatus {
-    fn from_bytes(arr: &[u8]) -> Result<DeviceStatus, SoundcoreError> {
+
+impl ResponseDecoder<DeviceStatus> for A3951 {
+    fn decode(arr: &[u8]) -> Result<DeviceStatus, SoundcoreError> {
         if arr.len() < 93 {
-            return Err(SoundcoreError::Unknown);
+            return Err(SoundcoreError::RecvError);
         }
 
         Ok(DeviceStatus {
             host_device: arr[9],
             tws_status: arr[10] == 1,
-            battery_level: BatteryLevel::from_bytes(&arr[11..13])?,
-            battery_charging: BatteryCharging::from_bytes(&arr[13..15])?,
-            left_eq: EQWave::from_bytes(&arr[17..25])?,
-            right_eq: EQWave::from_bytes(&arr[25..33])?,
+            battery_level: Self::decode(&arr[11..13])?,
+            battery_charging: Self::decode(&arr[13..15])?,
+            left_eq: EQWave::decode(&arr[17..25])?,
+            right_eq: EQWave::decode(&arr[25..33])?,
             hearid_enabled: arr[35] == 1,
-            left_hearid: EQWave::from_bytes(&arr[36..44])?,
-            right_hearid: EQWave::from_bytes(&arr[44..52])?,
-            left_hearid_customdata: EQWave::from_bytes(&arr[58..66])?,
-            right_hearid_customdata: EQWave::from_bytes(&arr[66..74])?,
-            anc_status: ANCProfile::from_bytes(&arr[86..90])?,
+            left_hearid: EQWave::decode(&arr[36..44])?,
+            right_hearid: EQWave::decode(&arr[44..52])?,
+            left_hearid_customdata: EQWave::decode(&arr[58..66])?,
+            right_hearid_customdata: EQWave::decode(&arr[66..74])?,
+            anc_status: ANCProfile::decode(&arr[86..90])?,
             side_tone_enabled: arr[90] == 1,
             wear_detection_enabled: arr[91] == 1,
             touch_tone_enabled: arr[92] == 1,
@@ -271,8 +273,9 @@ impl DeviceStatus {
     }
 }
 
-impl BatteryLevel {
-    fn from_bytes(arr: &[u8]) -> Result<BatteryLevel, SoundcoreError> {
+
+impl ResponseDecoder<BatteryLevel> for A3951 {
+    fn decode(arr: &[u8]) -> Result<BatteryLevel, SoundcoreError> {
         if arr.len() < 2 {
             return Err(SoundcoreError::Unknown);
         }
@@ -284,8 +287,8 @@ impl BatteryLevel {
     }
 }
 
-impl BatteryCharging {
-    fn from_bytes(arr: &[u8]) -> Result<BatteryCharging, SoundcoreError> {
+impl ResponseDecoder<BatteryCharging> for A3951 {
+    fn decode(arr: &[u8]) -> Result<BatteryCharging, SoundcoreError> {
         if arr.len() < 2 {
             return Err(SoundcoreError::Unknown);
         }
@@ -349,7 +352,7 @@ impl ANCProfile {
         }
     }
 
-    fn from_bytes(arr: &[u8]) -> Result<ANCProfile, std::string::FromUtf8Error> {
+    pub fn decode(arr: &[u8]) -> Result<ANCProfile, std::string::FromUtf8Error> {
         let anc_custom: u8;
 
         if arr[3] == 255 {
@@ -366,7 +369,7 @@ impl ANCProfile {
         })
     }
 
-    fn to_bytes(&self) -> [u8; 4] {
+    pub fn to_bytes(&self) -> [u8; 4] {
         let anc_custom: u8;
 
         if self.anc_custom == 255 {

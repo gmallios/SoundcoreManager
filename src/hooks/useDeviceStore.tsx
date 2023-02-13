@@ -5,6 +5,8 @@ import { DeviceSelection } from '../bindings/DeviceSelection';
 
 interface DeviceStoreState {
   deviceConnectionState: DeviceConnectionState
+  deviceModel: DeviceSelection,
+  updateDeviceModel: (model: DeviceSelection) => void,
   setDeviceConnectionState: (state: DeviceConnectionState) => void,
   connectUUID: (selection: DeviceSelection, addr: String) => void,
   close: () => void,
@@ -74,14 +76,16 @@ export interface EQWave {
 
 const useDeviceStore = create<DeviceStoreState>((set) => ({
   deviceConnectionState: DeviceConnectionState.DISCONNECTED,
-  
+  deviceModel: "None",
+  updateDeviceModel: (model: DeviceSelection) => {
+    set((state) => ({ ...state, deviceModel: model }));
+  },
   setDeviceConnectionState: (new_state: DeviceConnectionState) => {
     set((state) => ({ ...state, deviceConnectionState: new_state }));
   },
   connectUUID: (selection: DeviceSelection, addr: String) => {
     set((state) => ({ ...state, deviceConnectionState: DeviceConnectionState.CONNECTING }));
     invoke("connect", { selection: selection, addr: addr }).then((_msg) => {
-      console.log("con")
       set((state) => ({ ...state, deviceConnectionState: DeviceConnectionState.CONNECTED }));
     }).catch((err) => {
       console.log(err);

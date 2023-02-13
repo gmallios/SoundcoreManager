@@ -8,6 +8,14 @@ pub type RecvFnType<'a> = &'a (dyn Fn(usize) -> Result<Vec<u8>, SoundcoreError> 
 pub type CloseSockFnType<'a> = &'a (dyn Fn() + Send + Sync);
 
 
+pub trait ResponseDecoder<T> {
+    fn decode(arr: &[u8]) -> Result<T, SoundcoreError>;
+}
+
+pub trait CommandEncoder<T> {
+    fn encode(&self) -> Result<Vec<u8>, SoundcoreError>;
+}
+
 #[derive(Default, Debug, Serialize, Deserialize)]
 pub struct DeviceInfo {
     pub left_fw: String,
@@ -85,7 +93,7 @@ impl EQWave {
         pos9: 25.5,
     };
 
-    pub fn from_bytes(arr: &[u8]) -> Result<EQWave, SoundcoreError> {
+    pub fn decode(arr: &[u8]) -> Result<EQWave, SoundcoreError> {
         if arr.len() < 8 {
             return Err(SoundcoreError::Unknown);
         }
@@ -289,6 +297,19 @@ impl EQWaveInt {
             (self.pos7 as u8),
             (self.pos8 as u8),
             (self.pos9 as u8),
+        ]
+    }
+
+    pub fn to_8bytes(&self) -> [u8; 8] {
+        [
+            (self.pos0 as u8),
+            (self.pos1 as u8),
+            (self.pos2 as u8),
+            (self.pos3 as u8),
+            (self.pos4 as u8),
+            (self.pos5 as u8),
+            (self.pos6 as u8),
+            (self.pos7 as u8),
         ]
     }
 }
