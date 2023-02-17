@@ -1,15 +1,15 @@
-name: 'Push - Build'
+name: "Build and Release on Push"
 
 on: push
 
 jobs:
-  build-tauri:
+  build-tauri-and-release:
     strategy:
-      fail-fast: false
-      matrix:
-        platform: [windows-latest]
+      fail-fast: true
+      # matrix:
+      #   platform: [windows-latest]
 
-    runs-on: ${{ matrix.platform }}
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v3
 
@@ -25,17 +25,16 @@ jobs:
             ~/.cargo/registry/index/
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
-            src-tauri/target/            
+            src-tauri/target/
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: ${{ runner.os }}-cargo
 
       - name: 🔄 Sync node version
         uses: actions/setup-node@v3
         with:
-          node-version: 'lts/*'
-          cache: 'npm' # Set this to npm, yarn or pnpm.
-      
-        
+          node-version: "lts/*"
+          cache: "npm" # Set this to npm, yarn or pnpm.
+
       - name: ⏬ Install Ubuntu dependencies
         if: matrix.platform == 'ubuntu-20.04'
         run: |
@@ -45,15 +44,45 @@ jobs:
       - name: 📥 Install Node Dependencies
         run: npm install && npm run build
 
-      - name: 🔨 Build 
+      - name: 🔨 Build
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: ⏫ Upload artifact
+      - name: ⏫ Upload Build Artifact
         uses: actions/upload-artifact@v3
         with:
           name: |
-            SoundcoreManager-${{ matrix.platform }}
+            SoundcoreManager-${{ matrix.platform }}-${{ github.sha }}
           path: |
             src-tauri/target/${{ matrix.target }}/release/*.exe
+
+      - name: Create GitHub release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: soudncoremanager-rolling
+          release_name: SoudncoreManager Latest Release
+          draft: false
+          prerelease: false
+
+      - name: Add rolling release tag
+        uses: EndBug/add-and-commit@v7.1.2
+        with:
+          message: ""
+          add: "SoundcoreManager-${{ matrix.platform }}.exe"
+          force: true
+          tag: ${{ github.sha }}
+          tag_name: "rolling"
+
+      - name: Upload release asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: src-tauri/target/${{ matrix.target }}/release/*.exe
+          asset_name: SoundcoreManager-${{ matrix.platform }}-${{ github.sha }}
+          asset_content_type: application/octet-stream
