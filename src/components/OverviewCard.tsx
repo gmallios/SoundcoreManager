@@ -3,7 +3,8 @@ import useDeviceStore from "../hooks/useDeviceStore";
 import A3951ImgLeft from "./../assets/a3951_img_device_left.webp";
 import A3951ImgRight from "./../assets/a3951_img_device_right_edited.webp";
 import A3027Img from "./../assets/a3027_img_device.webp";
-
+import A3028Img from "./../assets/a3028_img_device.webp";
+import A3029Img from "./../assets/a3029_img_device.webp";
 
 import BatteryAlertIcon from '@mui/icons-material/BatteryAlert';
 import Battery20Icon from '@mui/icons-material/Battery20';
@@ -55,18 +56,26 @@ function OverviewItem() {
     const chargingQuery = useCharging();
     const levelQuery = useBatteryLevel();
     const {data: deviceModel} = useDeviceModel();
-
+    
     switch (deviceModel) {
         case "A3951":
             return (
                 <>
-                    <A3951EarbudItem img={A3951ImgLeft} imgSize={80} alignTo="left" batteryLevel={levelQuery.data?.left} batteryCharging={chargingQuery.data?.left} />
-                    <A3951EarbudItem img={A3951ImgRight} imgSize={80} alignTo="right" batteryLevel={levelQuery.data?.right} batteryCharging={chargingQuery.data?.right} />
+                    <EarbudItem img={A3951ImgLeft} imgSize={80} alignTo="left" batteryLevel={levelQuery.data?.left} batteryCharging={chargingQuery.data?.left} />
+                    <EarbudItem img={A3951ImgRight} imgSize={80} alignTo="right" batteryLevel={levelQuery.data?.right} batteryCharging={chargingQuery.data?.right} />
                 </>
             );
         case "A3027":
             return (
-                <A3951EarbudItem img={A3027Img} imgSize={90} alignTo="right" batteryLevel={levelQuery.data?.left} batteryCharging={chargingQuery.data?.left} />
+                <EarbudItem img={A3027Img} imgSize={90} alignTo="right" batteryLevel={levelQuery.data?.left} batteryCharging={chargingQuery.data?.left} />
+            );
+        case "A3028":
+            return (
+                <EarbudItem img={A3028Img} imgSize={90} alignTo="right" batteryLevel={levelQuery.data?.left} batteryCharging={chargingQuery.data?.left} />
+            );
+        case "A3029":
+            return (
+                <EarbudItem img={A3029Img} imgSize={90} alignTo="right" batteryLevel={levelQuery.data?.left} batteryCharging={chargingQuery.data?.left} />
             );
         default:
             return (
@@ -75,7 +84,7 @@ function OverviewItem() {
     }
 }
 
-function A3951EarbudItem({ alignTo, batteryLevel, batteryCharging, img, imgSize }: { alignTo: "left" | "right", batteryLevel: number | undefined, batteryCharging: boolean | undefined, img: string, imgSize: number }) {
+function EarbudItem({ alignTo, batteryLevel, batteryCharging, img, imgSize }: { alignTo: "left" | "right", batteryLevel: number | undefined, batteryCharging: boolean | undefined, img: string, imgSize: number }) {
     return (
         <Grid item>
             <Grid container spacing={1} justifyContent="center" alignItems="center">
