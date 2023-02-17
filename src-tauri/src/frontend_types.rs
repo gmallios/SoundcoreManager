@@ -1,5 +1,5 @@
+use serde::{Deserialize, Serialize};
 use ts_rs::TS;
-use serde::{Serialize, Deserialize};
 use typeshare::typeshare;
 // Run cargo test inside src-tauri to generate the typescript definitions
 #[derive(TS, Serialize, Deserialize, Debug)]
@@ -7,9 +7,8 @@ use typeshare::typeshare;
 pub(crate) enum DeviceSelection {
     A3951,
     A3027,
-    None
+    None,
 }
-
 
 #[derive(TS, Serialize, Deserialize, Clone, Copy, Debug)]
 #[ts(export, export_to = "../src/bindings/ANCModes.d.ts")]
@@ -22,7 +21,6 @@ pub(crate) enum ANCModes {
     TransparencyFullyTransparentMode,
     TransparencyVocalMode,
 }
-
 
 #[derive(TS, Serialize, Deserialize)]
 #[ts(export, export_to = "../src/bindings/ScanResult.d.ts")]
@@ -42,14 +40,13 @@ impl From<bluetooth_lib::BluetoothDevice> for BthScanResult {
     }
 }
 
-#[derive(TS, Serialize, Deserialize, Debug)]
-#[ts(export, export_to = "../src/bindings/TrayDeviceStatus.d.ts")]
-pub(crate) struct TrayDeviceStatus {
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug)]
+pub(crate) struct NewTrayDeviceStatus {
     pub is_connected: bool,
     pub left_status: BatteryStatus,
     pub right_status: BatteryStatus,
     pub anc_mode: ANCModes,
-    pub device_selection: DeviceSelection,
 }
 
 #[derive(TS, Serialize, Deserialize, Debug)]
@@ -58,7 +55,6 @@ pub(crate) struct BatteryStatus {
     pub is_charging: bool,
     pub battery_level: u8,
 }
-
 
 // #[derive(TS, Serialize, Deserialize)]
 // #[ts(export, export_to = "../src/bindings/Result.d.ts")]
@@ -79,7 +75,6 @@ pub(crate) struct BatteryStatus {
 pub struct DeviceFeatures {
     pub profiles: Vec<SupportedANCProfiles>,
 }
-
 
 #[typeshare]
 #[derive(Serialize, Deserialize)]

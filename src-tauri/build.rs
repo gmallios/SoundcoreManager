@@ -26,16 +26,22 @@ fn build_iobluetooth() {
         .expect("Failed to build iobluetooth server");
 
     if build.wait().unwrap().success() {
-        let mut basedir = PathBuf::from(env::current_dir().unwrap());
+        let mut basedir = env::current_dir().unwrap();
         basedir.pop();
-        let src = Path::join(&basedir, "bluetooth-lib/iobluetooth/target/release/soundcoremanager-iobtserver");
+        let src = Path::join(
+            &basedir,
+            "bluetooth-lib/iobluetooth/target/release/soundcoremanager-iobtserver",
+        );
         /* Add target triple to server - Required by Tauri to bundle it */
         let target = std::env::var("TARGET").unwrap();
         std::fs::rename(
             src,
             Path::join(
                 &basedir,
-                format!("bluetooth-lib/iobluetooth/target/release/soundcoremanager-iobtserver-{}", target),
+                format!(
+                    "bluetooth-lib/iobluetooth/target/release/soundcoremanager-iobtserver-{}",
+                    target
+                ),
             ),
         )
         .expect("Failed to rename iobluetooth server");
@@ -52,5 +58,5 @@ fn get_output_path() -> PathBuf {
     let path = Path::new(&manifest_dir_string)
         .join("target")
         .join(build_type);
-    return PathBuf::from(path);
+    path
 }

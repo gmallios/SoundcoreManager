@@ -8,7 +8,7 @@ interface DeviceStoreState {
   deviceModel: DeviceSelection,
   updateDeviceModel: (model: DeviceSelection) => void,
   setDeviceConnectionState: (state: DeviceConnectionState) => void,
-  connectUUID: (selection: DeviceSelection, addr: String) => void,
+  connectUUID: (bt_name: String, bt_addr: String) => void,
   close: () => void,
 }
 
@@ -83,9 +83,9 @@ const useDeviceStore = create<DeviceStoreState>((set) => ({
   setDeviceConnectionState: (new_state: DeviceConnectionState) => {
     set((state) => ({ ...state, deviceConnectionState: new_state }));
   },
-  connectUUID: (selection: DeviceSelection, addr: String) => {
+  connectUUID: (selection: String, addr: String) => {
     set((state) => ({ ...state, deviceConnectionState: DeviceConnectionState.CONNECTING }));
-    invoke("connect", { selection: selection, addr: addr }).then((_msg) => {
+    invoke("connect", { btName: selection, btAddr: addr }).then((_msg) => {
       set((state) => ({ ...state, deviceConnectionState: DeviceConnectionState.CONNECTED }));
     }).catch((err) => {
       console.log(err);

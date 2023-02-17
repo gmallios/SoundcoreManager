@@ -1,8 +1,10 @@
 import { ANCModes } from "../../bindings/ANCModes";
 import { DeviceSelection } from "../../bindings/DeviceSelection";
+import { useDeviceModel } from "../../hooks/useSoundcoreDevice";
 import BaseANCModeCard, { ANCSliderProps } from "./base";
 
-export default function ANCModeCard({ model }: { model: DeviceSelection }) {
+export default function ANCModeCard() {
+    let { data: model } = useDeviceModel();
     let Component = (props: ANCSliderProps) => <div />;
     let ancButtons: Array<[string, ANCModes | "AncCustomValue"]> = [];
     let transButtons: Array<[string, ANCModes]> = [];

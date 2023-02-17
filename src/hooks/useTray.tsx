@@ -9,13 +9,13 @@ import { Event, listen } from "@tauri-apps/api/event";
 import { useMutation } from "@tanstack/react-query";
 import { useANC, useBatteryLevel, useCharging } from "./useSoundcoreDevice";
 import { DeviceSelection } from "../bindings/DeviceSelection";
+import { NewTrayDeviceStatus } from "../types/soundcore";
 
 export interface ITrayStatus {
     deviceConnectionState: DeviceConnectionState,
     batteryLevel: DeviceBatteryLevel,
     batteryCharging: DeviceBatteryCharging,
     anc_mode: ANCModes | null,
-    device_selection: DeviceSelection
 }
 
 export const useUpdateTray = () => {
@@ -36,12 +36,11 @@ function updateTrayStatus(data: ITrayStatus) {
         is_charging: batteryCharging.right,
         battery_level: batteryLevel.right
     }
-    let status: TrayDeviceStatus = {
+    let status: NewTrayDeviceStatus = {
         is_connected: deviceConnectionState === DeviceConnectionState.CONNECTED,
         left_status: left_batt,
         right_status: right_batt,
         anc_mode: anc_mode != null ? anc_mode : "NormalMode",
-        device_selection: data.device_selection
     }
     console.log(status);
     return invoke("set_tray_device_status", { status });

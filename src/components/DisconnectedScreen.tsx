@@ -29,15 +29,12 @@ export default function DisconnectedScreen() {
         // setDeviceConnectionState(DeviceConnectionState.DISCONNECTED);
         setTrayMenu(DeviceConnectionState.DISCONNECTED);
         close();
-        updateDeviceModel("None");
     }, []);
 
     const handleFabClick = () => {
         if (selectedDevice) {
-            let deviceModel: DeviceSelection = selectedDevice.name == "Soundcore Liberty Air 2 Pro" ? "A3951" : "A3027"; /* TODO: Scale this up to multiple modelIds */
-            updateDeviceModel(deviceModel);
             console.log("Connecting to: " + selectedDevice.address)
-            connectUUID(deviceModel, selectedDevice.address);
+            connectUUID(selectedDevice.name , selectedDevice.address);
         }
     };
 

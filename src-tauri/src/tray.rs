@@ -1,11 +1,15 @@
 use log::debug;
 
 use tauri::{
-    AppHandle, CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu,
+    AppHandle, CustomMenuItem, Manager, State, SystemTray, SystemTrayEvent, SystemTrayMenu,
     SystemTrayMenuItem, SystemTraySubmenu,
 };
 
-use crate::frontend_types::{ANCModes, BatteryStatus, DeviceSelection, TrayDeviceStatus};
+use crate::{
+    device::SupportedModel,
+    frontend_types::{ANCModes, BatteryStatus, NewTrayDeviceStatus},
+    SoundcoreAppState,
+};
 
 /* Sets the tray menu to either the basic or the extended one */
 #[tauri::command]
@@ -15,9 +19,7 @@ pub(crate) async fn set_tray_menu(app_handle: AppHandle, is_connected: bool) {
     /* Set appropriate menu */
     match is_connected {
         true => {
-            tray_handle
-                .set_menu(build_extended_menu(&DeviceSelection::None))
-                .unwrap();
+            tray_handle.set_menu(build_extended_menu(None)).unwrap();
         }
         false => {
             tray_handle.set_menu(build_base_tray_menu()).unwrap();
@@ -29,15 +31,17 @@ pub(crate) async fn set_tray_menu(app_handle: AppHandle, is_connected: bool) {
 /* When the event system menu is done updates should be emmited from the backend to avoid unnecessary overhead */
 /* Also fixes the issue where when the window is hidden the setIntervals from the FE are not timed properly  */
 #[tauri::command]
-pub(crate) async fn set_tray_device_status(app_handle: AppHandle, status: TrayDeviceStatus) {
+pub(crate) async fn set_tray_device_status(app_handle: AppHandle, status: NewTrayDeviceStatus) {
     debug!("Updating tray menu: {:?}", status);
     let tray_handle = app_handle.tray_handle();
+    let state: State<SoundcoreAppState> = app_handle.state();
     /* Try to fix PoisonError bug which occurs randomly while refreshing the app */
     /* Remove set_tray_menu and use only this command? */
     match status.is_connected {
         true => {
+            let model = state.model.read().await;
             tray_handle
-                .set_menu(build_extended_menu(&status.device_selection))
+                .set_menu(build_extended_menu(model.as_ref()))
                 .unwrap();
         }
         false => {
@@ -95,7 +99,7 @@ pub(crate) async fn set_tray_device_status(app_handle: AppHandle, status: TrayDe
     });
 
     match status {
-        TrayDeviceStatus {
+        NewTrayDeviceStatus {
             is_connected: true,
             left_status: BatteryStatus {
                 is_charging: true, ..
@@ -108,7 +112,7 @@ pub(crate) async fn set_tray_device_status(app_handle: AppHandle, status: TrayDe
             // Both Charging
             charging_status.set_title("Both Charging").unwrap();
         }
-        TrayDeviceStatus {
+        NewTrayDeviceStatus {
             is_connected: true,
             left_status: BatteryStatus {
                 is_charging: true, ..
@@ -121,7 +125,7 @@ pub(crate) async fn set_tray_device_status(app_handle: AppHandle, status: TrayDe
             // Left Charging
             charging_status.set_title("Left Charging").unwrap();
         }
-        TrayDeviceStatus {
+        NewTrayDeviceStatus {
             is_connected: true,
             left_status: BatteryStatus {
                 is_charging: false, ..
@@ -134,7 +138,7 @@ pub(crate) async fn set_tray_device_status(app_handle: AppHandle, status: TrayDe
             // Right Charging
             charging_status.set_title("Right Charging").unwrap();
         }
-        TrayDeviceStatus {
+        NewTrayDeviceStatus {
             is_connected: true,
             left_status: BatteryStatus {
                 is_charging: false, ..
@@ -165,7 +169,7 @@ fn build_base_tray_menu() -> SystemTrayMenu {
         .add_item(quit)
 }
 
-fn build_anc_menu(device: &DeviceSelection) -> SystemTrayMenu {
+fn build_anc_menu(model: &SupportedModel) -> SystemTrayMenu {
     let normal_mode = CustomMenuItem::new("anc_sub_normal_mode".to_string(), "Normal Mode");
     let transport_mode =
         CustomMenuItem::new("anc_sub_transport_mode".to_string(), "ANC: Transport Mode");
@@ -178,8 +182,8 @@ fn build_anc_menu(device: &DeviceSelection) -> SystemTrayMenu {
     let vocal_mode =
         CustomMenuItem::new("anc_sub_vocal_mode".to_string(), "Transparency: Vocal Mode");
 
-    match device {
-        DeviceSelection::A3951 => SystemTrayMenu::new()
+    match model {
+        SupportedModel::A3951 => SystemTrayMenu::new()
             .add_item(indoor_mode)
             .add_item(outdoor_mode)
             .add_item(transport_mode)
@@ -188,22 +192,26 @@ fn build_anc_menu(device: &DeviceSelection) -> SystemTrayMenu {
             .add_native_item(SystemTrayMenuItem::Separator)
             .add_item(fully_transparent)
             .add_item(vocal_mode),
-        DeviceSelection::A3027 => SystemTrayMenu::new()
-            .add_item(indoor_mode)
-            .add_item(outdoor_mode)
-            .add_item(transport_mode)
-            .add_native_item(SystemTrayMenuItem::Separator)
-            .add_item(normal_mode)
-            .add_native_item(SystemTrayMenuItem::Separator)
-            .add_item(fully_transparent),
-        DeviceSelection::None => SystemTrayMenu::new(),
+        SupportedModel::A3027 | SupportedModel::A3028 | SupportedModel::A3029 => {
+            SystemTrayMenu::new()
+                .add_item(indoor_mode)
+                .add_item(outdoor_mode)
+                .add_item(transport_mode)
+                .add_native_item(SystemTrayMenuItem::Separator)
+                .add_item(normal_mode)
+                .add_native_item(SystemTrayMenuItem::Separator)
+                .add_item(fully_transparent)
+        }
     }
 }
 
 /* Menu used while connected */
-fn build_extended_menu(device: &DeviceSelection) -> SystemTrayMenu {
+fn build_extended_menu(model: Option<&SupportedModel>) -> SystemTrayMenu {
     let conn_status = CustomMenuItem::new("conn_status".to_string(), "Disconnected").disabled();
-    let anc_submenu = SystemTraySubmenu::new("ANC Profiles", build_anc_menu(device));
+    let anc_submenu = match model {
+        Some(model) => SystemTraySubmenu::new("ANC Profiles", build_anc_menu(model)),
+        None => SystemTraySubmenu::new("ANC Profiles", SystemTrayMenu::new()),
+    };
     let batt_charging_status = CustomMenuItem::new(
         "batt_charging_status".to_string(),
         "Battery: Is it charging?",

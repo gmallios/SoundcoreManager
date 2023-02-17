@@ -9,8 +9,8 @@ use env_logger::builder;
 use frontend_types::BthScanResult;
 use soundcore_lib::base::SoundcoreDevice;
 use std::sync::Arc;
-use tauri::api::process::Command;
-use tauri::async_runtime::Mutex;
+
+use tauri::async_runtime::{Mutex, RwLock};
 use tauri::Manager;
 
 mod device;
@@ -40,8 +40,9 @@ async fn scan_for_devices() -> Vec<BthScanResult> {
     scan_res
 }
 
-struct AppState {
+struct SoundcoreAppState {
     device: Arc<Mutex<Option<Box<dyn SoundcoreDevice>>>>,
+    model: Arc<RwLock<Option<device::SupportedModel>>>,
 }
 
 fn main() {
@@ -58,14 +59,16 @@ fn main() {
     tauri::Builder::default()
         .system_tray(tray::get_system_tray())
         .on_system_tray_event(tray::handle_tray_event)
-        .manage(AppState {
+        .manage(SoundcoreAppState {
             device: Arc::new(Mutex::new(None)),
+            model: Arc::new(RwLock::new(None)),
         })
         .invoke_handler(tauri::generate_handler![
             tray::set_tray_device_status,
             tray::set_tray_menu,
             device::connect,
             device::close,
+            device::get_model,
             device::is_connected,
             device::get_info,
             device::get_status,

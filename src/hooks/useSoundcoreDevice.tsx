@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { invoke } from "@tauri-apps/api/tauri";
 import { useEffect, useState } from "react";
 import { ANCModes } from "../bindings/ANCModes";
+import { SupportedModel } from "../types/soundcore";
 import useDeviceStore, { DeviceBatteryCharging, DeviceBatteryLevel, DeviceConnectionState, DeviceStatus, EQWave } from "./useDeviceStore";
 
 
@@ -38,6 +39,21 @@ export function connectWithUUID(macAddr: String, uuid: String) {
     }, []);
 
     return { status, connecting, error };
+}
+
+//TODO: Add type for result (SupportedModel)
+export function useDeviceModel() {
+    const { deviceConnectionState } = useDeviceStore();
+    return useQuery<SupportedModel, Error>(["model"], async () => {
+        try {
+            const result = await invoke("get_model");
+            return result as SupportedModel;
+        } catch (err) {
+            throw new Error("Error getting device model: " + err);
+        }
+    }, {
+        enabled: deviceConnectionState == DeviceConnectionState.CONNECTED,
+    });
 }
 
 export function useCharging() {

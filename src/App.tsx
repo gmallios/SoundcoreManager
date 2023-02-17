@@ -10,16 +10,17 @@ import DisconnectedScreen from "./components/DisconnectedScreen";
 import { ITrayStatus, setTrayMenu, useUpdateTray, useWindowEvent } from "./hooks/useTray";
 import { CircularProgress } from "@mui/material";
 import { ANCModes } from "./bindings/ANCModes";
-import { useANC, useBatteryLevel, useCharging, useStatus, useUpdateANC } from "./hooks/useSoundcoreDevice";
+import { useANC, useBatteryLevel, useCharging, useDeviceModel, useStatus, useUpdateANC } from "./hooks/useSoundcoreDevice";
 
 
 function App() {
-  const { deviceConnectionState, deviceModel } = useDeviceStore();
+  const { deviceConnectionState } = useDeviceStore();
 
   const { data: level, isSuccess: isBatteryLevelSuccess } = useBatteryLevel();
   const { data: charging, isSuccess: isBatteryChargingSuccess } = useCharging();
   const { data: ancStatus, isSuccess: isANCStatusSuccess } = useANC();
   const { data: devStatus, isSuccess: isStatusSuccess } = useStatus();
+  const { data: deviceModel, isSuccess: isDeviceModelSuccess } = useDeviceModel();
   const isDataSuccess = isBatteryLevelSuccess && isBatteryChargingSuccess && isANCStatusSuccess && isStatusSuccess;
   const isDataNotNull = level != undefined && charging != undefined && ancStatus != undefined && devStatus != undefined;
   const trayMutation = useUpdateTray();
@@ -33,14 +34,15 @@ function App() {
 
   /* Update tray status on every change */
   useEffect(() => {
+    if (deviceConnectionState == DeviceConnectionState.CONNECTED) {
       let trayStatus: ITrayStatus = {
         deviceConnectionState: DeviceConnectionState.CONNECTED,
         batteryLevel: level!,
         batteryCharging: charging!,
         anc_mode: ancStatus!,
-        device_selection: deviceModel
       }
       trayMutation.mutate(trayStatus);
+    }
   }, [level, charging, ancStatus, deviceConnectionState]);
 
   // useEffect(() => {
@@ -48,18 +50,15 @@ function App() {
   //   setTrayMenu(deviceConnectionState);
   // }, [deviceConnectionState]);
 
-  console.log(deviceModel);
-
   return (
     <React.Fragment>
       {deviceConnectionState != DeviceConnectionState.DISCONNECTED ? (
         <Stack>
           {isStatusSuccess ? (
-            /* TODO: Create a component which wraps all while-connected components */
             <React.Fragment>
               <AppBar />
               <OverviewCard />
-              <ANCModeCard model={deviceModel}/>
+              <ANCModeCard />
               <EQCard />
             </React.Fragment>
           ) : (

@@ -17,12 +17,12 @@ import BatteryCharging80Icon from '@mui/icons-material/BatteryCharging80';
 import BatteryFullIcon from '@mui/icons-material/BatteryFull';
 import BatteryChargingFullIcon from '@mui/icons-material/BatteryChargingFull';
 import BatteryUnknownIcon from '@mui/icons-material/BatteryUnknown';
-import { useBatteryLevel, useCharging } from "../hooks/useSoundcoreDevice";
+import { useBatteryLevel, useCharging, useDeviceModel } from "../hooks/useSoundcoreDevice";
 import { DeviceSelection } from "../bindings/DeviceSelection";
 
 export default function OverviewCard() {
 
-    const deviceModel = useDeviceStore(state => state.deviceModel);
+    
 
     // if(levelQuery.isLoading || chargingQuery.isLoading) {
     //     return(
@@ -45,15 +45,16 @@ export default function OverviewCard() {
         // </Card>
         <Box sx={{ display: "block", pt: 3, maxWidth: "300px", margin: "auto", mb: 0, mt: 1.5 }}>
             <Paper sx={{ display: "flex", margin: 1.5, justifyContent: "center", alignItems: "center" }} elevation={0}>
-                {OverviewItem(deviceModel)}
+                <OverviewItem />
             </Paper>
         </Box>
     )
 }
 
-function OverviewItem(deviceModel: DeviceSelection) {
+function OverviewItem() {
     const chargingQuery = useCharging();
     const levelQuery = useBatteryLevel();
+    const {data: deviceModel} = useDeviceModel();
 
     switch (deviceModel) {
         case "A3951":
