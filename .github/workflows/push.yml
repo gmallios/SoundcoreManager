@@ -1,11 +1,12 @@
-name: 'Push - Build'
+name: "Build and Release on Push"
 
+# This workflow runs on push to the release branch which should not be used for development
 on: push
 
 jobs:
-  build-tauri:
+  build-tauri-and-release:
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         platform: [windows-latest]
 
@@ -13,8 +14,14 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: ⚡ Set short SHA ENV
+        run: echo "SHORT_SHA=$("${{ github.sha }}".SubString(0, 8))" >> $env:GITHUB_ENV
+
       - name: ⏬ Install Rust stable
         uses: dtolnay/rust-toolchain@stable
+        with:
+          profile: minimal
+          toolchain: stable
 
       - name: ⚡ Set up cargo cache
         uses: actions/cache@v3
@@ -25,17 +32,16 @@ jobs:
             ~/.cargo/registry/index/
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
-            src-tauri/target/            
+            src-tauri/target/
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: ${{ runner.os }}-cargo
 
       - name: 🔄 Sync node version
         uses: actions/setup-node@v3
         with:
-          node-version: 'lts/*'
-          cache: 'npm' # Set this to npm, yarn or pnpm.
-      
-        
+          node-version: "lts/*"
+          cache: "npm" # Set this to npm, yarn or pnpm.
+
       - name: ⏬ Install Ubuntu dependencies
         if: matrix.platform == 'ubuntu-20.04'
         run: |
@@ -45,15 +51,36 @@ jobs:
       - name: 📥 Install Node Dependencies
         run: npm install && npm run build
 
-      - name: 🔨 Build 
+      - name: 🔨 Build
         uses: tauri-apps/tauri-action@v0
+        id: tauri-build
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: soundcoremanager-v__VERSION__
+          releaseName: 'Soundcore Manager v__VERSION__'
+          releaseBody: 'See the assets to download this version and install.'
+          releaseDraft: true
+          prerelease: false
 
-      - name: ⏫ Upload artifact
+      - name: ⏫ Upload Release Asset
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1.0.2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.tauri-build.outputs.releaseUploadUrl }}
+          asset_path: src-tauri\target\release\deps\soundcoremanager.exe
+          asset_name: SoundcoreManager-${{ matrix.platform }}-${{ env.SHORT_SHA }}.exe
+          asset_content_type: application/vnd.microsoft.portable-executable.
+
+      - name: Rename soundcoremanager.exe
+        run: ren src-tauri\target\release\deps\soundcoremanager.exe SoundcoreManager-${{ matrix.platform }}-${{ env.SHORT_SHA }}.exe
+
+      - name: ⏫ Upload Build Artifact
         uses: actions/upload-artifact@v3
         with:
-          name: |
-            SoundcoreManager-${{ matrix.platform }}
-          path: |
-            src-tauri/target/${{ matrix.target }}/release/*.exe
+          name: SoundcoreManager-${{ matrix.platform }}.exe
+          path: src-tauri\target\release\deps\SoundcoreManager-${{ matrix.platform }}-${{ env.SHORT_SHA }}.exe
+
+        
