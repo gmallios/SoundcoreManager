@@ -1,16 +1,37 @@
+<img src=".github/splash.png" alt="Tauri" />
 
-# Soundcore Manager
 
-A desktop companion app to control and monitor your Soundcore earbuds.
+<h3 align="center">
+ A desktop companion app for your Soundcore devices
+</h3>
+<br>
 
-## Features
+# Downloads
+* [Windows Latest](https://nightly.link/gmallios/SoundcoreManager/workflows/push/master/SoundcoreManager-windows-latest.exe.zip)
+
+
+# Features
 - See charging status and battery level 
 - Set ANC Modes
 - Adjust EQ
-- Cross-Platform. NOTE: Windows works. macOS is experimental. No Linux support yet.
 
+# Supported Devices
 
-## Instructions
+| Model ID &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;| Name  &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; | Features Supported &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; |
+|----------|-------------------|--------------------|
+| A3951    |Liberty Air 2 Pro  | All                |
+| A3027    |Life Q35           | All/In-Progress    |
+| A3028    |Life Q30           | All/In-Progress    |
+| A3029    |Life Tune          | All/In-Progress    |
+| A3033    |Live 2 Neo         | Untested           |
+| A3025    |Life Q20           | Untested           |
+| A3935    |Life A2 NC         | Untested           |
+| A3931    |Life Dot 2         | Untested           |
+
+### Note: Untested devices have similar implementation as a known working model.
+<br>
+
+# Build Instructions
 
 #### Install deps
 ```
@@ -20,33 +41,19 @@ npm install
 #### To build and create an installer
 
 ```
-  npm run tauri build
+npm run tauri build
 ```
 
 #### To run dev build
 
 ```
-  npm run tauri dev
+npm run tauri dev
 ```
 
-## Supported Devices (Not guaranteed)
 
-| Model ID | Name              | Features Supported |
-|----------|-------------------|--------------------|
-| A3951    |Liberty Air 2 Pro  | All (Tested)       |
-| A3027    |Life Q35           | Most/In-Progress   |
-| A3033    |Live 2 Neo         | Untested           |
-| A3025    |Life Q20           | Untested           |
-| A3935    |Life A2 NC         | Untested           |
-| A3931    |Life Dot 2         | Untested           |
-| A3029    |Life Tune          | Untested           |
 
-Note: Untested devices have similar implementation as a known working model.
 
-## Roadmap
-- Move device polling from Frontend to a background thread (Tauri-Event Based?)
-
-## License
+# License
 
 [MIT](https://choosealicense.com/licenses/mit/)
 
