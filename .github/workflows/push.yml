@@ -1,7 +1,9 @@
-name: "Build and Release on Push"
+name: "Build latest release"
 
-# This workflow runs on push to the release branch which should not be used for development
-on: push
+on:
+  push:
+    branches:
+      - master
 
 jobs:
   build-tauri-and-release:
