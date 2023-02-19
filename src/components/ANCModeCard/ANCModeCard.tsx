@@ -10,6 +10,7 @@ export default function ANCModeCard() {
     let transButtons: Array<[string, ANCModes]> = [];
 
     switch (model) {
+        case "A3935":
         case "A3951":
             Component = BaseANCModeCard;
             ancButtons =
@@ -25,6 +26,8 @@ export default function ANCModeCard() {
             ];
             break;
         case "A3027":
+        case "A3028":
+        case "A3029":
             Component = BaseANCModeCard;
             ancButtons =
                 [

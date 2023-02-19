@@ -7,7 +7,7 @@
 <br>
 
 # Downloads
-* [Windows Latest](https://nightly.link/gmallios/SoundcoreManager/workflows/push/master/SoundcoreManager-windows-latest.exe.zip) binary or check the Releases section for an installer.
+* [Windows Latest](https://nightly.link/gmallios/SoundcoreManager/workflows/push/master/SoundcoreManager-windows-latest.exe.zip) binary or check the Releases section for an installer(Not recomended since the app is constantly updated).
 
 
 # Features
