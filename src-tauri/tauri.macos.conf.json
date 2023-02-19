@@ -7,7 +7,7 @@
   },
   "package": {
     "productName": "Soundcore Manager",
-    "version": "0.0.0"
+    "version": "0.1.0"
   },
   "tauri": {
     "allowlist": {
@@ -24,7 +24,7 @@
     },
     "bundle": {
       "active": true,
-      "category": "DeveloperTool",
+      "category": "Utility",
       "copyright": "",
       "deb": {
         "depends": []
@@ -47,7 +47,7 @@
         "signingIdentity": null
       },
       "resources": [],
-      "shortDescription": "",
+      "shortDescription": "An app to manage your Soundcore devices",
       "targets": "all",
       "windows": {
         "certificateThumbprint": null,
