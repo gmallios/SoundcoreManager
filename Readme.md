@@ -7,7 +7,7 @@
 <br>
 
 # Downloads
-* [Windows Latest](https://nightly.link/gmallios/SoundcoreManager/workflows/push/master/SoundcoreManager-windows-latest.exe.zip)
+* [Windows Latest](https://nightly.link/gmallios/SoundcoreManager/workflows/push/master/SoundcoreManager-windows-latest.exe.zip) binary or check the Releases section for an installer.
 
 
 # Features
@@ -20,13 +20,14 @@
 | Model ID &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;| Name  &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; | Features Supported &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; |
 |----------|-------------------|--------------------|
 | A3951    |Liberty Air 2 Pro  | All                |
+| A3025    |Life Q20           | Untested           |
 | A3027    |Life Q35           | All/In-Progress    |
 | A3028    |Life Q30           | All/In-Progress    |
 | A3029    |Life Tune          | All/In-Progress    |
 | A3033    |Live 2 Neo         | Untested           |
-| A3025    |Life Q20           | Untested           |
 | A3935    |Life A2 NC         | Untested           |
 | A3931    |Life Dot 2         | Untested           |
+| A3992    |Soundcore A3i      | None/In-Progress   |
 
 ### Note: Untested devices have similar implementation as a known working model.
 <br>
