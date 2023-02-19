@@ -35,20 +35,23 @@ pub(crate) async fn close(state: State<'_, SoundcoreAppState>) -> Result<(), Str
 #[typeshare]
 #[derive(Clone, Serialize)]
 pub(crate) enum SupportedModel {
-    A3951,
     A3027,
     A3028,
     A3029,
+    A3935,
+    A3951,
 }
 
 /* Maps Bluetooth Name to SupportedModel */
 static SOUNDCORE_NAME_MODEL_MAP: phf::Map<&'static str, SupportedModel> = phf_map! {
-    "Soundcore Liberty Air 2 Pro" => SupportedModel::A3951,
     "Soundcore Life Q35" => SupportedModel::A3027,
     "Soundcore Q35" => SupportedModel::A3027, /* EU Variant */
     "Soundcore Life Q30" => SupportedModel::A3028,
     "Soundcore Q30" => SupportedModel::A3028, /* EU Variant */
     "Soundcore Life Tune" => SupportedModel::A3029,
+    "Soundcore Life A2 NC" => SupportedModel::A3935,
+    "Soundcore Life A2 NC+" => SupportedModel::A3935,
+    "Soundcore Liberty Air 2 Pro" => SupportedModel::A3951,
 };
 
 #[tauri::command]
@@ -81,7 +84,7 @@ pub(crate) async fn connect(
     *state.model.write().await = Some(device_model.clone());
 
     match device_model {
-        SupportedModel::A3951 => {
+        SupportedModel::A3951 | SupportedModel::A3935 => {
             let device = A3951::default()
                 .init(BluetoothAdrr::from(bt_addr))
                 .await
@@ -96,6 +99,9 @@ pub(crate) async fn connect(
                 .map_err(|e| e.to_string())?;
             let mut a = state.device.lock().await;
             *a = Some(device);
+        }
+        _ => {
+            return Err("Device not supported yet".to_string());
         }
     };
     Ok(())

@@ -5,6 +5,7 @@ import A3951ImgRight from "./../assets/a3951_img_device_right_edited.webp";
 import A3027Img from "./../assets/a3027_img_device.webp";
 import A3028Img from "./../assets/a3028_img_device.webp";
 import A3029Img from "./../assets/a3029_img_device.webp";
+import A3935Img from "./../assets/a3935_img_device.webp";
 
 import BatteryAlertIcon from '@mui/icons-material/BatteryAlert';
 import Battery20Icon from '@mui/icons-material/Battery20';
@@ -23,7 +24,7 @@ import { DeviceSelection } from "../bindings/DeviceSelection";
 
 export default function OverviewCard() {
 
-    
+
 
     // if(levelQuery.isLoading || chargingQuery.isLoading) {
     //     return(
@@ -56,7 +57,7 @@ function OverviewItem() {
     const chargingQuery = useCharging();
     const levelQuery = useBatteryLevel();
     const {data: deviceModel} = useDeviceModel();
-    
+
     switch (deviceModel) {
         case "A3951":
             return (
@@ -77,11 +78,36 @@ function OverviewItem() {
             return (
                 <EarbudItem img={A3029Img} imgSize={90} alignTo="right" batteryLevel={levelQuery.data?.left} batteryCharging={chargingQuery.data?.left} />
             );
+        case "A3935":
+            return (
+                <SingleImgTwoBattery 
+                    img={A3935Img} 
+                    imgSize={90} 
+                    leftBattLevel={levelQuery.data?.left} 
+                    rightBattLevel={levelQuery.data?.right} 
+                    leftCharging={chargingQuery.data?.left} 
+                    rightCharging={chargingQuery.data?.right} 
+                />
+            );
         default:
             return (
                 <h1>Something went wrong...</h1>
             );
     }
+}
+
+function SingleImgTwoBattery({ img, imgSize, leftBattLevel, rightBattLevel, leftCharging, rightCharging }: any) {
+    return (
+        <Grid item>
+            <Grid container spacing={1} justifyContent="center" alignItems="center">
+                <EarbudBattery batteryLevel={leftBattLevel} batteryCharging={leftCharging} />
+                <Grid item>
+                    <img src={img} height={imgSize} />
+                </Grid>
+                <EarbudBattery batteryLevel={rightBattLevel} batteryCharging={rightCharging} />
+            </Grid>
+        </Grid>
+    );
 }
 
 function EarbudItem({ alignTo, batteryLevel, batteryCharging, img, imgSize }: { alignTo: "left" | "right", batteryLevel: number | undefined, batteryCharging: boolean | undefined, img: string, imgSize: number }) {
@@ -92,7 +118,7 @@ function EarbudItem({ alignTo, batteryLevel, batteryCharging, img, imgSize }: { 
                     <EarbudBattery batteryLevel={batteryLevel} batteryCharging={batteryCharging} />
                 }
                 <Grid item>
-                    <img src={img} alt="A3951" height={imgSize} />
+                    <img src={img} height={imgSize} />
                 </Grid>
                 {alignTo == "right" &&
                     <EarbudBattery batteryLevel={batteryLevel} batteryCharging={batteryCharging} />

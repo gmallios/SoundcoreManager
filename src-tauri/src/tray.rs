@@ -202,6 +202,8 @@ fn build_anc_menu(model: &SupportedModel) -> SystemTrayMenu {
                 .add_native_item(SystemTrayMenuItem::Separator)
                 .add_item(fully_transparent)
         }
+        _ => SystemTrayMenu::new()
+            .add_item(CustomMenuItem::new("unsoported".to_string(), "Not supported"))
     }
 }
 
@@ -263,15 +265,18 @@ pub(crate) fn handle_tray_event(app: &AppHandle, event: SystemTrayEvent) {
             }
             match id.as_str() {
                 "hide" => {
-                    let window = app.get_window("main").unwrap();
-                    match window.is_visible().unwrap() {
-                        true => {
+                    let window = app.get_window("main").unwrap_or_else(|| panic!("Could not get window"));
+                    match window.is_visible() {
+                        Ok(true) => {
                             window.hide().unwrap();
                             item_handle.set_title("Show").unwrap();
                         }
-                        false => {
+                        Ok(false) => {
                             window.show().unwrap();
                             item_handle.set_title("Hide").unwrap();
+                        },
+                        Err(e) => {
+                            panic!("Could not get window visibility: {}", e);
                         }
                     }
                 }

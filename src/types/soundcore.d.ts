@@ -14,10 +14,11 @@ export interface DeviceFeatures {
 }
 
 export enum SupportedModel {
-	A3951 = "A3951",
 	A3027 = "A3027",
 	A3028 = "A3028",
 	A3029 = "A3029",
+	A3935 = "A3935",
+	A3951 = "A3951",
 }
 
 export enum SupportedANCProfiles {
