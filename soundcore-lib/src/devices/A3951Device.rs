@@ -18,19 +18,12 @@ static SLEEP_DURATION: Duration = std::time::Duration::from_millis(30);
 
 pub static A3951_RFCOMM_UUID: &str = crate::statics::A3951_RFCOMM_UUID;
 
+#[derive(Default)]
 pub struct A3951 {
     btaddr: Option<BluetoothAdrr>,
     rfcomm: Option<RFCOMM>,
 }
 
-impl Default for A3951 {
-    fn default() -> Self {
-        Self {
-            btaddr: None,
-            rfcomm: None,
-        }
-    }
-}
 
 #[async_trait]
 impl SoundcoreDevice for A3951 {

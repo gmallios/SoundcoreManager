@@ -16,20 +16,12 @@ use std::time::Duration;
 
 static SLEEP_DURATION: Duration = std::time::Duration::from_millis(30);
 
-
+#[derive(Default)]
 pub struct A3027 {
     btaddr: Option<BluetoothAdrr>,
     rfcomm: Option<RFCOMM>,
 }
 
-impl Default for A3027 {
-    fn default() -> Self {
-        Self {
-            btaddr: None,
-            rfcomm: None,
-        }
-    }
-}
 
 #[async_trait]
 impl SoundcoreDevice for A3027 {
