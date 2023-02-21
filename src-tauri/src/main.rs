@@ -34,8 +34,11 @@ mod server;
 async fn scan_for_devices() -> Vec<BthScanResult> {
     let res = BthScanner::new().scan().await;
     let mut scan_res: Vec<BthScanResult> = vec![];
-    res.into_iter().for_each(|x| {
-        scan_res.push(BthScanResult::from(x));
+    res.into_iter().for_each(|btdevice| {
+        if !btdevice.connected || !device::SOUNDCORE_NAME_MODEL_MAP.contains_key(&btdevice.name){
+            return;
+        }
+        scan_res.push(BthScanResult::from(btdevice));
     });
     scan_res
 }

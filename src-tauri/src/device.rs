@@ -43,7 +43,7 @@ pub(crate) enum SupportedModel {
 }
 
 /* Maps Bluetooth Name to SupportedModel */
-static SOUNDCORE_NAME_MODEL_MAP: phf::Map<&'static str, SupportedModel> = phf_map! {
+pub(crate) static SOUNDCORE_NAME_MODEL_MAP: phf::Map<&'static str, SupportedModel> = phf_map! {
     "Soundcore Life Q35" => SupportedModel::A3027,
     "Soundcore Q35" => SupportedModel::A3027, /* EU Variant */
     "Soundcore Life Q30" => SupportedModel::A3028,
