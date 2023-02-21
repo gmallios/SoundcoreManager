@@ -6,7 +6,7 @@ use crate::{
 use serde::Serialize;
 use soundcore_lib::{
     base::SoundcoreDevice,
-    devices::{A3027, A3951},
+    devices::{A3027, A3951, A3935},
     types::{BatteryCharging, BatteryLevel, DeviceInfo, DeviceStatus, EQWave},
     BluetoothAdrr,
 };
@@ -84,8 +84,16 @@ pub(crate) async fn connect(
     *state.model.write().await = Some(device_model.clone());
 
     match device_model {
-        SupportedModel::A3951 | SupportedModel::A3935 => {
+        SupportedModel::A3951 => {
             let device = A3951::default()
+                .init(BluetoothAdrr::from(bt_addr))
+                .await
+                .map_err(|e| e.to_string())?;
+            let mut a = state.device.lock().await;
+            *a = Some(device);
+        }
+        SupportedModel::A3935 => {
+            let device = A3935::default()
                 .init(BluetoothAdrr::from(bt_addr))
                 .await
                 .map_err(|e| e.to_string())?;
