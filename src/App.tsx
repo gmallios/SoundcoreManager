@@ -34,12 +34,12 @@ function App() {
 
   /* Update tray status on every change */
   useEffect(() => {
-    if (deviceConnectionState == DeviceConnectionState.CONNECTED) {
+    if (deviceConnectionState == DeviceConnectionState.CONNECTED && isDataSuccess && isDataNotNull) {
       let trayStatus: ITrayStatus = {
-        deviceConnectionState: DeviceConnectionState.CONNECTED,
-        batteryLevel: level!,
-        batteryCharging: charging!,
-        anc_mode: ancStatus!,
+        deviceConnectionState: deviceConnectionState,
+        batteryLevel: level,
+        batteryCharging: charging,
+        anc_mode: ancStatus,
       }
       trayMutation.mutate(trayStatus);
     }
