@@ -8,9 +8,10 @@ use crate::{
     error::SoundcoreError,
     statics::*,
     types::{
-        ANCProfile, BatteryCharging, BatteryLevel, DeviceInfo, DeviceStatus, EQWave, EQWaveInt, ResponseDecoder
+        ANCProfile, BatteryCharging, BatteryLevel, DeviceInfo, DeviceStatus, EQWave, EQWaveInt,
+        ResponseDecoder,
     },
-    utils::{build_command_array_with_options_toggle_enabled, i8_to_u8vec, verify_resp, Clamp},
+    utils::{build_command_array_with_options_toggle_enabled, i8_to_u8vec, verify_resp, Clamp, remove_padding},
 };
 use std::time::Duration;
 
@@ -22,15 +23,20 @@ pub struct A3027 {
     rfcomm: Option<RFCOMM>,
 }
 
-
 #[async_trait]
 impl SoundcoreDevice for A3027 {
-    async fn init(&self, btaddr: BluetoothAdrr) -> Result<Box<dyn SoundcoreDevice>, SoundcoreError> {
+    async fn init(
+        &self,
+        btaddr: BluetoothAdrr,
+    ) -> Result<Box<dyn SoundcoreDevice>, SoundcoreError> {
         let mut rfcomm = RFCOMM::new().await?;
         rfcomm
             .connect_uuid(btaddr.clone(), A3951_RFCOMM_UUID)
             .await?;
-        Ok(Box::new(A3027 { btaddr: Some(btaddr), rfcomm: Some(rfcomm) }))
+        Ok(Box::new(A3027 {
+            btaddr: Some(btaddr),
+            rfcomm: Some(rfcomm),
+        }))
     }
 
     async fn close(&self) -> Result<(), SoundcoreError> {
@@ -52,10 +58,12 @@ impl SoundcoreDevice for A3027 {
             None => Err(SoundcoreError::NotConnected),
         }
     }
-    async fn recv(&self, size: usize) -> Result<Vec<u8>, SoundcoreError> {
+    async fn recv(&self) -> Result<Vec<u8>, SoundcoreError> {
         match &self.rfcomm {
-            Some(rfcomm) => Ok(rfcomm.recv(size).await?),
-            None => Err(SoundcoreError::NotConnected),
+            Some(rfcomm) => Ok(remove_padding(rfcomm.recv(300).await?.as_slice())),
+            None => Err(SoundcoreError::BthError {
+                source: bluetooth_lib::error::BthError::InvalidSocketError,
+            }),
         }
     }
 
@@ -71,20 +79,21 @@ impl SoundcoreDevice for A3027 {
     }
 
     async fn get_status(&self) -> Result<DeviceStatus, SoundcoreError> {
-        self.build_and_send_cmd(A3951_CMD_DEVICE_STATUS, None).await?;
-        let resp = self.recv(97).await?;
-        // if !verify_resp(&resp) {
-        //     return Err(SoundcoreError::ResponseChecksumError);
-        // }
+        self.build_and_send_cmd(A3951_CMD_DEVICE_STATUS, None)
+            .await?;
+        let resp = self.recv().await?;
+        if !verify_resp(&resp) {
+            return Err(SoundcoreError::ResponseChecksumError);
+        }
         Ok(Self::decode(&resp)?)
     }
 
     async fn get_info(&self) -> Result<DeviceInfo, SoundcoreError> {
         self.build_and_send_cmd(A3951_CMD_DEVICE_INFO, None).await?;
-        let resp = self.recv(36).await?;
-        // if !verify_resp(&resp) {
-        //     return Err(SoundcoreError::ResponseChecksumError);
-        // }
+        let resp = self.recv().await?;
+        if !verify_resp(&resp) {
+            return Err(SoundcoreError::ResponseChecksumError);
+        }
         Ok(Self::decode(&resp)?)
     }
     async fn get_battery_level(&self) -> Result<BatteryLevel, SoundcoreError> {
@@ -101,14 +110,14 @@ impl SoundcoreANC for A3027 {
     async fn set_anc(&self, profile: ANCProfile) -> Result<(), crate::error::SoundcoreError> {
         self.build_and_send_cmd(A3951_CMD_DEVICE_SETANC, Some(&profile.to_bytes()))
             .await?;
-        let _resp = self.recv(10).await?; /* No response validation - Need more info */
+        let _resp = self.recv().await?; /* No response validation - Need more info */
         Ok(())
     }
 
     async fn get_anc(&self) -> Result<ANCProfile, crate::error::SoundcoreError> {
         self.build_and_send_cmd(A3951_CMD_DEVICE_GETANC, None)
             .await?;
-        let resp = self.recv(14).await?;
+        let resp = self.recv().await?;
         if !verify_resp(&resp) {
             return Err(SoundcoreError::ResponseChecksumError);
         }
@@ -122,7 +131,7 @@ impl SoundcoreEQ for A3027 {
         /* Original Java method name: SendEQ_NoDrc_Not_A3951_A3930 */
         let mut wave_out = vec![0; 10];
         let eq_index: i32 = 65278; /* Custom EQ Index */
-        let eq_wave = EQWaveInt::from_eq_wave(wave).to_8bytes(); 
+        let eq_wave = EQWaveInt::from_eq_wave(wave).to_8bytes();
         wave_out[0] = eq_index as u8;
         wave_out[1] = (eq_index >> 8) as u8;
         wave_out[2..10].copy_from_slice(&eq_wave);
@@ -130,21 +139,21 @@ impl SoundcoreEQ for A3027 {
         /* A3027 Doesn't appear to be using DRC */
         self.build_and_send_cmd(A3027_CMD_DEVICE_SETEQ, Some(&wave_out))
             .await?;
-        let _resp = self.recv(100).await?;
+        let _resp = self.recv().await?;
         Ok(())
     }
 
     async fn get_eq(&self) -> Result<EQWave, SoundcoreError> {
         Ok(self.get_status().await?.left_eq) /* Return both left and right? */
     }
-
 }
 
 #[async_trait]
 impl SoundcoreLDAC for A3027 {
     async fn get_ldac(&self) -> Result<bool, SoundcoreError> {
-        self.build_and_send_cmd(A3951_CMD_DEVICE_GETLDAC, None).await?;
-        let resp = self.recv(11).await?;
+        self.build_and_send_cmd(A3951_CMD_DEVICE_GETLDAC, None)
+            .await?;
+        let resp = self.recv().await?;
         if !verify_resp(&resp) {
             return Err(SoundcoreError::ResponseChecksumError);
         }
@@ -194,7 +203,6 @@ impl ResponseDecoder<DeviceStatus> for A3027 {
         })
     }
 }
-
 
 impl ResponseDecoder<BatteryLevel> for A3027 {
     fn decode(arr: &[u8]) -> Result<BatteryLevel, SoundcoreError> {

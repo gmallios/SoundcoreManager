@@ -52,11 +52,20 @@ pub(crate) fn build_command_array_with_options_toggle_enabled(
     let len_bytes = int_to_byte_array(length2 as i32);
     output_arr[cmd.len()] = len_bytes[3];
     output_arr[cmd.len() + 1] = len_bytes[2];
-    if optional_data.is_some() {
-        output_arr[length..].copy_from_slice(optional_data.unwrap());
+    if let Some(data) = optional_data {
+        output_arr[length..].copy_from_slice(data);
     }
 
     return calculate_checksum(&output_arr);
+}
+pub(crate) fn remove_padding(arr: &[u8]) -> Vec<u8> {
+    let mut out = arr.iter()
+        .rev()
+        .skip_while(|&&b| b == 0)
+        .map(|&b| b)
+        .collect::<Vec<u8>>();
+    out.reverse();
+    out
 }
 
 pub(crate) fn int_to_byte_array(num: i32) -> [u8; 4] {
@@ -77,7 +86,7 @@ pub(crate) fn calculate_checksum(cmd: &[u8]) -> Vec<u8> {
     res
 }
 
-pub fn calculate_checksum_byte(cmd: &[u8]) -> u8 {
+pub(crate) fn calculate_checksum_byte(cmd: &[u8]) -> u8 {
     if cmd.is_empty() {
         return 0;
     }

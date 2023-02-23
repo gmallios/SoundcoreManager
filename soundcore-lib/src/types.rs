@@ -1,12 +1,10 @@
-use serde::{ Serialize, Deserialize };
+use serde::{Deserialize, Serialize};
 
 use crate::error::SoundcoreError;
-
 
 pub type SendFnType<'a> = &'a (dyn Fn(&[u8]) -> Result<(), SoundcoreError> + Send + Sync);
 pub type RecvFnType<'a> = &'a (dyn Fn(usize) -> Result<Vec<u8>, SoundcoreError> + Send + Sync);
 pub type CloseSockFnType<'a> = &'a (dyn Fn() + Send + Sync);
-
 
 pub trait ResponseDecoder<T> {
     fn decode(arr: &[u8]) -> Result<T, SoundcoreError>;
@@ -41,7 +39,6 @@ pub struct DeviceStatus {
     pub left_hearid_customdata: EQWave,
     pub right_hearid_customdata: EQWave,
 }
-
 
 #[derive(Default, Debug, Serialize, Deserialize, Clone, Copy, PartialEq, Eq)]
 pub struct BatteryCharging {
@@ -79,7 +76,6 @@ pub struct EQWave {
 }
 
 impl EQWave {
-
     pub const HEARD_ID_DEFAULT: EQWave = EQWave {
         pos0: 25.5,
         pos1: 25.5,

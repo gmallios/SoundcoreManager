@@ -8,9 +8,13 @@ use crate::{
     error::SoundcoreError,
     statics::*,
     types::{
-        ANCProfile, BatteryCharging, BatteryLevel, DeviceInfo, DeviceStatus, EQWave, EQWaveInt, ResponseDecoder
+        ANCProfile, BatteryCharging, BatteryLevel, DeviceInfo, DeviceStatus, EQWave, EQWaveInt,
+        ResponseDecoder,
     },
-    utils::{build_command_array_with_options_toggle_enabled, i8_to_u8vec, verify_resp, Clamp},
+    utils::{
+        build_command_array_with_options_toggle_enabled, i8_to_u8vec, remove_padding, verify_resp,
+        Clamp,
+    },
 };
 use std::time::Duration;
 
@@ -24,15 +28,20 @@ pub struct A3951 {
     rfcomm: Option<RFCOMM>,
 }
 
-
 #[async_trait]
 impl SoundcoreDevice for A3951 {
-    async fn init(&self, btaddr: BluetoothAdrr) -> Result<Box<dyn SoundcoreDevice>, SoundcoreError> {
+    async fn init(
+        &self,
+        btaddr: BluetoothAdrr,
+    ) -> Result<Box<dyn SoundcoreDevice>, SoundcoreError> {
         let mut rfcomm = RFCOMM::new().await?;
         rfcomm
             .connect_uuid(btaddr.clone(), A3951_RFCOMM_UUID)
             .await?;
-        Ok(Box::new(A3951 { btaddr: Some(btaddr), rfcomm: Some(rfcomm) }))
+        Ok(Box::new(A3951 {
+            btaddr: Some(btaddr),
+            rfcomm: Some(rfcomm),
+        }))
     }
 
     async fn close(&self) -> Result<(), SoundcoreError> {
@@ -54,10 +63,12 @@ impl SoundcoreDevice for A3951 {
             None => Err(SoundcoreError::NotConnected),
         }
     }
-    async fn recv(&self, size: usize) -> Result<Vec<u8>, SoundcoreError> {
+    async fn recv(&self) -> Result<Vec<u8>, SoundcoreError> {
         match &self.rfcomm {
-            Some(rfcomm) => Ok(rfcomm.recv(size).await?),
-            None => Err(SoundcoreError::NotConnected),
+            Some(rfcomm) => Ok(remove_padding(rfcomm.recv(300).await?.as_slice())),
+            None => Err(SoundcoreError::BthError {
+                source: bluetooth_lib::error::BthError::InvalidSocketError,
+            }),
         }
     }
 
@@ -73,8 +84,9 @@ impl SoundcoreDevice for A3951 {
     }
 
     async fn get_status(&self) -> Result<DeviceStatus, SoundcoreError> {
-        self.build_and_send_cmd(A3951_CMD_DEVICE_STATUS, None).await?;
-        let resp = self.recv(97).await?;
+        self.build_and_send_cmd(A3951_CMD_DEVICE_STATUS, None)
+            .await?;
+        let resp = self.recv().await?;
         if !verify_resp(&resp) {
             return Err(SoundcoreError::ResponseChecksumError);
         }
@@ -83,15 +95,16 @@ impl SoundcoreDevice for A3951 {
 
     async fn get_info(&self) -> Result<DeviceInfo, SoundcoreError> {
         self.build_and_send_cmd(A3951_CMD_DEVICE_INFO, None).await?;
-        let resp = self.recv(36).await?;
+        let resp = self.recv().await?;
         if !verify_resp(&resp) {
             return Err(SoundcoreError::ResponseChecksumError);
         }
         Ok(Self::decode(&resp)?)
     }
     async fn get_battery_level(&self) -> Result<BatteryLevel, SoundcoreError> {
-        self.build_and_send_cmd(A3951_CMD_DEVICE_BATTERYLEVEL, None).await?;
-        let resp = self.recv(100).await?;
+        self.build_and_send_cmd(A3951_CMD_DEVICE_BATTERYLEVEL, None)
+            .await?;
+        let resp = self.recv().await?;
 
         if !verify_resp(&resp[0..12]) {
             return Err(SoundcoreError::ResponseChecksumError);
@@ -108,8 +121,9 @@ impl SoundcoreDevice for A3951 {
     }
 
     async fn get_battery_charging(&self) -> Result<BatteryCharging, SoundcoreError> {
-        self.build_and_send_cmd(A3951_CMD_DEVICE_BATTERYCHARGING, None).await?;
-        let resp = self.recv(100).await?;
+        self.build_and_send_cmd(A3951_CMD_DEVICE_BATTERYCHARGING, None)
+            .await?;
+        let resp = self.recv().await?;
 
         if !verify_resp(&resp[0..12]) {
             return Err(SoundcoreError::ResponseChecksumError);
@@ -130,14 +144,14 @@ impl SoundcoreANC for A3951 {
     async fn set_anc(&self, profile: ANCProfile) -> Result<(), crate::error::SoundcoreError> {
         self.build_and_send_cmd(A3951_CMD_DEVICE_SETANC, Some(&profile.to_bytes()))
             .await?;
-        let _resp = self.recv(10).await?; /* No response validation - Need more info */
+        let _resp = self.recv().await?; /* No response validation - Need more info */
         Ok(())
     }
 
     async fn get_anc(&self) -> Result<ANCProfile, crate::error::SoundcoreError> {
         self.build_and_send_cmd(A3951_CMD_DEVICE_GETANC, None)
             .await?;
-        let resp = self.recv(14).await?;
+        let resp = self.recv().await?;
         if !verify_resp(&resp) {
             return Err(SoundcoreError::ResponseChecksumError);
         }
@@ -181,15 +195,15 @@ impl SoundcoreEQ for A3951 {
         wave_out[drc_offset..drc_offset + 8].copy_from_slice(&eq_wave_bytes[0..8]);
         wave_out[drc_offset + 8..drc_offset + 16].copy_from_slice(&eq_wave_bytes[0..8]);
         /* Straight from Soundcore spaghetti */
-        wave_out[drc_offset + 16] = ((-1 & -1) & 255) as u8;
-        wave_out[drc_offset + 17] = ((-1 & -1) & 255) as u8;
-        wave_out[drc_offset + 18] = (0 & 255) as u8;
+        wave_out[drc_offset + 16] = (-1 & 255) as u8;
+        wave_out[drc_offset + 17] = (-1 & 255) as u8;
+        wave_out[drc_offset + 18] = 0;
         /* drc_offset + 19-35 HearID EQ Wave */
         wave_out[drc_offset + 19..drc_offset + 27].copy_from_slice(&hearid_wave_bytes[0..8]);
         wave_out[drc_offset + 27..drc_offset + 35].copy_from_slice(&hearid_wave_bytes[0..8]);
 
         wave_out[drc_offset + 35..drc_offset + 39].copy_from_slice(&[0, 0, 0, 0]);
-        wave_out[drc_offset + 39] = (0 & 255) as u8; /* HearID type */
+        wave_out[drc_offset + 39] = 0; /* HearID type */
 
         /* drc_offset + 40-56 HearID Customer EQ Wave (IDK what this means, hearid data is not reversed atm) */
         wave_out[drc_offset + 40..drc_offset + 48].copy_from_slice(&hearid_wave_bytes[0..8]);
@@ -200,22 +214,21 @@ impl SoundcoreEQ for A3951 {
         wave_out[drc_offset + 64..drc_offset + 72].copy_from_slice(&corrected_eq_wave_bytes[0..8]);
         self.build_and_send_cmd(A3951_CMD_DEVICE_SETEQ_DRC, Some(&wave_out))
             .await?;
-        let _resp = self.recv(100).await?;
+        let _resp = self.recv().await?;
         Ok(())
     }
 
     async fn get_eq(&self) -> Result<EQWave, SoundcoreError> {
         Ok(self.get_status().await?.left_eq) /* Return both left and right? */
     }
-
-
 }
 
 #[async_trait]
 impl SoundcoreLDAC for A3951 {
     async fn get_ldac(&self) -> Result<bool, SoundcoreError> {
-        self.build_and_send_cmd(A3951_CMD_DEVICE_GETLDAC, None).await?;
-        let resp = self.recv(11).await?;
+        self.build_and_send_cmd(A3951_CMD_DEVICE_GETLDAC, None)
+            .await?;
+        let resp = self.recv().await?;
         if !verify_resp(&resp) {
             return Err(SoundcoreError::ResponseChecksumError);
         }
@@ -228,7 +241,6 @@ impl SoundcoreLDAC for A3951 {
 }
 impl SoundcoreHearID for A3951 {}
 
-
 impl ResponseDecoder<DeviceInfo> for A3951 {
     fn decode(arr: &[u8]) -> Result<DeviceInfo, SoundcoreError> {
         Ok(DeviceInfo {
@@ -238,7 +250,6 @@ impl ResponseDecoder<DeviceInfo> for A3951 {
         })
     }
 }
-
 
 impl ResponseDecoder<DeviceStatus> for A3951 {
     fn decode(arr: &[u8]) -> Result<DeviceStatus, SoundcoreError> {
@@ -265,7 +276,6 @@ impl ResponseDecoder<DeviceStatus> for A3951 {
         })
     }
 }
-
 
 impl ResponseDecoder<BatteryLevel> for A3951 {
     fn decode(arr: &[u8]) -> Result<BatteryLevel, SoundcoreError> {

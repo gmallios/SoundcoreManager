@@ -4,14 +4,14 @@ use std::{fmt::Write, num::ParseIntError, ops::Add, thread, time::Duration};
 
 use crate::devices::A3951;
 
-use crate::types::{SendFnType, RecvFnType, EQWave};
+use crate::types::{EQWave, RecvFnType, SendFnType};
 
+mod base;
 mod devices;
-mod utils;
-mod types;
 mod error;
 mod statics;
-mod base;
+mod types;
+mod utils;
 
 // Modes
 // const TRANSPORT_MODE: &[u8; 14] = b"\x08\xee\x00\x00\x00\x06\x81\x0e\x00\x01\x01\x01\x00\x8e";
@@ -44,7 +44,7 @@ fn main() {
     // println!("ANC Status: {:?}", status.anc_status);
     // println!("ANC Status from get_anc: {:?}", device.get_anc().unwrap());
     // println!("LDAC Status: {}", device.get_ldac_status().unwrap());
-    
+
     // //device.set_anc(A3951DeviceANC::ANC_INDOOR_MODE).unwrap();
 
     // let wave = EQWave {
@@ -64,8 +64,6 @@ fn main() {
     // let status1 = device.get_status().unwrap();
     // println!("Left EQ: {:X?}", status1.left_eq);
     // println!("Right EQ: {:X?}", status1.right_eq);
-
-   
 }
 
 // // https://stackoverflow.com/questions/52987181/how-can-i-convert-a-hex-string-to-a-u8-slice
@@ -110,7 +108,3 @@ fn main() {
 //     result[..length].copy_from_slice(&bArr2.unwrap());
 //     return result;
 // }
-
-
-
-

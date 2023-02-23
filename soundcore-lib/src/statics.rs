@@ -1,15 +1,13 @@
 #![allow(warnings, unused)]
 pub(crate) static RFCOMM_UUIDs: [&str; 4] = [
-    "00001101-0000-1000-8000-00805F9B34FB", 
+    "00001101-0000-1000-8000-00805F9B34FB",
     "66666666-6666-6666-6666-666666666666",
     "77777777-7777-7777-7777-777777777777",
     "00002902-0000-1000-8000-00805f9b34fb",
 ];
 
-
 pub(crate) static EQ_INDEX_DEFAULT: i32 = 0;
 pub(crate) static EQ_INDEX_CUSTOM: i32 = 65278;
-
 
 pub(crate) static A3951_RFCOMM_UUID: &str = RFCOMM_UUIDs[0];
 pub(crate) static A3951_CMD_DEVICE_STATUS: [i8; 7] = [8, -18, 0, 0, 0, 1, 1];
@@ -23,6 +21,4 @@ pub(crate) static A3951_CMD_DEVICE_SETEQ_NODRC: [i8; 7] = [8, -18, 0, 0, 0, 3, -
 pub(crate) static A3951_CMD_DEVICE_GETANC: [i8; 7] = [8, -18, 0, 0, 0, 6, 1];
 pub(crate) static A3951_CMD_DEVICE_SETANC: [i8; 7] = [8, -18, 0, 0, 0, 6, -127];
 
-
 pub(crate) static A3027_CMD_DEVICE_SETEQ: [i8; 7] = [8, -18, 0, 0, 0, 2, -127];
-

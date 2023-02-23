@@ -1,6 +1,5 @@
 use thiserror::Error;
 
-
 #[derive(Error, Debug)]
 pub enum SoundcoreError {
     #[error("Unknown error")]
@@ -39,7 +38,7 @@ pub enum SoundcoreError {
     #[error("Bluetooth Error")]
     BthError {
         #[from]
-        source: bluetooth_lib::BthError
+        source: bluetooth_lib::BthError,
     },
 }
 
@@ -70,7 +69,6 @@ pub enum SoundcoreError {
 //         SoundcoreError::Unknown
 //     }
 // }
-
 
 // impl From<std::string::FromUtf8Error> for SoundcoreError {
 //     fn from(_error: std::string::FromUtf8Error) -> Self {

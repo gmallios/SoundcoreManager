@@ -21,7 +21,7 @@ pub trait SoundcoreDevice:
         -> Result<Box<dyn SoundcoreDevice>, SoundcoreError>;
     async fn close(&self) -> Result<(), SoundcoreError>;
     async fn send(&self, data: &[u8]) -> Result<(), SoundcoreError>;
-    async fn recv(&self, size: usize) -> Result<Vec<u8>, SoundcoreError>;
+    async fn recv(&self) -> Result<Vec<u8>, SoundcoreError>;
     async fn build_and_send_cmd(
         &self,
         cmd: [i8; 7],
@@ -31,7 +31,6 @@ pub trait SoundcoreDevice:
     async fn get_info(&self) -> Result<DeviceInfo, SoundcoreError>;
     async fn get_battery_level(&self) -> Result<BatteryLevel, SoundcoreError>;
     async fn get_battery_charging(&self) -> Result<BatteryCharging, SoundcoreError>;
-   
 }
 
 /* "Optional" traits - Not really since SoundcoreDevice
