@@ -14,11 +14,14 @@
     "typeshare:tauri": "typeshare ./src-tauri --lang=typescript --output-file=./src/types/tauri-backend.d.ts"
   },
   "dependencies": {
-    "@emotion/react": "^11.10.4",
+    "@emotion/react": "^11.10.6",
     "@emotion/styled": "^11.10.4",
     "@fontsource/roboto": "^4.5.8",
     "@mui/icons-material": "^5.11.16",
     "@mui/material": "^5.12.0",
+    "@mantine/core": "^5.10.4",
+    "@mantine/hooks": "^5.10.4",
+    "@mantine/nprogress": "^5.10.4",
     "@tanstack/react-query": "^4.20.4",
     "@tanstack/react-query-devtools": "^4.20.4",
     "@tauri-apps/api": "^1.2.0",
