@@ -87,18 +87,14 @@ impl SoundcoreDevice for A3951 {
         self.build_and_send_cmd(A3951_CMD_DEVICE_STATUS, None)
             .await?;
         let resp = self.recv().await?;
-        if !verify_resp(&resp) {
-            return Err(SoundcoreError::ResponseChecksumError);
-        }
+        verify_resp(&resp)?;
         Ok(Self::decode(&resp)?)
     }
 
     async fn get_info(&self) -> Result<DeviceInfo, SoundcoreError> {
         self.build_and_send_cmd(A3951_CMD_DEVICE_INFO, None).await?;
         let resp = self.recv().await?;
-        if !verify_resp(&resp) {
-            return Err(SoundcoreError::ResponseChecksumError);
-        }
+        verify_resp(&resp)?;
         Ok(Self::decode(&resp)?)
     }
     async fn get_battery_level(&self) -> Result<BatteryLevel, SoundcoreError> {
@@ -106,9 +102,7 @@ impl SoundcoreDevice for A3951 {
             .await?;
         let resp = self.recv().await?;
 
-        if !verify_resp(&resp[0..12]) {
-            return Err(SoundcoreError::ResponseChecksumError);
-        }
+        verify_resp(&resp)?;
 
         if resp[6] == 4 {
             debug!("Device battery level blink: {:?}", resp);
@@ -124,12 +118,9 @@ impl SoundcoreDevice for A3951 {
         self.build_and_send_cmd(A3951_CMD_DEVICE_BATTERYCHARGING, None)
             .await?;
         let resp = self.recv().await?;
-
-        if !verify_resp(&resp[0..12]) {
-            return Err(SoundcoreError::ResponseChecksumError);
-        }
+        verify_resp(&resp)?;
         // https://prnt.sc/yze5IvvUtYlq Case battery "blink"
-        if resp[13] == 255 {
+        if resp.len() >= 13 && resp[13] == 255 {
             debug!("Device battery charging blink: {:?}", resp);
             // When "blinking" resp[13] is 255 afaik.
             return Err(SoundcoreError::Unknown);
@@ -152,9 +143,7 @@ impl SoundcoreANC for A3951 {
         self.build_and_send_cmd(A3951_CMD_DEVICE_GETANC, None)
             .await?;
         let resp = self.recv().await?;
-        if !verify_resp(&resp) {
-            return Err(SoundcoreError::ResponseChecksumError);
-        }
+        verify_resp(&resp)?;
         Ok(ANCProfile::decode(&resp[9..13])?)
     }
 }
@@ -229,9 +218,7 @@ impl SoundcoreLDAC for A3951 {
         self.build_and_send_cmd(A3951_CMD_DEVICE_GETLDAC, None)
             .await?;
         let resp = self.recv().await?;
-        if !verify_resp(&resp) {
-            return Err(SoundcoreError::ResponseChecksumError);
-        }
+        // verify_resp(&resp)?;
         Ok(resp[9] == 1)
     }
 

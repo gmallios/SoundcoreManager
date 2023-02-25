@@ -1,3 +1,5 @@
+use crate::error::SoundcoreError;
+
 pub(crate) fn i8vec_to_u8vec(arr: Vec<i8>) -> Vec<u8> {
     let mut vec = Vec::new();
     for i in arr {
@@ -23,16 +25,19 @@ pub(crate) fn mac_str_to_u64(addr: &str) -> Result<u64, std::num::ParseIntError>
     Ok(a)
 }
 
-pub(crate) fn verify_resp(resp: &[u8]) -> bool {
+pub(crate) fn verify_resp(resp: &[u8]) -> Result<(), SoundcoreError> {
     if resp.is_empty() {
-        return false;
+        return Err(SoundcoreError::ResponseChecksumError);
     }
 
     let len = resp.len() - 1;
     let mut b_arr2: Vec<u8> = vec![0; len];
     b_arr2.copy_from_slice(&resp[0..len]);
 
-    return calculate_checksum_byte(&b_arr2) == resp[len];
+    match calculate_checksum_byte(&b_arr2) == resp[len] {
+        true => Ok(()),
+        false => Err(SoundcoreError::ResponseChecksumError),
+    }
 }
 
 pub(crate) fn build_command_array_with_options_toggle_enabled(

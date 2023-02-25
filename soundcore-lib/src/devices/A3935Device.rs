@@ -82,18 +82,14 @@ impl SoundcoreDevice for A3935 {
         self.build_and_send_cmd(A3951_CMD_DEVICE_STATUS, None)
             .await?;
         let resp = self.recv().await?;
-        if !verify_resp(&resp) {
-            return Err(SoundcoreError::ResponseChecksumError);
-        }
+        verify_resp(&resp)?;
         Ok(Self::decode(&resp)?)
     }
 
     async fn get_info(&self) -> Result<DeviceInfo, SoundcoreError> {
         self.build_and_send_cmd(A3951_CMD_DEVICE_INFO, None).await?;
         let resp = self.recv().await?;
-        if !verify_resp(&resp) {
-            return Err(SoundcoreError::ResponseChecksumError);
-        }
+        verify_resp(&resp)?;
         Ok(Self::decode(&resp)?)
     }
     async fn get_battery_level(&self) -> Result<BatteryLevel, SoundcoreError> {
@@ -118,9 +114,7 @@ impl SoundcoreANC for A3935 {
         self.build_and_send_cmd(A3951_CMD_DEVICE_GETANC, None)
             .await?;
         let resp = self.recv().await?;
-        if !verify_resp(&resp) {
-            return Err(SoundcoreError::ResponseChecksumError);
-        }
+        verify_resp(&resp)?;
         Ok(ANCProfile::decode(&resp[9..13])?)
     }
 }
@@ -154,9 +148,7 @@ impl SoundcoreLDAC for A3935 {
         self.build_and_send_cmd(A3951_CMD_DEVICE_GETLDAC, None)
             .await?;
         let resp = self.recv().await?;
-        if !verify_resp(&resp) {
-            return Err(SoundcoreError::ResponseChecksumError);
-        }
+        verify_resp(&resp)?;
         Ok(resp[9] == 1)
     }
 
