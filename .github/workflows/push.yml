@@ -42,7 +42,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: "lts/*"
-          cache: "yarn" # Set this to npm, yarn or pnpm.
+          cache: "yarn"
 
       - name: ⏬ Install Ubuntu dependencies
         if: matrix.platform == 'ubuntu-20.04'
