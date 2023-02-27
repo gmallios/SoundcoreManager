@@ -25,6 +25,7 @@
 | A3028    |Life Q30           | All/In-Progress    |
 | A3029    |Life Tune          | All/In-Progress    |
 | A3033    |Live 2 Neo         | Untested           |
+| A3040    |Space Q45          | None/In-Progress   |
 | A3935    |Life A2 NC         | Untested           |
 | A3931    |Life Dot 2         | Untested           |
 | A3992    |Soundcore A3i      | None/In-Progress   |

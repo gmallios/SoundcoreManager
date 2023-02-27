@@ -6,7 +6,7 @@ use crate::{
 use serde::Serialize;
 use soundcore_lib::{
     base::SoundcoreDevice,
-    devices::{A3027, A3951, A3935},
+    devices::{A3027, A3951, A3935, A3040},
     types::{BatteryCharging, BatteryLevel, DeviceInfo, DeviceStatus, EQWave},
     BluetoothAdrr,
 };
@@ -38,6 +38,7 @@ pub(crate) enum SupportedModel {
     A3027,
     A3028,
     A3029,
+    A3040,
     A3935,
     A3951,
 }
@@ -49,6 +50,7 @@ pub(crate) static SOUNDCORE_NAME_MODEL_MAP: phf::Map<&'static str, SupportedMode
     "Soundcore Life Q30" => SupportedModel::A3028,
     "Soundcore Q30" => SupportedModel::A3028, /* EU Variant */
     "Soundcore Life Tune" => SupportedModel::A3029,
+    "Soundcore Space Q45" => SupportedModel::A3040,
     "Soundcore Life A2 NC" => SupportedModel::A3935,
     "Soundcore Life A2 NC+" => SupportedModel::A3935,
     "Soundcore Liberty Air 2 Pro" => SupportedModel::A3951,
@@ -64,13 +66,13 @@ pub(crate) async fn get_model(
 
 #[tauri::command]
 pub(crate) async fn connect(
-    state: State<'_, SoundcoreAppState>,
+    app_state: State<'_, SoundcoreAppState>,
     bt_name: String,
     bt_addr: String,
 ) -> Result<(), String> {
     /* Check if device is connected */
     {
-        let mut device = state.device.lock().await;
+        let mut device = app_state.device.lock().await;
         if device.is_some() {
             device.as_ref().unwrap().close().await.unwrap();
             *device = None;
@@ -81,37 +83,41 @@ pub(crate) async fn connect(
         "No Model ID found for given bluetooth name: {}",
         bt_name
     ))?;
-    *state.model.write().await = Some(device_model.clone());
 
+    let mut device_state = app_state.device.lock().await;
     match device_model {
         SupportedModel::A3951 => {
             let device = A3951::default()
                 .init(BluetoothAdrr::from(bt_addr))
                 .await
                 .map_err(|e| e.to_string())?;
-            let mut a = state.device.lock().await;
-            *a = Some(device);
+            *device_state = Some(device);
         }
         SupportedModel::A3935 => {
             let device = A3935::default()
                 .init(BluetoothAdrr::from(bt_addr))
                 .await
                 .map_err(|e| e.to_string())?;
-            let mut a = state.device.lock().await;
-            *a = Some(device);
+            *device_state = Some(device);
         }
         SupportedModel::A3027 | SupportedModel::A3028 | SupportedModel::A3029 => {
             let device = A3027::default()
                 .init(BluetoothAdrr::from(bt_addr))
                 .await
                 .map_err(|e| e.to_string())?;
-            let mut a = state.device.lock().await;
-            *a = Some(device);
+            *device_state = Some(device);
         }
-        _ => {
-            return Err("Device not supported yet".to_string());
+        SupportedModel::A3040 => {
+            let device = A3040::default()
+                .init(BluetoothAdrr::from(bt_addr))
+                .await
+                .map_err(|e| e.to_string())?;
+            *device_state = Some(device);
         }
     };
+
+    *app_state.model.write().await = Some(device_model.clone());
+
     Ok(())
 }
 

@@ -5,6 +5,7 @@ import A3951ImgRight from "./../assets/a3951_img_device_right_edited.webp";
 import A3027Img from "./../assets/a3027_img_device.webp";
 import A3028Img from "./../assets/a3028_img_device.webp";
 import A3029Img from "./../assets/a3029_img_device.webp";
+import A3040Img from "./../assets/a3040_img_device.webp";
 import A3935Img from "./../assets/a3935_img_device.webp";
 
 import BatteryAlertIcon from '@mui/icons-material/BatteryAlert';
@@ -77,6 +78,17 @@ function OverviewItem() {
         case "A3029":
             return (
                 <EarbudItem img={A3029Img} imgSize={90} alignTo="right" batteryLevel={levelQuery.data?.left} batteryCharging={chargingQuery.data?.left} />
+            );
+        case "A3040":
+            return (
+                <SingleImgTwoBattery
+                    img={A3040Img}
+                    imgSize={90}
+                    leftBattLevel={levelQuery.data?.left}
+                    rightBattLevel={levelQuery.data?.right}
+                    leftCharging={chargingQuery.data?.left}
+                    rightCharging={chargingQuery.data?.right}
+                />
             );
         case "A3935":
             return (
