@@ -1,3 +1,4 @@
+use phf::phf_map;
 use serde::{Deserialize, Serialize};
 
 use crate::error::SoundcoreError;
@@ -6,13 +7,36 @@ pub type SendFnType<'a> = &'a (dyn Fn(&[u8]) -> Result<(), SoundcoreError> + Sen
 pub type RecvFnType<'a> = &'a (dyn Fn(usize) -> Result<Vec<u8>, SoundcoreError> + Send + Sync);
 pub type CloseSockFnType<'a> = &'a (dyn Fn() + Send + Sync);
 
-pub trait ResponseDecoder<T> {
+pub(crate) trait ResponseDecoder<T> {
     fn decode(arr: &[u8]) -> Result<T, SoundcoreError>;
 }
 
-pub trait CommandEncoder<T> {
+pub(crate) trait CommandEncoder<T> {
     fn encode(&self) -> Result<Vec<u8>, SoundcoreError>;
 }
+
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub enum SupportedModels {
+    A3027,
+    A3028,
+    A3029,
+    A3040,
+    A3935,
+    A3951,
+}
+
+pub static SOUNDCORE_NAME_MODEL_MAP: phf::Map<&'static str, SupportedModels> = phf_map! {
+    "Soundcore Life Q35" => SupportedModels::A3027,
+    "Soundcore Q35" => SupportedModels::A3027, /* EU Variant */
+    "Soundcore Life Q30" => SupportedModels::A3028,
+    "Soundcore Q30" => SupportedModels::A3028, /* EU Variant */
+    "Soundcore Life Tune" => SupportedModels::A3029,
+    "Soundcore Space Q45" => SupportedModels::A3040,
+    "Soundcore Life A2 NC" => SupportedModels::A3935,
+    "Soundcore Life A2 NC+" => SupportedModels::A3935,
+    "Soundcore Liberty Air 2 Pro" => SupportedModels::A3951,
+};
 
 #[derive(Default, Debug, Serialize, Deserialize)]
 pub struct DeviceInfo {

@@ -1,12 +1,12 @@
 use log::debug;
 
+use soundcore_lib::types::SupportedModels;
 use tauri::{
     AppHandle, CustomMenuItem, Manager, State, SystemTray, SystemTrayEvent, SystemTrayMenu,
     SystemTrayMenuItem, SystemTraySubmenu,
 };
 
 use crate::{
-    device::SupportedModel,
     frontend_types::{ANCModes, BatteryStatus, NewTrayDeviceStatus},
     SoundcoreAppState,
 };
@@ -169,7 +169,7 @@ fn build_base_tray_menu() -> SystemTrayMenu {
         .add_item(quit)
 }
 
-fn build_anc_menu(model: &SupportedModel) -> SystemTrayMenu {
+fn build_anc_menu(model: &SupportedModels) -> SystemTrayMenu {
     let normal_mode = CustomMenuItem::new("anc_sub_normal_mode".to_string(), "Normal Mode");
     let transport_mode =
         CustomMenuItem::new("anc_sub_transport_mode".to_string(), "ANC: Transport Mode");
@@ -183,7 +183,7 @@ fn build_anc_menu(model: &SupportedModel) -> SystemTrayMenu {
         CustomMenuItem::new("anc_sub_vocal_mode".to_string(), "Transparency: Vocal Mode");
 
     match model {
-        SupportedModel::A3951 => SystemTrayMenu::new()
+        SupportedModels::A3951 => SystemTrayMenu::new()
             .add_item(indoor_mode)
             .add_item(outdoor_mode)
             .add_item(transport_mode)
@@ -192,7 +192,7 @@ fn build_anc_menu(model: &SupportedModel) -> SystemTrayMenu {
             .add_native_item(SystemTrayMenuItem::Separator)
             .add_item(fully_transparent)
             .add_item(vocal_mode),
-        SupportedModel::A3027 | SupportedModel::A3028 | SupportedModel::A3029 => {
+        SupportedModels::A3027 | SupportedModels::A3028 | SupportedModels::A3029 => {
             SystemTrayMenu::new()
                 .add_item(indoor_mode)
                 .add_item(outdoor_mode)
@@ -208,7 +208,7 @@ fn build_anc_menu(model: &SupportedModel) -> SystemTrayMenu {
 }
 
 /* Menu used while connected */
-fn build_extended_menu(model: Option<&SupportedModel>) -> SystemTrayMenu {
+fn build_extended_menu(model: Option<&SupportedModels>) -> SystemTrayMenu {
     let conn_status = CustomMenuItem::new("conn_status".to_string(), "Disconnected").disabled();
     let anc_submenu = match model {
         Some(model) => SystemTraySubmenu::new("ANC Profiles", build_anc_menu(model)),

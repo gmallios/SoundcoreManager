@@ -9,7 +9,7 @@ use env_logger::builder;
 use frontend_types::BthScanResult;
 use soundcore_lib::base::SoundcoreDevice;
 use std::sync::Arc;
-
+use soundcore_lib::types::{SupportedModels, SOUNDCORE_NAME_MODEL_MAP};
 use tauri::async_runtime::{Mutex, RwLock};
 use tauri::Manager;
 
@@ -35,7 +35,7 @@ async fn scan_for_devices() -> Vec<BthScanResult> {
     let res = BthScanner::new().scan().await;
     let mut scan_res: Vec<BthScanResult> = vec![];
     res.into_iter().for_each(|btdevice| {
-        if !btdevice.connected || !device::SOUNDCORE_NAME_MODEL_MAP.contains_key(&btdevice.name){
+        if !btdevice.connected || !SOUNDCORE_NAME_MODEL_MAP.contains_key(&btdevice.name){
             return;
         }
         scan_res.push(BthScanResult::from(btdevice));
@@ -45,7 +45,7 @@ async fn scan_for_devices() -> Vec<BthScanResult> {
 
 struct SoundcoreAppState {
     device: Arc<Mutex<Option<Box<dyn SoundcoreDevice>>>>,
-    model: Arc<RwLock<Option<device::SupportedModel>>>,
+    model: Arc<RwLock<Option<SupportedModels>>>,
 }
 
 fn main() {

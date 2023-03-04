@@ -7,6 +7,7 @@ use crate::devices::A3951;
 use crate::types::{EQWave, RecvFnType, SendFnType};
 
 mod base;
+mod cli;
 mod devices;
 mod error;
 mod statics;

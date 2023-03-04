@@ -3,15 +3,13 @@ use crate::{
     utils::{anc_mode_to_profile, anc_profile_to_mode},
     SoundcoreAppState,
 };
-use serde::Serialize;
 use soundcore_lib::{
     base::SoundcoreDevice,
     devices::{A3027, A3951, A3935, A3040},
-    types::{BatteryCharging, BatteryLevel, DeviceInfo, DeviceStatus, EQWave},
+    types::{BatteryCharging, BatteryLevel, DeviceInfo, DeviceStatus, EQWave, SupportedModels},
     BluetoothAdrr,
 };
-use tauri::{utils::assets::phf::phf_map, State};
-use typeshare::typeshare;
+use tauri::State;
 
 #[tauri::command]
 pub(crate) async fn is_connected(state: State<'_, SoundcoreAppState>) -> Result<bool, String> {
@@ -32,34 +30,11 @@ pub(crate) async fn close(state: State<'_, SoundcoreAppState>) -> Result<(), Str
     Ok(())
 }
 
-#[typeshare]
-#[derive(Clone, Serialize)]
-pub(crate) enum SupportedModel {
-    A3027,
-    A3028,
-    A3029,
-    A3040,
-    A3935,
-    A3951,
-}
-
-/* Maps Bluetooth Name to SupportedModel */
-pub(crate) static SOUNDCORE_NAME_MODEL_MAP: phf::Map<&'static str, SupportedModel> = phf_map! {
-    "Soundcore Life Q35" => SupportedModel::A3027,
-    "Soundcore Q35" => SupportedModel::A3027, /* EU Variant */
-    "Soundcore Life Q30" => SupportedModel::A3028,
-    "Soundcore Q30" => SupportedModel::A3028, /* EU Variant */
-    "Soundcore Life Tune" => SupportedModel::A3029,
-    "Soundcore Space Q45" => SupportedModel::A3040,
-    "Soundcore Life A2 NC" => SupportedModel::A3935,
-    "Soundcore Life A2 NC+" => SupportedModel::A3935,
-    "Soundcore Liberty Air 2 Pro" => SupportedModel::A3951,
-};
 
 #[tauri::command]
 pub(crate) async fn get_model(
     state: State<'_, SoundcoreAppState>,
-) -> Result<SupportedModel, String> {
+) -> Result<SupportedModels, String> {
     let model = state.model.read().await;
     model.clone().ok_or("No device connected".to_string())
 }
@@ -79,35 +54,35 @@ pub(crate) async fn connect(
         }
     }
 
-    let device_model = SOUNDCORE_NAME_MODEL_MAP.get(&bt_name).ok_or(format!(
+    let device_model = soundcore_lib::types::SOUNDCORE_NAME_MODEL_MAP.get(&bt_name).ok_or(format!(
         "No Model ID found for given bluetooth name: {}",
         bt_name
     ))?;
 
     let mut device_state = app_state.device.lock().await;
     match device_model {
-        SupportedModel::A3951 => {
+        SupportedModels::A3951 => {
             let device = A3951::default()
                 .init(BluetoothAdrr::from(bt_addr))
                 .await
                 .map_err(|e| e.to_string())?;
             *device_state = Some(device);
         }
-        SupportedModel::A3935 => {
+        SupportedModels::A3935 => {
             let device = A3935::default()
                 .init(BluetoothAdrr::from(bt_addr))
                 .await
                 .map_err(|e| e.to_string())?;
             *device_state = Some(device);
         }
-        SupportedModel::A3027 | SupportedModel::A3028 | SupportedModel::A3029 => {
+        SupportedModels::A3027 | SupportedModels::A3028 | SupportedModels::A3029 => {
             let device = A3027::default()
                 .init(BluetoothAdrr::from(bt_addr))
                 .await
                 .map_err(|e| e.to_string())?;
             *device_state = Some(device);
         }
-        SupportedModel::A3040 => {
+        SupportedModels::A3040 => {
             let device = A3040::default()
                 .init(BluetoothAdrr::from(bt_addr))
                 .await
