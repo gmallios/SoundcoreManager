@@ -21,7 +21,6 @@ import BatteryFullIcon from '@mui/icons-material/BatteryFull';
 import BatteryChargingFullIcon from '@mui/icons-material/BatteryChargingFull';
 import BatteryUnknownIcon from '@mui/icons-material/BatteryUnknown';
 import { useBatteryLevel, useCharging, useDeviceModel } from "../hooks/useSoundcoreDevice";
-import { DeviceSelection } from "../bindings/DeviceSelection";
 
 export default function OverviewCard() {
 

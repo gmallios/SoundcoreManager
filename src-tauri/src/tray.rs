@@ -1,13 +1,13 @@
 use log::debug;
 
-use soundcore_lib::types::SupportedModels;
+use soundcore_lib::types::{SupportedModels, BatteryCharging};
 use tauri::{
     AppHandle, CustomMenuItem, Manager, State, SystemTray, SystemTrayEvent, SystemTrayMenu,
     SystemTrayMenuItem, SystemTraySubmenu,
 };
 
 use crate::{
-    frontend_types::{ANCModes, BatteryStatus, NewTrayDeviceStatus},
+    frontend_types::{ANCModes, NewTrayDeviceStatus},
     SoundcoreAppState,
 };
 
@@ -60,8 +60,8 @@ pub(crate) async fn set_tray_device_status(app_handle: AppHandle, status: NewTra
             battery_level
                 .set_title(format!(
                     "Battery Level: L: {}% R: {}%",
-                    status.left_status.battery_level * 2 * 10,
-                    status.right_status.battery_level * 2 * 10
+                    status.level.left * 2 * 10,
+                    status.level.right * 2 * 10
                 ))
                 .unwrap()
         }
@@ -101,11 +101,9 @@ pub(crate) async fn set_tray_device_status(app_handle: AppHandle, status: NewTra
     match status {
         NewTrayDeviceStatus {
             is_connected: true,
-            left_status: BatteryStatus {
-                is_charging: true, ..
-            },
-            right_status: BatteryStatus {
-                is_charging: true, ..
+            charging: BatteryCharging {
+                left: true,
+                right: true,
             },
             ..
         } => {
@@ -114,11 +112,9 @@ pub(crate) async fn set_tray_device_status(app_handle: AppHandle, status: NewTra
         }
         NewTrayDeviceStatus {
             is_connected: true,
-            left_status: BatteryStatus {
-                is_charging: true, ..
-            },
-            right_status: BatteryStatus {
-                is_charging: false, ..
+            charging: BatteryCharging {
+                left: true,
+                right: false,
             },
             ..
         } => {
@@ -127,11 +123,9 @@ pub(crate) async fn set_tray_device_status(app_handle: AppHandle, status: NewTra
         }
         NewTrayDeviceStatus {
             is_connected: true,
-            left_status: BatteryStatus {
-                is_charging: false, ..
-            },
-            right_status: BatteryStatus {
-                is_charging: true, ..
+            charging: BatteryCharging {
+                left: false,
+                right: true,
             },
             ..
         } => {
@@ -140,16 +134,14 @@ pub(crate) async fn set_tray_device_status(app_handle: AppHandle, status: NewTra
         }
         NewTrayDeviceStatus {
             is_connected: true,
-            left_status: BatteryStatus {
-                is_charging: false, ..
-            },
-            right_status: BatteryStatus {
-                is_charging: false, ..
+            charging: BatteryCharging {
+                left: false,
+                right: false,
             },
             ..
         } => {
             // Not Charging
-            charging_status.set_title("Not Charging").unwrap();
+            charging_status.set_title("None Charging").unwrap();
         }
         _ => {
             charging_status.set_title("Not Charging").unwrap();

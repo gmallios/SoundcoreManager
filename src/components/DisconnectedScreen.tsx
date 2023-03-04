@@ -3,10 +3,9 @@ import { CircularProgress, Fab, Stack, Typography } from "@mui/material";
 import { useSearch } from "../hooks/useBluetooth";
 import DeviceList from "./DeviceList";
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
-import { BthScanResult } from "../bindings/ScanResult";
 import useDeviceStore, { DeviceConnectionState } from "../hooks/useDeviceStore";
-import { DeviceSelection } from "../bindings/DeviceSelection";
 import { setTrayMenu } from "../hooks/useTray";
+import { BthScanResult } from "../types/tauri-backend";
 
 
 

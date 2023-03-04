@@ -9,8 +9,8 @@ import ANCModeCard from "./components/ANCModeCard/ANCModeCard";
 import DisconnectedScreen from "./components/DisconnectedScreen";
 import { ITrayStatus, setTrayMenu, useUpdateTray, useWindowEvent } from "./hooks/useTray";
 import { CircularProgress } from "@mui/material";
-import { ANCModes } from "./bindings/ANCModes";
 import { useANC, useBatteryLevel, useCharging, useDeviceModel, useStatus, useUpdateANC } from "./hooks/useSoundcoreDevice";
+import { ANCModes } from "./types/tauri-backend";
 
 
 function App() {
@@ -37,8 +37,8 @@ function App() {
     if (deviceConnectionState == DeviceConnectionState.CONNECTED && isDataSuccess && isDataNotNull) {
       let trayStatus: ITrayStatus = {
         deviceConnectionState: deviceConnectionState,
-        batteryLevel: level,
-        batteryCharging: charging,
+        level,
+        charging,
         anc_mode: ancStatus,
       }
       trayMutation.mutate(trayStatus);

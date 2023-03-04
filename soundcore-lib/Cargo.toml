@@ -14,6 +14,7 @@ async-trait = "0.1.59"
 thiserror = "1.0.37"
 bluetooth-lib = { path = "../bluetooth-lib/" }
 log = "0.4.17"
+typeshare = "1.0.1"
 phf = { version = "0.11", default-features = false, features = ["macros"] }
 dialoguer = { version = "0.10.3", features = ["fuzzy-select"] }
 

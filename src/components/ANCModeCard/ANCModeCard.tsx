@@ -1,12 +1,11 @@
-import { ANCModes } from "../../bindings/ANCModes";
-import { DeviceSelection } from "../../bindings/DeviceSelection";
 import { useDeviceModel } from "../../hooks/useSoundcoreDevice";
+import { ANCModes } from "../../types/tauri-backend";
 import BaseANCModeCard, { ANCSliderProps } from "./base";
 
 export default function ANCModeCard() {
     let { data: model } = useDeviceModel();
     let Component = (props: ANCSliderProps) => <div />;
-    let ancButtons: Array<[string, ANCModes | "AncCustomValue"]> = [];
+    let ancButtons: Array<[string, ANCModes]> = [];
     let transButtons: Array<[string, ANCModes]> = [];
 
     switch (model) {
@@ -15,14 +14,14 @@ export default function ANCModeCard() {
             Component = BaseANCModeCard;
             ancButtons =
                 [
-                    ["Transport", "AncTransportMode"],
-                    ["Outdoor", "AncOutdoorMode"],
-                    ["Indoor", "AncIndoorMode"],
-                    ["Custom", "AncCustomValue"]
+                    ["Transport", { mode: "AncTransportMode" }],
+                    ["Outdoor", { mode: "AncOutdoorMode" }],
+                    ["Indoor", { mode: "AncIndoorMode" }],
+                    ["Custom", { mode: "AncCustomValue", value: 0 }]
                 ];
             transButtons = [
-                ["Fully Trasparent", "TransparencyFullyTransparentMode"],
-                ["Vocal Mode", "TransparencyVocalMode"]
+                ["Fully Trasparent", { mode: "TransparencyFullyTransparentMode" }],
+                ["Vocal Mode", { mode: "TransparencyVocalMode" }]
             ];
             break;
         case "A3027":
@@ -31,11 +30,11 @@ export default function ANCModeCard() {
             Component = BaseANCModeCard;
             ancButtons =
                 [
-                    ["Transport", "AncTransportMode"],
-                    ["Outdoor", "AncOutdoorMode"],
-                    ["Indoor", "AncIndoorMode"],
+                    ["Transport", { mode: "AncTransportMode" }],
+                    ["Outdoor", { mode: "AncOutdoorMode" }],
+                    ["Indoor", { mode: "AncIndoorMode" }],
                 ];
-            transButtons = [["Fully Trasparent", "TransparencyFullyTransparentMode"]];
+            transButtons = [["Fully Trasparent", { mode: "TransparencyFullyTransparentMode"}]];
             break;
         default:
             Component = () => <div>Not implemented</div>;

@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
-import { BthScanResult } from "../bindings/ScanResult";
 import { List, SxProps, } from "@mui/material";
 import DeviceListItem from "./DeviceListItem";
+import { BthScanResult } from "../types/tauri-backend";
 
 
 interface IDeviceListProps {

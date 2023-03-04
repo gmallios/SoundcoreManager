@@ -1,12 +1,11 @@
 import { invoke } from '@tauri-apps/api/tauri';
-import create from 'zustand'
-import { ANCModes } from '../bindings/ANCModes';
-import { DeviceSelection } from '../bindings/DeviceSelection';
+import create from 'zustand';
+import { SupportedModels } from '../types/soundcore-lib';
 
 interface DeviceStoreState {
   deviceConnectionState: DeviceConnectionState
-  deviceModel: DeviceSelection,
-  updateDeviceModel: (model: DeviceSelection) => void,
+  deviceModel: SupportedModels | undefined,
+  updateDeviceModel: (model: SupportedModels) => void,
   setDeviceConnectionState: (state: DeviceConnectionState) => void,
   connectUUID: (bt_name: String, bt_addr: String) => void,
   close: () => void,
@@ -20,39 +19,39 @@ export enum DeviceConnectionState {
   UNINITIALIZED
 }
 
-export interface DeviceBatteryLevel {
-  left: number,
-  right: number
-}
+// export interface DeviceBatteryLevel {
+//   left: number,
+//   right: number
+// }
 
-export interface DeviceBatteryCharging {
-  left: boolean,
-  right: boolean
-}
+// export interface DeviceBatteryCharging {
+//   left: boolean,
+//   right: boolean
+// }
 
-export interface DeviceInfo {
-  left_fw: string,
-  right_fw: string,
-  SN: string,
-}
+// export interface DeviceInfo {
+//   left_fw: string,
+//   right_fw: string,
+//   SN: string,
+// }
 
-export interface DeviceStatus {
-  host_device: number,
-  tws_status: boolean,
-  battery_level: DeviceBatteryLevel,
-  battery_charging: DeviceBatteryCharging,
-  anc_mode: ANCValues,
-  side_tone_enabled: boolean,
-  wear_detection_enabled: boolean,
-  touch_tone_enabled: boolean,
-  left_eq: EQWave,
-  right_eq: EQWave,
-  hearid_enabled: boolean,
-  left_hearid: EQWave,
-  right_hearid: EQWave,
-  left_hearid_customdata: EQWave,
-  right_hearid_customdata: EQWave,
-}
+// export interface DeviceStatus {
+//   host_device: number,
+//   tws_status: boolean,
+//   battery_level: DeviceBatteryLevel,
+//   battery_charging: DeviceBatteryCharging,
+//   anc_mode: ANCValues,
+//   side_tone_enabled: boolean,
+//   wear_detection_enabled: boolean,
+//   touch_tone_enabled: boolean,
+//   left_eq: EQWave,
+//   right_eq: EQWave,
+//   hearid_enabled: boolean,
+//   left_hearid: EQWave,
+//   right_hearid: EQWave,
+//   left_hearid_customdata: EQWave,
+//   right_hearid_customdata: EQWave,
+// }
 
 export interface ANCValues {
   option: number,
@@ -76,8 +75,8 @@ export interface EQWave {
 
 const useDeviceStore = create<DeviceStoreState>((set) => ({
   deviceConnectionState: DeviceConnectionState.DISCONNECTED,
-  deviceModel: "None",
-  updateDeviceModel: (model: DeviceSelection) => {
+  deviceModel: undefined,
+  updateDeviceModel: (model: SupportedModels) => {
     set((state) => ({ ...state, deviceModel: model }));
   },
   setDeviceConnectionState: (new_state: DeviceConnectionState) => {

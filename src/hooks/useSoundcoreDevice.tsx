@@ -3,9 +3,9 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { invoke } from "@tauri-apps/api/tauri";
 import { useEffect, useState } from "react";
-import { ANCModes } from "../bindings/ANCModes";
-import { SupportedModel } from "../types/soundcore";
-import useDeviceStore, { DeviceBatteryCharging, DeviceBatteryLevel, DeviceConnectionState, DeviceStatus, EQWave } from "./useDeviceStore";
+import { BatteryCharging, BatteryLevel, DeviceStatus, SupportedModels } from "../types/soundcore-lib";
+import { ANCModes } from "../types/tauri-backend";
+import useDeviceStore, { DeviceConnectionState, EQWave } from "./useDeviceStore";
 
 
 
@@ -44,10 +44,10 @@ export function connectWithUUID(macAddr: String, uuid: String) {
 //TODO: Add type for result (SupportedModel)
 export function useDeviceModel() {
     const { deviceConnectionState } = useDeviceStore();
-    return useQuery<SupportedModel, Error>(["model"], async () => {
+    return useQuery<SupportedModels, Error>(["model"], async () => {
         try {
             const result = await invoke("get_model");
-            return result as SupportedModel;
+            return result as SupportedModels;
         } catch (err) {
             throw new Error("Error getting device model: " + err);
         }
@@ -58,13 +58,13 @@ export function useDeviceModel() {
 
 export function useCharging() {
     const { deviceConnectionState } = useDeviceStore();
-    return useQuery<DeviceBatteryCharging, Error>(["charging"], async () => {
+    return useQuery<BatteryCharging, Error>(["charging"], async () => {
         try {
             const result = await invoke("get_battery_charging");
-            return result as DeviceBatteryCharging;
+            return result as BatteryCharging;
         } catch (err) {
             console.error("Charging Error: " + err);
-            return { left: false, right: false } as DeviceBatteryCharging;
+            return { left: false, right: false } as BatteryCharging;
         }
     }, {
         refetchInterval: 500,
@@ -74,13 +74,13 @@ export function useCharging() {
 
 export function useBatteryLevel() {
     const { deviceConnectionState } = useDeviceStore();
-    return useQuery<DeviceBatteryLevel, Error>(["battery"], async () => {
+    return useQuery<BatteryLevel, Error>(["battery"], async () => {
         try {
             const result = await invoke("get_battery_level");
-            return result as DeviceBatteryLevel;
+            return result as BatteryLevel;
         } catch (err) {
             console.error("Battery Error: " + err);
-            return { left: 0, right: 0 } as DeviceBatteryLevel;
+            return { left: 0, right: 0 } as BatteryLevel;
         }
     }, {
         refetchInterval: 5000,
@@ -127,7 +127,7 @@ export function useUpdateEQ() {
         mutationFn: (newEQ: EQWave) => { return invoke("set_eq", { eq: newEQ }); },
         onMutate: async (newEQ: EQWave) => {
             await queryClient.cancelQueries({ queryKey: ["status"] });
-            queryClient.setQueryData<DeviceStatus>(["status"], old => {
+            queryClient.setQueryData<DeviceStatus>(["status"], (old: any) => {
                 return {
                     ...old!,
                     left_eq: newEQ,

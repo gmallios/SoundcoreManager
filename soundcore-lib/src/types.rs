@@ -1,5 +1,6 @@
 use phf::phf_map;
 use serde::{Deserialize, Serialize};
+use typeshare::typeshare;
 
 use crate::error::SoundcoreError;
 
@@ -16,6 +17,7 @@ pub(crate) trait CommandEncoder<T> {
 }
 
 
+#[typeshare]
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub enum SupportedModels {
     A3027,
@@ -38,6 +40,7 @@ pub static SOUNDCORE_NAME_MODEL_MAP: phf::Map<&'static str, SupportedModels> = p
     "Soundcore Liberty Air 2 Pro" => SupportedModels::A3951,
 };
 
+#[typeshare]
 #[derive(Default, Debug, Serialize, Deserialize)]
 pub struct DeviceInfo {
     pub left_fw: String,
@@ -45,6 +48,7 @@ pub struct DeviceInfo {
     pub sn: String,
 }
 
+#[typeshare]
 #[derive(Default, Debug, Serialize, Deserialize)]
 pub struct DeviceStatus {
     pub host_device: u8,
@@ -64,18 +68,21 @@ pub struct DeviceStatus {
     pub right_hearid_customdata: EQWave,
 }
 
+#[typeshare]
 #[derive(Default, Debug, Serialize, Deserialize, Clone, Copy, PartialEq, Eq)]
 pub struct BatteryCharging {
     pub left: bool,
     pub right: bool,
 }
 
+#[typeshare]
 #[derive(Default, Debug, Serialize, Deserialize, Clone, Copy, PartialEq, Eq)]
 pub struct BatteryLevel {
     pub left: u8,
     pub right: u8,
 }
 
+#[typeshare]
 #[derive(Default, Debug, Serialize, Deserialize, PartialEq, Eq, Clone, Copy)]
 pub struct ANCProfile {
     pub option: u8,

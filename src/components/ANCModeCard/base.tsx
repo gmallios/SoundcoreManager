@@ -4,8 +4,8 @@ import ANCIcon from "../../assets/ambient_icon_anc.png";
 import NormalIcon from "../../assets/ambient_icon_off.png";
 import TransIcon from "../../assets/ambient_icon_trans.png";
 import useDeviceStore from "../../hooks/useDeviceStore";
-import { ANCModes } from "../../bindings/ANCModes";
 import { useANC, useUpdateANC } from "../../hooks/useSoundcoreDevice";
+import { ANCModes } from "../../types/tauri-backend";
 
 const width = window.innerWidth - 35;
 
@@ -87,7 +87,7 @@ const ANCSliderButton = styled(Button, {
 
 
 export interface ANCSliderProps {
-    ancModes: Array<[string, ANCModes | "AncCustomValue"]>;
+    ancModes: Array<[string, ANCModes]>;
     transModes: Array<[string, ANCModes]>;
 }
 
@@ -99,39 +99,39 @@ export default function BaseANCModeCard() {
     let [sliderPosition, setSliderPosition] = useState<AllowedSliderPositions>(null);
     let [sliderIcon, setSliderIcon] = useState<string>(NormalIcon);
     let [submenuOpen, setSubmenuOpen] = useState<boolean>(false);
-    let [ancModeSelected, setAncModeSelected] = useState<ANCModes | "AncCustomValue">("AncOutdoorMode");
-    let [transModeSelected, setTransModeSelected] = useState<ANCModes>("TransparencyFullyTransparentMode");
-    let [ancCustomValue, setAncCustomValue] = useState<number | number[] | null>(null);
+    let [ancModeSelected, setAncModeSelected] = useState<ANCModes>({ mode: "AncOutdoorMode" });
+    let [transModeSelected, setTransModeSelected] = useState<ANCModes>({ mode: "TransparencyFullyTransparentMode" });
+    let [ancCustomValue, setAncCustomValue] = useState<number | number[] | null>(10);
 
 
-    let ancButtons: Array<[string, ANCModes | "AncCustomValue"]> =
+    let ancButtons: Array<[string, ANCModes]> =
         [
-            ["Transport", "AncTransportMode"],
-            ["Outdoor", "AncOutdoorMode"],
-            ["Indoor", "AncIndoorMode"],
-            ["Custom", "AncCustomValue"]
+            ["Transport", { mode: "AncTransportMode" }],
+            ["Outdoor", { mode: "AncOutdoorMode" }],
+            ["Indoor", { mode: "AncIndoorMode" }],
+            ["Custom", { mode: "AncCustomValue", value: 0 }]
         ];
 
     let transButtons: Array<[string, ANCModes]> =
         [
-            ["Fully Trasparent", "TransparencyFullyTransparentMode"],
-            ["Vocal Mode", "TransparencyVocalMode"]
+            ["Fully Trasparent", { mode: "TransparencyFullyTransparentMode"}],
+            ["Vocal Mode", { mode: "TransparencyVocalMode" }]
         ];
 
     useEffect(() => {
         /* Update component from current ANC mode */
         if (!isSuccess) return;
 
-        if (currentANCMode == "NormalMode") {
+        if (currentANCMode.mode == "NormalMode") {
             setSliderPosition("center");
-        } else if (currentANCMode == "TransparencyFullyTransparentMode" || currentANCMode == "TransparencyVocalMode") {
+        } else if (currentANCMode.mode == "TransparencyFullyTransparentMode" || currentANCMode.mode == "TransparencyVocalMode") {
             setSliderPosition("right");
             setTransModeSelected(currentANCMode);
         } else {
             setSliderPosition("left");
-            if (typeof currentANCMode === "object") {
-                setAncCustomValue(currentANCMode.AncCustomValue);
-                setAncModeSelected("AncCustomValue");
+            if (currentANCMode.mode == "AncCustomValue") {
+                setAncCustomValue(currentANCMode.value);
+                setAncModeSelected({mode: "AncCustomValue", value: currentANCMode.value});
             } else {
                 setAncModeSelected(currentANCMode!);
             }
@@ -141,10 +141,10 @@ export default function BaseANCModeCard() {
 
     useEffect(() => {
         if (sliderPosition == "center") {
-            ancMutation.mutate("NormalMode");
+            ancMutation.mutate({ mode: "NormalMode" });
             setSubmenuOpen(false);
         } else if (sliderPosition == "left") {
-            if (ancModeSelected != "AncCustomValue") {
+            if (ancModeSelected.mode != "AncCustomValue") {
                 ancMutation.mutate(ancModeSelected);
             }
             setSubmenuOpen(true);
@@ -156,15 +156,16 @@ export default function BaseANCModeCard() {
 
     useEffect(() => {
         if (sliderPosition == "left") {
-            if (ancModeSelected == "AncCustomValue") {
+            if (ancModeSelected.mode == "AncCustomValue") {
                 if (ancCustomValue == null) {
                     setAncCustomValue(10);
                 }
-                ancMutation.mutate({ AncCustomValue: ancCustomValue as number });
+                ancMutation.mutate({ mode: "AncCustomValue", value: ancCustomValue as number });
             } else {
                 ancMutation.mutate(ancModeSelected);
             }
         }
+        console.log(ancModeSelected);
     }, [ancModeSelected, ancCustomValue]);
 
     useEffect(() => {
@@ -191,7 +192,7 @@ export default function BaseANCModeCard() {
                 <Grid item sx={{ paddingTop: "0px !important" }}>
                     <Collapse in={submenuOpen}>
                         <ButtonGrid buttonArray={sliderPosition == "left" ? ancButtons : transButtons} setButtonSelected={sliderPosition == "left" ? setAncModeSelected : setTransModeSelected} buttonSelected={sliderPosition == "left" ? ancModeSelected : transModeSelected}>
-                            <Collapse in={sliderPosition == "left" && ancModeSelected == "AncCustomValue"}>
+                            <Collapse in={sliderPosition == "left" && ancModeSelected.mode == "AncCustomValue"}>
                                 {ancCustomValue != null &&
                                     <Slider
                                         size="small"
@@ -243,12 +244,12 @@ const ANCModeButton = styled(Button, {
 }));
 
 
-function ButtonGrid({ children, buttonArray, setButtonSelected, buttonSelected }: { children: ReactNode, buttonArray: Array<[string, ANCModes | "AncCustomValue"]>, setButtonSelected: React.Dispatch<React.SetStateAction<any>>, buttonSelected: any }) {
+function ButtonGrid({ children, buttonArray, setButtonSelected, buttonSelected }: { children: ReactNode, buttonArray: Array<[string, ANCModes]>, setButtonSelected: React.Dispatch<React.SetStateAction<any>>, buttonSelected: any }) {
     return (
         <Stack>
             <Grid container direction="row" spacing={1} sx={{ display: "flex", justifyContent: "space-evenly", pt: 2 }}>
                 {buttonArray.map(([title, mode]) => (
-                    <Grid item key={title}><ANCModeButton variant="outlined" active={buttonSelected == mode} onClick={() => { setButtonSelected(mode) }} size="small">{title}</ANCModeButton></Grid>
+                    <Grid item key={title}><ANCModeButton variant="outlined" active={buttonSelected.mode == mode.mode} onClick={() => { setButtonSelected(mode) }} size="small">{title}</ANCModeButton></Grid>
                 ))}
             </Grid>
             {children}

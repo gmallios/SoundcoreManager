@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/tauri";
-import { BthScanResult } from "../bindings/ScanResult";
 import { useQuery } from "@tanstack/react-query";
+import { BthScanResult } from "../types/tauri-backend";
 
 export function scanForDevices() {
     const [data, setData] = useState<BthScanResult[]>([]);
