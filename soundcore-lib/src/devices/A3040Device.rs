@@ -1,25 +1,32 @@
-use bluetooth_lib::{BluetoothAdrr, platform::RFCOMM, RFCOMMClient};
-use tokio::time::sleep;
-
-use crate::{base::{SoundcoreDevice, SoundcoreHearID, SoundcoreANC, SoundcoreLDAC, SoundcoreEQ}, error::SoundcoreError, statics::A3040_RFCOMM_UUID, utils::remove_padding, types::{DeviceStatus, BatteryCharging, BatteryLevel, DeviceInfo}};
+use crate::{
+    base::{SoundcoreANC, SoundcoreDevice, SoundcoreEQ, SoundcoreHearID, SoundcoreLDAC},
+    error::SoundcoreError,
+    statics::A3040_RFCOMM_UUID,
+    types::{
+        BatteryCharging, BatteryLevel, CommandEncoder, DeviceInfo, DeviceStatus, ResponseDecoder,
+    },
+    utils::remove_padding,
+};
+use bluetooth_lib::{platform::RFCOMM, BluetoothAdrr, RFCOMMClient};
 
 #[derive(Default)]
 pub struct A3040 {
-    btaddr: Option<BluetoothAdrr>,
-    rfcomm: Option<RFCOMM>
+    _btaddr: Option<BluetoothAdrr>,
+    rfcomm: Option<RFCOMM>,
 }
-
-
 
 #[async_trait::async_trait]
 impl SoundcoreDevice for A3040 {
-    async fn init(&self, btaddr: BluetoothAdrr) -> Result<Box<dyn SoundcoreDevice>, SoundcoreError> {
+    async fn init(
+        &self,
+        btaddr: BluetoothAdrr,
+    ) -> Result<Box<dyn SoundcoreDevice>, SoundcoreError> {
         let mut rfcomm = RFCOMM::new().await?;
         rfcomm
             .connect_uuid(btaddr.clone(), A3040_RFCOMM_UUID)
             .await?;
         Ok(Box::new(A3040 {
-            btaddr: Some(btaddr),
+            _btaddr: Some(btaddr),
             rfcomm: Some(rfcomm),
         }))
     }
@@ -64,7 +71,7 @@ impl SoundcoreDevice for A3040 {
     }
 
     async fn get_status(&self) -> Result<DeviceStatus, SoundcoreError> {
-       todo!()
+        todo!()
     }
 
     async fn get_info(&self) -> Result<DeviceInfo, SoundcoreError> {
@@ -75,6 +82,17 @@ impl SoundcoreDevice for A3040 {
     }
 
     async fn get_battery_charging(&self) -> Result<BatteryCharging, SoundcoreError> {
+        todo!()
+    }
+}
+
+impl ResponseDecoder<DeviceInfo> for A3040 {
+    fn decode(&self, arr: &[u8]) -> Result<DeviceInfo, SoundcoreError> {
+        todo!()
+    }
+}
+impl ResponseDecoder<DeviceStatus> for A3040 {
+    fn decode(&self, arr: &[u8]) -> Result<DeviceStatus, SoundcoreError> {
         todo!()
     }
 }

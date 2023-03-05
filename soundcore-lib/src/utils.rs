@@ -64,7 +64,8 @@ pub(crate) fn build_command_array_with_options_toggle_enabled(
     return calculate_checksum(&output_arr);
 }
 pub(crate) fn remove_padding(arr: &[u8]) -> Vec<u8> {
-    let mut out = arr.iter()
+    let mut out = arr
+        .iter()
         .rev()
         .skip_while(|&&b| b == 0)
         .map(|&b| b)

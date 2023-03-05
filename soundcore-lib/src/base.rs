@@ -6,7 +6,10 @@ use std::any::Any;
 
 use crate::{
     error::SoundcoreError,
-    types::{ANCProfile, BatteryCharging, BatteryLevel, DeviceInfo, DeviceStatus, EQWave},
+    types::{
+        ANCProfile, BatteryCharging, BatteryLevel, DeviceInfo, DeviceStatus, EQWave,
+        ResponseDecoder,
+    },
 };
 
 /* Should we require all traits or make this be a SoundcoreBase and have all
@@ -15,7 +18,14 @@ other traits be "extensions" (may require unsafe downcasting/upcasting) */
 
 #[async_trait]
 pub trait SoundcoreDevice:
-    SoundcoreANC + SoundcoreEQ + SoundcoreLDAC + SoundcoreHearID + Send + Sync
+    SoundcoreANC
+    + SoundcoreEQ
+    + SoundcoreLDAC
+    + SoundcoreHearID
+    + ResponseDecoder<DeviceInfo>
+    + ResponseDecoder<DeviceStatus>
+    + Send
+    + Sync
 {
     async fn init(&self, btaddr: BluetoothAdrr)
         -> Result<Box<dyn SoundcoreDevice>, SoundcoreError>;

@@ -8,14 +8,13 @@ pub type SendFnType<'a> = &'a (dyn Fn(&[u8]) -> Result<(), SoundcoreError> + Sen
 pub type RecvFnType<'a> = &'a (dyn Fn(usize) -> Result<Vec<u8>, SoundcoreError> + Send + Sync);
 pub type CloseSockFnType<'a> = &'a (dyn Fn() + Send + Sync);
 
-pub(crate) trait ResponseDecoder<T> {
-    fn decode(arr: &[u8]) -> Result<T, SoundcoreError>;
+pub trait ResponseDecoder<T> {
+    fn decode(&self, arr: &[u8]) -> Result<T, SoundcoreError>;
 }
 
-pub(crate) trait CommandEncoder<T> {
+pub trait CommandEncoder<T> {
     fn encode(&self) -> Result<Vec<u8>, SoundcoreError>;
 }
-
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Clone, Debug)]

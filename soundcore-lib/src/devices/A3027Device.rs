@@ -11,7 +11,10 @@ use crate::{
         ANCProfile, BatteryCharging, BatteryLevel, DeviceInfo, DeviceStatus, EQWave, EQWaveInt,
         ResponseDecoder,
     },
-    utils::{build_command_array_with_options_toggle_enabled, i8_to_u8vec, verify_resp, Clamp, remove_padding},
+    utils::{
+        build_command_array_with_options_toggle_enabled, i8_to_u8vec, remove_padding, verify_resp,
+        Clamp,
+    },
 };
 use std::time::Duration;
 
@@ -83,14 +86,14 @@ impl SoundcoreDevice for A3027 {
             .await?;
         let resp = self.recv().await?;
         verify_resp(&resp)?;
-        Ok(Self::decode(&resp)?)
+        Ok(Self::decode(&self, &resp)?)
     }
 
     async fn get_info(&self) -> Result<DeviceInfo, SoundcoreError> {
         self.build_and_send_cmd(A3951_CMD_DEVICE_INFO, None).await?;
         let resp = self.recv().await?;
         verify_resp(&resp)?;
-        Ok(Self::decode(&resp)?)
+        Ok(Self::decode(&self, &resp)?)
     }
     async fn get_battery_level(&self) -> Result<BatteryLevel, SoundcoreError> {
         Ok(self.get_status().await?.battery_level)
@@ -159,7 +162,7 @@ impl SoundcoreLDAC for A3027 {
 impl SoundcoreHearID for A3027 {}
 
 impl ResponseDecoder<DeviceInfo> for A3027 {
-    fn decode(arr: &[u8]) -> Result<DeviceInfo, SoundcoreError> {
+    fn decode(&self, arr: &[u8]) -> Result<DeviceInfo, SoundcoreError> {
         Ok(DeviceInfo {
             left_fw: String::from_utf8(arr[9..14].to_vec())?,
             right_fw: String::from_utf8(arr[14..19].to_vec())?,
@@ -169,18 +172,18 @@ impl ResponseDecoder<DeviceInfo> for A3027 {
 }
 
 impl ResponseDecoder<DeviceStatus> for A3027 {
-    fn decode(arr: &[u8]) -> Result<DeviceStatus, SoundcoreError> {
+    fn decode(&self, arr: &[u8]) -> Result<DeviceStatus, SoundcoreError> {
         if arr.len() < 93 {
             return Err(SoundcoreError::Unknown);
         }
-        let chargeArr = vec![arr[10], arr[10]];
-        let levelArr = vec![arr[9], arr[9]];
+        let charge_arr = vec![arr[10], arr[10]];
+        let level_arr = vec![arr[9], arr[9]];
 
         Ok(DeviceStatus {
             host_device: arr[9],
             tws_status: arr[10] == 1,
-            battery_level: Self::decode(&*levelArr)?,
-            battery_charging: Self::decode(&*chargeArr)?,
+            battery_level: Self::decode(&self, &*level_arr)?,
+            battery_charging: Self::decode(&self, &*charge_arr)?,
             left_eq: EQWave::decode(&arr[13..21])?,
             right_eq: EQWave::decode(&arr[13..21])?,
             hearid_enabled: arr[23] == 1,
@@ -197,7 +200,7 @@ impl ResponseDecoder<DeviceStatus> for A3027 {
 }
 
 impl ResponseDecoder<BatteryLevel> for A3027 {
-    fn decode(arr: &[u8]) -> Result<BatteryLevel, SoundcoreError> {
+    fn decode(&self, arr: &[u8]) -> Result<BatteryLevel, SoundcoreError> {
         if arr.len() < 2 {
             return Err(SoundcoreError::Unknown);
         }
@@ -210,7 +213,7 @@ impl ResponseDecoder<BatteryLevel> for A3027 {
 }
 
 impl ResponseDecoder<BatteryCharging> for A3027 {
-    fn decode(arr: &[u8]) -> Result<BatteryCharging, SoundcoreError> {
+    fn decode(&self, arr: &[u8]) -> Result<BatteryCharging, SoundcoreError> {
         if arr.len() < 2 {
             return Err(SoundcoreError::Unknown);
         }

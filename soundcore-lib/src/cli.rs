@@ -8,20 +8,18 @@ async fn main() {
     let res: Vec<BtDevice> = scan_res
         .into_iter()
         .filter(|device| device.connected)
-        .map(|device| BtDevice::from(device))
+        .map(BtDevice::from)
         .collect();
 
-    let bt_device_selection =
-        FuzzySelect::with_theme(&ColorfulTheme::default())
-            .with_prompt("Select your device")
-            .items(&res)
-            .default(0)
-            .interact()
-            .unwrap();
+    let bt_device_selection = FuzzySelect::with_theme(&ColorfulTheme::default())
+        .with_prompt("Select your device")
+        .items(&res)
+        .default(0)
+        .interact()
+        .unwrap();
 
     println!("{:?}", bt_device_selection);
 }
-
 
 struct BtDevice {
     name: String,
