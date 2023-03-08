@@ -22,7 +22,7 @@ static SLEEP_DURATION: Duration = std::time::Duration::from_millis(30);
 
 #[derive(Default)]
 pub struct A3027 {
-    btaddr: Option<BluetoothAdrr>,
+    _btaddr: Option<BluetoothAdrr>,
     rfcomm: Option<RFCOMM>,
 }
 
@@ -37,7 +37,7 @@ impl SoundcoreDevice for A3027 {
             .connect_uuid(btaddr.clone(), A3951_RFCOMM_UUID)
             .await?;
         Ok(Box::new(A3027 {
-            btaddr: Some(btaddr),
+            _btaddr: Some(btaddr),
             rfcomm: Some(rfcomm),
         }))
     }
@@ -85,14 +85,14 @@ impl SoundcoreDevice for A3027 {
         self.build_and_send_cmd(A3951_CMD_DEVICE_STATUS, None)
             .await?;
         let resp = self.recv().await?;
-        verify_resp(&resp)?;
+        // verify_resp(&resp)?;
         Ok(Self::decode(&self, &resp)?)
     }
 
     async fn get_info(&self) -> Result<DeviceInfo, SoundcoreError> {
         self.build_and_send_cmd(A3951_CMD_DEVICE_INFO, None).await?;
         let resp = self.recv().await?;
-        verify_resp(&resp)?;
+        // verify_resp(&resp)?;
         Ok(Self::decode(&self, &resp)?)
     }
     async fn get_battery_level(&self) -> Result<BatteryLevel, SoundcoreError> {
@@ -117,7 +117,7 @@ impl SoundcoreANC for A3027 {
         self.build_and_send_cmd(A3951_CMD_DEVICE_GETANC, None)
             .await?;
         let resp = self.recv().await?;
-        verify_resp(&resp)?;
+        // verify_resp(&resp)?;
         Ok(ANCProfile::decode(&resp[9..13])?)
     }
 }
@@ -151,7 +151,7 @@ impl SoundcoreLDAC for A3027 {
         self.build_and_send_cmd(A3951_CMD_DEVICE_GETLDAC, None)
             .await?;
         let resp = self.recv().await?;
-        verify_resp(&resp)?;
+        // verify_resp(&resp)?;
         Ok(resp[9] == 1)
     }
 
