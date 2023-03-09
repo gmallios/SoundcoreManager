@@ -40,6 +40,10 @@ pub enum SoundcoreError {
         #[from]
         source: bluetooth_lib::BthError,
     },
+    #[error("Invalid arguments")]
+    InvalidArguments,
+    #[error("Invalid response")]
+    InvalidResponse,
 }
 
 // impl std::fmt::Display for SoundcoreError {

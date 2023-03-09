@@ -24,7 +24,7 @@ pub static A3951_RFCOMM_UUID: &str = crate::statics::A3951_RFCOMM_UUID;
 
 #[derive(Default)]
 pub struct A3951 {
-    btaddr: Option<BluetoothAdrr>,
+    _btaddr: Option<BluetoothAdrr>,
     rfcomm: Option<RFCOMM>,
 }
 
@@ -39,7 +39,7 @@ impl SoundcoreDevice for A3951 {
             .connect_uuid(btaddr.clone(), A3951_RFCOMM_UUID)
             .await?;
         Ok(Box::new(A3951 {
-            btaddr: Some(btaddr),
+            _btaddr: Some(btaddr),
             rfcomm: Some(rfcomm),
         }))
     }
@@ -88,14 +88,14 @@ impl SoundcoreDevice for A3951 {
             .await?;
         let resp = self.recv().await?;
         verify_resp(&resp)?;
-        Ok(Self::decode(&self, &resp)?)
+        Ok(Self::decode(self, &resp)?)
     }
 
     async fn get_info(&self) -> Result<DeviceInfo, SoundcoreError> {
         self.build_and_send_cmd(A3951_CMD_DEVICE_INFO, None).await?;
         let resp = self.recv().await?;
         verify_resp(&resp)?;
-        Ok(Self::decode(&self, &resp)?)
+        Ok(Self::decode(self, &resp)?)
     }
     async fn get_battery_level(&self) -> Result<BatteryLevel, SoundcoreError> {
         self.build_and_send_cmd(A3951_CMD_DEVICE_BATTERYLEVEL, None)
@@ -111,7 +111,7 @@ impl SoundcoreDevice for A3951 {
             return Err(SoundcoreError::Unknown);
         }
 
-        Ok(Self::decode(&self, &resp[9..11])?)
+        Ok(Self::decode(self, &resp[9..11])?)
     }
 
     async fn get_battery_charging(&self) -> Result<BatteryCharging, SoundcoreError> {
@@ -126,7 +126,7 @@ impl SoundcoreDevice for A3951 {
             return Err(SoundcoreError::Unknown);
         }
 
-        Ok(Self::decode(&self, &resp[9..11])?)
+        Ok(Self::decode(self, &resp[9..11])?)
     }
 }
 
@@ -165,12 +165,12 @@ impl SoundcoreEQ for A3951 {
         };
         let mut wave_out: Vec<u8> = vec![0; arr_len];
 
-        wave_out[0] = eq_index as u8 & 0xFF;
+        wave_out[0] = eq_index as u8;
         wave_out[1] = ((eq_index >> 8) & 0xFF) as u8;
 
         if drc_supported {
             /* hindex is used on DRC models */
-            wave_out[2] = eq_hindex as u8 & 0xFF;
+            wave_out[2] = eq_hindex as u8;
             wave_out[3] = ((eq_hindex >> 8) & 0xFF) as u8;
         }
 
@@ -184,8 +184,8 @@ impl SoundcoreEQ for A3951 {
         wave_out[drc_offset..drc_offset + 8].copy_from_slice(&eq_wave_bytes[0..8]);
         wave_out[drc_offset + 8..drc_offset + 16].copy_from_slice(&eq_wave_bytes[0..8]);
         /* Straight from Soundcore spaghetti */
-        wave_out[drc_offset + 16] = (-1 & 255) as u8;
-        wave_out[drc_offset + 17] = (-1 & 255) as u8;
+        wave_out[drc_offset + 16] = 255_u8;
+        wave_out[drc_offset + 17] = 255_u8;
         wave_out[drc_offset + 18] = 0;
         /* drc_offset + 19-35 HearID EQ Wave */
         wave_out[drc_offset + 19..drc_offset + 27].copy_from_slice(&hearid_wave_bytes[0..8]);
@@ -222,7 +222,7 @@ impl SoundcoreLDAC for A3951 {
         Ok(resp[9] == 1)
     }
 
-    async fn set_ldac(&self, enabled: bool) -> Result<(), SoundcoreError> {
+    async fn set_ldac(&self, _enabled: bool) -> Result<(), SoundcoreError> {
         unimplemented!()
     }
 }
@@ -247,8 +247,8 @@ impl ResponseDecoder<DeviceStatus> for A3951 {
         Ok(DeviceStatus {
             host_device: arr[9],
             tws_status: arr[10] == 1,
-            battery_level: Self::decode(&self, &arr[11..13])?,
-            battery_charging: Self::decode(&self, &arr[13..15])?,
+            battery_level: Self::decode(self, &arr[11..13])?,
+            battery_charging: Self::decode(self, &arr[13..15])?,
             left_eq: EQWave::decode(&arr[17..25])?,
             right_eq: EQWave::decode(&arr[25..33])?,
             hearid_enabled: arr[35] == 1,

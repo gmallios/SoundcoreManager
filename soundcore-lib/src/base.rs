@@ -1,8 +1,5 @@
-/* Draft */
-
 use async_trait::async_trait;
 use bluetooth_lib::BluetoothAdrr;
-use std::any::Any;
 
 use crate::{
     error::SoundcoreError,
@@ -49,7 +46,7 @@ has a bound on them but they return Err by default */
 pub trait SoundcoreANC: Sync + Send {
     async fn set_anc(&self, _profile: ANCProfile) -> Result<(), SoundcoreError> {
         Err(SoundcoreError::FeatureNotSupported(
-            "ANC - set_ancc".to_string(),
+            "ANC - set_anc".to_string(),
         ))
     }
     async fn get_anc(&self) -> Result<ANCProfile, SoundcoreError> {
@@ -73,7 +70,7 @@ pub trait SoundcoreEQ: Sync + Send {
 }
 #[async_trait]
 pub trait SoundcoreLDAC: Sync + Send {
-    async fn set_ldac(&self, toggle: bool) -> Result<(), SoundcoreError> {
+    async fn set_ldac(&self, _toggle: bool) -> Result<(), SoundcoreError> {
         Err(SoundcoreError::FeatureNotSupported(
             "LDAC - set_ldac".to_string(),
         ))

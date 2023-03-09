@@ -1,3 +1,4 @@
+#![allow(non_snake_case)]
 mod A3027Device;
 mod A3040Device;
 mod A3935Device;

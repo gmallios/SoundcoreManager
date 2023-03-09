@@ -1,6 +1,5 @@
 use async_trait::async_trait;
 use bluetooth_lib::{platform::RFCOMM, BluetoothAdrr, RFCOMMClient};
-use log::debug;
 use tokio::time::sleep;
 
 use crate::{
@@ -11,10 +10,7 @@ use crate::{
         ANCProfile, BatteryCharging, BatteryLevel, DeviceInfo, DeviceStatus, EQWave, EQWaveInt,
         ResponseDecoder,
     },
-    utils::{
-        build_command_array_with_options_toggle_enabled, i8_to_u8vec, remove_padding, verify_resp,
-        Clamp,
-    },
+    utils::{build_command_array_with_options_toggle_enabled, i8_to_u8vec, remove_padding, Clamp},
 };
 use std::time::Duration;
 
@@ -86,14 +82,14 @@ impl SoundcoreDevice for A3027 {
             .await?;
         let resp = self.recv().await?;
         // verify_resp(&resp)?;
-        Ok(Self::decode(&self, &resp)?)
+        Ok(Self::decode(self, &resp)?)
     }
 
     async fn get_info(&self) -> Result<DeviceInfo, SoundcoreError> {
         self.build_and_send_cmd(A3951_CMD_DEVICE_INFO, None).await?;
         let resp = self.recv().await?;
         // verify_resp(&resp)?;
-        Ok(Self::decode(&self, &resp)?)
+        Ok(Self::decode(self, &resp)?)
     }
     async fn get_battery_level(&self) -> Result<BatteryLevel, SoundcoreError> {
         Ok(self.get_status().await?.battery_level)
@@ -155,7 +151,7 @@ impl SoundcoreLDAC for A3027 {
         Ok(resp[9] == 1)
     }
 
-    async fn set_ldac(&self, enabled: bool) -> Result<(), SoundcoreError> {
+    async fn set_ldac(&self, _enabled: bool) -> Result<(), SoundcoreError> {
         unimplemented!()
     }
 }
@@ -182,8 +178,8 @@ impl ResponseDecoder<DeviceStatus> for A3027 {
         Ok(DeviceStatus {
             host_device: arr[9],
             tws_status: arr[10] == 1,
-            battery_level: Self::decode(&self, &*level_arr)?,
-            battery_charging: Self::decode(&self, &*charge_arr)?,
+            battery_level: Self::decode(self, &level_arr)?,
+            battery_charging: Self::decode(self, &charge_arr)?,
             left_eq: EQWave::decode(&arr[13..21])?,
             right_eq: EQWave::decode(&arr[13..21])?,
             hearid_enabled: arr[23] == 1,
