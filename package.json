@@ -9,7 +9,7 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "tauri": "tauri",
-    "generate-types": "npm run typeshare:tauri && npm run typeshare:soundcore-lib",
+    "generate-types": "yarn typeshare:tauri && yarn typeshare:soundcore-lib",
     "typeshare:soundcore-lib": "typeshare ./soundcore-lib --lang=typescript --output-file=./src/types/soundcore-lib.d.ts",
     "typeshare:tauri": "typeshare ./src-tauri --lang=typescript --output-file=./src/types/tauri-backend.d.ts"
   },
