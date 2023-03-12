@@ -294,6 +294,24 @@ pub struct EQWaveInt {
     pos9: i16,
 }
 
+impl From<EQWave> for EQWaveInt {
+    fn from(eq: EQWave) -> Self {
+        const F: f32 = 10.0; /* Constant derived from method usage in the Soundcore App */
+        EQWaveInt {
+            pos0: (eq.pos0 * F).round() as i16,
+            pos1: (eq.pos1 * F).round() as i16,
+            pos2: (eq.pos2 * F).round() as i16,
+            pos3: (eq.pos3 * F).round() as i16,
+            pos4: (eq.pos4 * F).round() as i16,
+            pos5: (eq.pos5 * F).round() as i16,
+            pos6: (eq.pos6 * F).round() as i16,
+            pos7: (eq.pos7 * F).round() as i16,
+            pos8: (eq.pos8 * F).round() as i16,
+            pos9: (eq.pos9 * F).round() as i16,
+        }
+    }
+}
+
 impl EQWaveInt {
     pub fn from_eq_wave(eq: EQWave) -> EQWaveInt {
         const F: f32 = 10.0; /* Constant derived from method usage in the Soundcore App */
@@ -313,6 +331,33 @@ impl EQWaveInt {
 
     pub fn to_bytes(&self) -> [u8; 10] {
         [
+            (self.pos0 as u8),
+            (self.pos1 as u8),
+            (self.pos2 as u8),
+            (self.pos3 as u8),
+            (self.pos4 as u8),
+            (self.pos5 as u8),
+            (self.pos6 as u8),
+            (self.pos7 as u8),
+            (self.pos8 as u8),
+            (self.pos9 as u8),
+        ]
+    }
+
+    pub fn to_dualch_bytes(&self) -> [u8; 20] {
+        [
+            /* Left */
+            (self.pos0 as u8),
+            (self.pos1 as u8),
+            (self.pos2 as u8),
+            (self.pos3 as u8),
+            (self.pos4 as u8),
+            (self.pos5 as u8),
+            (self.pos6 as u8),
+            (self.pos7 as u8),
+            (self.pos8 as u8),
+            (self.pos9 as u8),
+            /* Right */
             (self.pos0 as u8),
             (self.pos1 as u8),
             (self.pos2 as u8),

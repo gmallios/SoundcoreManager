@@ -5,14 +5,15 @@ use crate::{
     error::SoundcoreError,
     statics::{
         A3040_CMD_DEVICE_BATTERYLEVEL, A3040_CMD_DEVICE_CHARGINSTATUS, A3040_CMD_DEVICE_INFO,
-        A3040_RFCOMM_UUID,
+        A3040_RFCOMM_UUID, A3040_CMD_DEVICE_SETLDAC, EQ_INDEX_CUSTOM, A3040_CMD_DEVICE_SETCUSTOMEQ,
     },
     types::{
         ANCProfile, BatteryCharging, BatteryLevel, DeviceInfo, DeviceStatus, EQWave,
-        ResponseDecoder,
+        ResponseDecoder, EQWaveInt,
     },
     utils::{build_command_with_options, i8_to_u8vec, remove_padding, Clamp},
 };
+use async_trait::async_trait;
 use bluetooth_lib::{platform::RFCOMM, BluetoothAdrr, RFCOMMClient};
 use tokio::time::sleep;
 
@@ -24,7 +25,7 @@ pub struct A3040 {
     rfcomm: Option<RFCOMM>,
 }
 
-#[async_trait::async_trait]
+#[async_trait]
 impl SoundcoreDevice for A3040 {
     async fn init(
         &self,
@@ -156,12 +157,13 @@ impl ResponseDecoder<BatteryLevel> for A3040 {
     fn decode(&self, arr: &[u8]) -> Result<BatteryLevel, SoundcoreError> {
         Ok(BatteryLevel {
             left: Clamp::clamp(arr[9], 0, 5),
-            right: Clamp::clamp(arr[10], 0, 5),
+            right: Clamp::clamp(arr[9], 0, 5),
         })
     }
 }
 
 impl ResponseDecoder<BatteryCharging> for A3040 {
+    /* Might need to use DeviceInfo cmd and charging_case_idx */
     fn decode(&self, arr: &[u8]) -> Result<BatteryCharging, SoundcoreError> {
         Ok(BatteryCharging {
             left: arr[9] == 1,
@@ -200,10 +202,54 @@ impl ResponseDecoder<EQWave> for A3040 {
     }
 }
 
+#[async_trait]
+impl SoundcoreANC for A3040 {
+    async fn get_anc(&self) -> Result<ANCProfile, SoundcoreError> {
+        Ok(self.get_status().await?.anc_status)
+    }
+
+    /* set_anc needs a litle more investigation - maybe some wireshark captures? */
+}
+
+#[async_trait]
+impl SoundcoreLDAC for A3040 {
+    async fn set_ldac(&self, toggle: bool) -> Result<(), SoundcoreError> {
+        self.build_and_send_cmd(A3040_CMD_DEVICE_SETLDAC, Some(&vec![toggle as u8]))
+            .await?;
+        let _resp = self.recv().await?;
+        Ok(())
+    }
+
+    async fn get_ldac(&self) -> Result<bool, SoundcoreError> {
+        self.build_and_send_cmd(A3040_CMD_DEVICE_INFO, None).await?;
+        let resp = self.recv().await?;
+        let base_idx = resp[54] as usize;
+        let ldac_idx = base_idx + 66;
+        Ok(resp[ldac_idx] == 1)
+    }
+}
+
+#[async_trait]
+impl SoundcoreEQ for A3040 {
+    async fn set_eq(&self, wave: EQWave) -> Result<(), SoundcoreError> {
+        let int_wave = EQWaveInt::from(wave).to_dualch_bytes();
+        let mut out_wave = vec![0; 22];
+        out_wave[0] = (EQ_INDEX_CUSTOM & 255) as u8;
+        out_wave[1] = (EQ_INDEX_CUSTOM >> 8) as u8;
+        // Copy the EQWaveInt bytes into the out_wave
+        out_wave[2..].copy_from_slice(&int_wave);
+        self.build_and_send_cmd(A3040_CMD_DEVICE_SETCUSTOMEQ, Some(&out_wave))
+            .await?;
+        let _resp = self.recv().await?;
+        Ok(())
+    }
+
+    async fn get_eq(&self) -> Result<EQWave, SoundcoreError> {
+        Ok(self.get_status().await?.left_eq)
+    }
+}
+
 impl SoundcoreHearID for A3040 {}
-impl SoundcoreANC for A3040 {}
-impl SoundcoreLDAC for A3040 {}
-impl SoundcoreEQ for A3040 {}
 
 fn get_nth_bit_value(b: u8, n: u8) -> u8 {
     // shift the byte n-1 bits to the right and bitwise AND it with 1 to get the nth bit value
