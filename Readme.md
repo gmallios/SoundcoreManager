@@ -1,9 +1,16 @@
 <img src=".github/splash.png" alt="Tauri" />
 
 <h3 align="center">
- A desktop companion app for your Soundcore devices
+ A desktop companion app for your Soundcore devices 
 </h3>
 <br>
+<h5 align="center">
+ 
+![Github Actions](https://github.com/gmallios/SoundcoreManager/actions/workflows/push.yml/badge.svg) 
+ [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/donate/?hosted_button_id=58VZ5TZFZXACJ)
+ 
+<h5>
+
 
 # Downloads
 
