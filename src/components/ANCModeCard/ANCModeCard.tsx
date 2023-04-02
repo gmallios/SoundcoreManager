@@ -1,3 +1,4 @@
+import React from "react";
 import { useDeviceModel } from "../../hooks/useSoundcoreDevice";
 import { ANCModes } from "../../types/tauri-backend";
 import BaseANCModeCard, { ANCSliderProps } from "./base";

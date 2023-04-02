@@ -6,13 +6,15 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
+import { MantineProvider, MantineThemeOverride } from "@mantine/core";
+import { BluetoothSearchScreen } from "./components/BluetoothSearch/main";
 import { appLogDir } from '@tauri-apps/api/path';
 
-const darkTheme = createTheme({
-  palette: {
-    mode: 'dark',
-  },
-});
+// const darkTheme = createTheme({
+//   palette: {
+//     mode: 'dark',
+//   },
+// });
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -23,6 +25,21 @@ const queryClient = new QueryClient({
   },
 });
 
+// ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
+//   <ThemeProvider theme={darkTheme}>
+//     <CssBaseline />
+//     <QueryClientProvider client={queryClient}>
+//       <App />
+//       <ReactQueryDevtools />
+//     </QueryClientProvider>
+//   </ThemeProvider>
+// );
+
+
+const theme: MantineThemeOverride = {
+  colorScheme: 'dark',
+}
+
 
 (async () => {
   const logDir = await appLogDir();
@@ -30,11 +47,12 @@ const queryClient = new QueryClient({
 })();
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
-  <ThemeProvider theme={darkTheme}>
-    <CssBaseline />
+  <MantineProvider theme={theme}>
     <QueryClientProvider client={queryClient}>
-      <App />
+      {/* <App /> */}
+      <BluetoothSearchScreen />
       <ReactQueryDevtools />
     </QueryClientProvider>
-  </ThemeProvider>
+  </MantineProvider>
 );
+
