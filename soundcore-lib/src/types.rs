@@ -32,6 +32,7 @@ pub static SOUNDCORE_NAME_MODEL_MAP: phf::Map<&'static str, SupportedModels> = p
     "Soundcore Q35" => SupportedModels::A3027, /* EU Variant */
     "Soundcore Life Q30" => SupportedModels::A3028,
     "Soundcore Q30" => SupportedModels::A3028, /* EU Variant */
+    "BES_BLE" => SupportedModels::A3028, /* Q30 has a FW Bug causing it to appear sometimes as BES_BLE */
     "Soundcore Life Tune" => SupportedModels::A3029,
     "Soundcore Space Q45" => SupportedModels::A3040,
     "Soundcore Life A2 NC" => SupportedModels::A3935,
