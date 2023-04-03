@@ -82,13 +82,15 @@ pub(crate) fn build_command_with_options(cmd: &[u8], optional_data: Option<&[u8]
 }
 
 pub(crate) fn remove_padding(arr: &[u8]) -> Vec<u8> {
-    let mut out = arr
-        .iter()
-        .rev()
-        .skip_while(|&&b| b == 0).copied()
-        .collect::<Vec<u8>>();
-    out.reverse();
-    out
+    /* Disable until we find a new method of removing the padded 0s from the end */
+    // let mut out = arr
+    //     .iter()
+    //     .rev()
+    //     .skip_while(|&&b| b == 0).copied()
+    //     .collect::<Vec<u8>>();
+    // out.reverse();
+    // out
+    arr.into()
 }
 
 pub(crate) fn int_to_byte_array(num: i32) -> [u8; 4] {
