@@ -39,7 +39,14 @@ async fn scan_for_devices() -> Vec<BthScanResult> {
         if !btdevice.connected || !SOUNDCORE_NAME_MODEL_MAP.contains_key(&btdevice.name){
             return;
         }
-        scan_res.push(BthScanResult::from(btdevice));
+
+        let modelid = SOUNDCORE_NAME_MODEL_MAP.get(&btdevice.name).unwrap().clone();
+        scan_res.push(BthScanResult{
+            name: btdevice.name,
+            address: btdevice.address.to_string(),
+            is_connected: btdevice.connected,
+            modelid: modelid,
+        });
     });
     scan_res
 }

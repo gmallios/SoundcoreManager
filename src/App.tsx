@@ -52,7 +52,7 @@ function App() {
 
   return (
     <React.Fragment>
-      {/* {deviceConnectionState != DeviceConnectionState.DISCONNECTED ? (
+      {deviceConnectionState != DeviceConnectionState.DISCONNECTED ? (
         <Stack>
           {isStatusSuccess ? (
             <React.Fragment>
@@ -68,7 +68,7 @@ function App() {
         </Stack>
       ) : (
         <DisconnectedScreen />
-      )} */}
+      )}
     </React.Fragment>
   );
 }

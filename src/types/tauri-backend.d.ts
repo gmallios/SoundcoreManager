@@ -6,6 +6,7 @@ export interface BthScanResult {
 	name: string;
 	address: string;
 	is_connected: boolean;
+	modelid: SupportedModels;
 }
 
 export interface NewTrayDeviceStatus {

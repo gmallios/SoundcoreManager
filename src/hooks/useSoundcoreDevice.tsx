@@ -1,4 +1,3 @@
-/* Not in use - Draft */
 /* Move to async state react-query and define here async functions to "fetch" */
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { invoke } from "@tauri-apps/api/tauri";

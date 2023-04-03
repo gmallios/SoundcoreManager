@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use soundcore_lib::types::{BatteryCharging, BatteryLevel};
+use soundcore_lib::types::{BatteryCharging, BatteryLevel, SupportedModels};
 use typeshare::typeshare;
 
 
@@ -21,20 +21,21 @@ pub(crate) enum ANCModes {
 #[typeshare]
 #[derive(Serialize, Deserialize)]
 pub(crate) struct BthScanResult {
-    name: String,
-    address: String,
-    is_connected: bool,
+    pub(crate) name: String,
+    pub(crate) address: String,
+    pub(crate) is_connected: bool,
+    pub(crate) modelid: SupportedModels,
 }
 
-impl From<bluetooth_lib::BluetoothDevice> for BthScanResult {
-    fn from(device: bluetooth_lib::BluetoothDevice) -> Self {
-        Self {
-            name: device.name,
-            address: device.address.to_string(),
-            is_connected: device.connected,
-        }
-    }
-}
+// impl From<bluetooth_lib::BluetoothDevice> for BthScanResult {
+//     fn from(device: bluetooth_lib::BluetoothDevice) -> Self {
+//         Self {
+//             name: device.name,
+//             address: device.address.to_string(),
+//             is_connected: device.connected,
+//         }
+//     }
+// }
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug)]

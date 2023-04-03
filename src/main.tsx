@@ -7,14 +7,8 @@ import CssBaseline from '@mui/material/CssBaseline';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { MantineProvider, MantineThemeOverride } from "@mantine/core";
-import { BluetoothSearchScreen } from "./components/BluetoothSearch/main";
+import { BluetoothSearchScreen } from "./components/BluetoothSearch";
 import { appLogDir } from '@tauri-apps/api/path';
-
-// const darkTheme = createTheme({
-//   palette: {
-//     mode: 'dark',
-//   },
-// });
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -24,6 +18,25 @@ const queryClient = new QueryClient({
     },
   },
 });
+
+const theme: MantineThemeOverride = {
+  colorScheme: 'dark',
+  primaryShade: 9,
+  globalStyles(theme) {
+    return {
+      body: {
+        backgroundColor: theme.colorScheme === 'dark' ? theme.colors.dark[8] : theme.white,
+      },
+    };
+  },
+}
+
+// const darkTheme = createTheme({
+//   palette: {
+//     mode: 'dark',
+//   },
+// });
+
 
 // ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
 //   <ThemeProvider theme={darkTheme}>
@@ -36,9 +49,7 @@ const queryClient = new QueryClient({
 // );
 
 
-const theme: MantineThemeOverride = {
-  colorScheme: 'dark',
-}
+
 
 
 (async () => {
@@ -47,7 +58,7 @@ const theme: MantineThemeOverride = {
 })();
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
-  <MantineProvider theme={theme}>
+  <MantineProvider theme={theme} withGlobalStyles withNormalizeCSS>
     <QueryClientProvider client={queryClient}>
       {/* <App /> */}
       <BluetoothSearchScreen />
