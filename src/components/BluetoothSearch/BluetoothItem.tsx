@@ -6,12 +6,13 @@ import { SupportedModels } from "../../types/soundcore-lib";
 const transitionSpeed = "0.2s";
 const useStyles = createStyles((theme) => ({
     card: {
-        transition: `background-color ${transitionSpeed} ease-in-out`,
+        transition: `background-color ${transitionSpeed} ease-in-out, transform 100ms ease`,
         backgroundColor: theme.colors.dark[7],
         marginLeft: rem(10),
         marginRight: rem(10),
         ":hover": {
             backgroundColor: theme.colors.dark[8],
+            transform: 'scale(1.01)',
         },
         "&:hover .cardImg": {
             transform: "translateY(-5px)",
@@ -46,7 +47,7 @@ export default function BluetoothItem(props: BluetoothItemProps) {
     const { classes, cx } = useStyles();
     
     return (
-        <Card withBorder radius="md" p="md" className={cx(classes.card)} onClick={(event) => console.log(event)}>
+        <Card withBorder radius="md" p="md" className={cx(classes.card)} onClick={(event) => props.onItemClicked(event, props.idx)}>
             <Container className={cx(classes.cardInner)}>
                 <div className={cx(classes.cardTitle, "cardTitle")}>
                     <Text fz="md" fw={500}>
@@ -69,7 +70,7 @@ export function BluetoothItemSkeleton() {
     const { classes, cx } = useStyles();
     
     return (
-        <Card withBorder radius="md" p="md" className={cx(classes.card)} onClick={(event) => console.log(event)}>
+        <Card withBorder radius="md" p="md" className={cx(classes.card)}>
             <Container className={cx(classes.cardInner)}>
                 <div className={cx(classes.cardTitle, "cardTitle")}>
                     <Skeleton height={13} width={200} radius="xl" />
@@ -89,5 +90,5 @@ export interface BluetoothItemProps {
     name: string;
     isConnected: boolean;
     model: SupportedModels;
-    onItemClicked: (event: React.MouseEvent<HTMLButtonElement, MouseEvent>, index: number) => void;
+    onItemClicked: (event: React.MouseEvent<HTMLDivElement, MouseEvent>, index: number) => void;
 }

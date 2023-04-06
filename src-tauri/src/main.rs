@@ -41,12 +41,7 @@ async fn scan_for_devices() -> Vec<BthScanResult> {
         }
 
         let modelid = SOUNDCORE_NAME_MODEL_MAP.get(&btdevice.name).unwrap().clone();
-        scan_res.push(BthScanResult{
-            name: btdevice.name,
-            address: btdevice.address.to_string(),
-            is_connected: btdevice.connected,
-            modelid: modelid,
-        });
+        scan_res.push((btdevice, modelid).into());
     });
     scan_res
 }

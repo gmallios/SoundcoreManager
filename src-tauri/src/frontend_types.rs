@@ -1,3 +1,4 @@
+use bluetooth_lib::BluetoothDevice;
 use serde::{Deserialize, Serialize};
 use soundcore_lib::types::{BatteryCharging, BatteryLevel, SupportedModels};
 use typeshare::typeshare;
@@ -27,15 +28,16 @@ pub(crate) struct BthScanResult {
     pub(crate) modelid: SupportedModels,
 }
 
-// impl From<bluetooth_lib::BluetoothDevice> for BthScanResult {
-//     fn from(device: bluetooth_lib::BluetoothDevice) -> Self {
-//         Self {
-//             name: device.name,
-//             address: device.address.to_string(),
-//             is_connected: device.connected,
-//         }
-//     }
-// }
+impl From<(bluetooth_lib::BluetoothDevice, SupportedModels)> for BthScanResult {
+    fn from(args: (BluetoothDevice, SupportedModels)) -> Self {
+        Self {
+            name: args.0.name,
+            address: args.0.address.to_string(),
+            is_connected: args.0.connected,
+            modelid: args.1,
+        }
+    }
+}
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug)]

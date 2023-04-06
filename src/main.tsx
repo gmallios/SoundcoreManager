@@ -8,7 +8,14 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { MantineProvider, MantineThemeOverride } from "@mantine/core";
 import { BluetoothSearchScreen } from "./components/BluetoothSearch";
-import { appLogDir } from '@tauri-apps/api/path';
+import { inspect } from "@xstate/inspect";
+import { useMachine } from "@xstate/react";
+import { createMachine, interpret } from "xstate";
+inspect({
+  // options
+  url: 'https://statecharts.io/inspect', // (default)
+  iframe: false // open in new window
+});import { appLogDir } from '@tauri-apps/api/path';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -30,6 +37,7 @@ const theme: MantineThemeOverride = {
     };
   },
 }
+
 
 // const darkTheme = createTheme({
 //   palette: {

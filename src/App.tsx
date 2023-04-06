@@ -11,6 +11,9 @@ import { ITrayStatus, setTrayMenu, useUpdateTray, useWindowEvent } from "./hooks
 import { CircularProgress } from "@mui/material";
 import { useANC, useBatteryLevel, useCharging, useDeviceModel, useStatus, useUpdateANC } from "./hooks/useSoundcoreDevice";
 import { ANCModes } from "./types/tauri-backend";
+import { useMachine } from "@xstate/react";
+import { createMachine, interpret } from "xstate";
+import { inspect } from "@xstate/inspect";
 
 
 function App() {
@@ -25,6 +28,8 @@ function App() {
   const isDataNotNull = level != undefined && charging != undefined && ancStatus != undefined && devStatus != undefined;
   const trayMutation = useUpdateTray();
   const ancMutation = useUpdateANC();
+
+
 
 
   /* On Tray Event - Handles the anc submenu event */
