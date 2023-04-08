@@ -1,4 +1,9 @@
 #![allow(warnings, unused)]
+pub(crate) static A3951_RESPONSE_VERIFICATION: bool = false;
+pub(crate) static A3935_RESPONSE_VERIFICATION: bool = false;
+pub(crate) static A3040_RESPONSE_VERIFICATION: bool = false;
+pub(crate) static A3027_RESPONSE_VERIFICATION: bool = false;
+
 pub(crate) static EQ_INDEX_DEFAULT: i32 = 0;
 pub(crate) static EQ_INDEX_CUSTOM: i32 = 65278;
 

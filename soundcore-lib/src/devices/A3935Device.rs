@@ -11,7 +11,10 @@ use crate::{
         ANCProfile, BatteryCharging, BatteryLevel, DeviceInfo, DeviceStatus, EQWave, EQWaveInt,
         ResponseDecoder,
     },
-    utils::{build_command_array_with_options_toggle_enabled, i8_to_u8vec, remove_padding, Clamp},
+    utils::{
+        build_command_array_with_options_toggle_enabled, i8_to_u8vec, remove_padding, verify_resp,
+        Clamp,
+    },
 };
 use std::time::Duration;
 
@@ -82,14 +85,18 @@ impl SoundcoreDevice for A3935 {
         self.build_and_send_cmd(A3951_CMD_DEVICE_STATUS, None)
             .await?;
         let resp = self.recv().await?;
-        // verify_resp(&resp)?;
+        if A3935_RESPONSE_VERIFICATION {
+            verify_resp(&resp)?;
+        }
         Ok(Self::decode(self, &resp)?)
     }
 
     async fn get_info(&self) -> Result<DeviceInfo, SoundcoreError> {
         self.build_and_send_cmd(A3951_CMD_DEVICE_INFO, None).await?;
         let resp = self.recv().await?;
-        // verify_resp(&resp)?;
+        if A3951_RESPONSE_VERIFICATION {
+            verify_resp(&resp)?;
+        }
         Ok(Self::decode(self, &resp)?)
     }
     async fn get_battery_level(&self) -> Result<BatteryLevel, SoundcoreError> {
@@ -114,7 +121,9 @@ impl SoundcoreANC for A3935 {
         self.build_and_send_cmd(A3951_CMD_DEVICE_GETANC, None)
             .await?;
         let resp = self.recv().await?;
-        // verify_resp(&resp)?;
+        if A3951_RESPONSE_VERIFICATION {
+            verify_resp(&resp)?;
+        }
         Ok(ANCProfile::decode(&resp[9..13])?)
     }
 }
@@ -148,7 +157,9 @@ impl SoundcoreLDAC for A3935 {
         self.build_and_send_cmd(A3951_CMD_DEVICE_GETLDAC, None)
             .await?;
         let resp = self.recv().await?;
-        // verify_resp(&resp)?;
+        if A3951_RESPONSE_VERIFICATION {
+            verify_resp(&resp)?;
+        }
         Ok(resp[9] == 1)
     }
 

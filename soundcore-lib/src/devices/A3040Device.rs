@@ -5,13 +5,14 @@ use crate::{
     error::SoundcoreError,
     statics::{
         A3040_CMD_DEVICE_BATTERYLEVEL, A3040_CMD_DEVICE_CHARGINSTATUS, A3040_CMD_DEVICE_INFO,
-        A3040_RFCOMM_UUID, A3040_CMD_DEVICE_SETLDAC, EQ_INDEX_CUSTOM, A3040_CMD_DEVICE_SETCUSTOMEQ,
+        A3040_CMD_DEVICE_SETCUSTOMEQ, A3040_CMD_DEVICE_SETLDAC, A3040_RESPONSE_VERIFICATION,
+        A3040_RFCOMM_UUID, EQ_INDEX_CUSTOM,
     },
     types::{
-        ANCProfile, BatteryCharging, BatteryLevel, DeviceInfo, DeviceStatus, EQWave,
-        ResponseDecoder, EQWaveInt,
+        ANCProfile, BatteryCharging, BatteryLevel, DeviceInfo, DeviceStatus, EQWave, EQWaveInt,
+        ResponseDecoder,
     },
-    utils::{build_command_with_options, i8_to_u8vec, remove_padding, Clamp},
+    utils::{build_command_with_options, i8_to_u8vec, remove_padding, verify_resp, Clamp},
 };
 use async_trait::async_trait;
 use bluetooth_lib::{platform::RFCOMM, BluetoothAdrr, RFCOMMClient};
@@ -83,12 +84,18 @@ impl SoundcoreDevice for A3040 {
     async fn get_status(&self) -> Result<DeviceStatus, SoundcoreError> {
         self.build_and_send_cmd(A3040_CMD_DEVICE_INFO, None).await?;
         let resp = self.recv().await?;
+        if A3040_RESPONSE_VERIFICATION {
+            verify_resp(&resp)?
+        }
         Ok(Self::decode(self, &resp)?)
     }
 
     async fn get_info(&self) -> Result<DeviceInfo, SoundcoreError> {
         self.build_and_send_cmd(A3040_CMD_DEVICE_INFO, None).await?;
         let resp = self.recv().await?;
+        if A3040_RESPONSE_VERIFICATION {
+            verify_resp(&resp)?
+        }
         Ok(Self::decode(self, &resp)?)
     }
 
@@ -96,6 +103,9 @@ impl SoundcoreDevice for A3040 {
         self.build_and_send_cmd(A3040_CMD_DEVICE_BATTERYLEVEL, None)
             .await?;
         let resp = self.recv().await?;
+        if A3040_RESPONSE_VERIFICATION {
+            verify_resp(&resp)?
+        }
         Ok(Self::decode(self, &resp)?)
     }
 
@@ -103,6 +113,9 @@ impl SoundcoreDevice for A3040 {
         self.build_and_send_cmd(A3040_CMD_DEVICE_CHARGINSTATUS, None)
             .await?;
         let resp = self.recv().await?;
+        if A3040_RESPONSE_VERIFICATION {
+            verify_resp(&resp)?
+        }
         Ok(Self::decode(self, &resp)?)
     }
 }
@@ -214,7 +227,7 @@ impl SoundcoreANC for A3040 {
 #[async_trait]
 impl SoundcoreLDAC for A3040 {
     async fn set_ldac(&self, toggle: bool) -> Result<(), SoundcoreError> {
-        self.build_and_send_cmd(A3040_CMD_DEVICE_SETLDAC, Some(&vec![toggle as u8]))
+        self.build_and_send_cmd(A3040_CMD_DEVICE_SETLDAC, Some(&[toggle as u8]))
             .await?;
         let _resp = self.recv().await?;
         Ok(())
