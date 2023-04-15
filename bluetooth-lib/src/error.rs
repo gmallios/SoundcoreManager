@@ -21,4 +21,11 @@ pub enum BthError {
         #[from]
         source: std::num::ParseIntError,
     },
+    #[error("Windows error")]
+    Windows {
+        #[from]
+        source: windows::core::Error,
+    },
+    #[error("Device not found")]
+    DeviceNotFound,
 }

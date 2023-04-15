@@ -1,5 +1,4 @@
-use bluetooth_lib::{platform::{BthScanner}, Scanner};
-
+use bluetooth_lib::{platform::BthScanner, Scanner};
 
 #[tokio::main]
 async fn main() {

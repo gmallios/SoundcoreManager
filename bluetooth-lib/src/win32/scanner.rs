@@ -1,22 +1,25 @@
 use async_trait::async_trait;
 use windows::Win32::{
     Devices::Bluetooth::{
-        BluetoothFindFirstDevice, BluetoothFindNextDevice,
-        BLUETOOTH_DEVICE_INFO_STRUCT, BLUETOOTH_DEVICE_SEARCH_PARAMS,
+        BluetoothFindFirstDevice, BluetoothFindNextDevice, BLUETOOTH_DEVICE_INFO,
+        BLUETOOTH_DEVICE_SEARCH_PARAMS,
     },
     Foundation::{BOOL, HANDLE},
-    Networking::WinSock::{WSACleanup},
+    Networking::WinSock::WSACleanup,
 };
 
-use crate::{win32::util::init_winsock, types::{ BluetoothDevice, Scanner }};
+use crate::{
+    types::{BluetoothDevice, Scanner},
+    win32::util::init_winsock,
+};
 
 pub struct BthScanner {
     params: BLUETOOTH_DEVICE_SEARCH_PARAMS,
-    device_info: BLUETOOTH_DEVICE_INFO_STRUCT,
+    device_info: BLUETOOTH_DEVICE_INFO,
 }
 
 #[async_trait]
-impl Scanner for  BthScanner {
+impl Scanner for BthScanner {
     fn new() -> BthScanner {
         init_winsock();
         /* Safety: Zeroed Memory */
@@ -32,8 +35,8 @@ impl Scanner for  BthScanner {
                     cTimeoutMultiplier: 1,
                     hRadio: HANDLE::default(),
                 },
-                device_info: BLUETOOTH_DEVICE_INFO_STRUCT {
-                    dwSize: std::mem::size_of::<BLUETOOTH_DEVICE_INFO_STRUCT>() as u32,
+                device_info: BLUETOOTH_DEVICE_INFO {
+                    dwSize: std::mem::size_of::<BLUETOOTH_DEVICE_INFO>() as u32,
                     Address: std::mem::zeroed(),
                     ulClassofDevice: std::mem::zeroed(),
                     fConnected: std::mem::zeroed(),
@@ -50,12 +53,10 @@ impl Scanner for  BthScanner {
     async fn scan(&mut self) -> Vec<BluetoothDevice> {
         let mut devices = Vec::new();
         unsafe {
-            let h_device: isize = BluetoothFindFirstDevice(&self.params, &mut self.device_info);
-            if h_device != 0 {
+            let h_device = BluetoothFindFirstDevice(&self.params, &mut self.device_info).unwrap();
+            devices.push(BluetoothDevice::from(self.device_info));
+            while BluetoothFindNextDevice(h_device, &mut self.device_info) == BOOL::from(true) {
                 devices.push(BluetoothDevice::from(self.device_info));
-                while BluetoothFindNextDevice(h_device, &mut self.device_info) == BOOL::from(true) {
-                    devices.push(BluetoothDevice::from(self.device_info));
-                }
             }
         }
         devices
@@ -69,7 +70,3 @@ impl Drop for BthScanner {
         }
     }
 }
-
-
-
-

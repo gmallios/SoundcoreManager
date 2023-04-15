@@ -1,11 +1,10 @@
-use std::fmt::{Display, Debug};
+use std::fmt::{Debug, Display};
 
-use async_trait::async_trait;
 use crate::BthError;
+use async_trait::async_trait;
 
 #[cfg(target_os = "windows")]
-use windows::Win32::Devices::Bluetooth::{BLUETOOTH_ADDRESS_STRUCT, BLUETOOTH_DEVICE_INFO_STRUCT};
-
+use windows::Win32::Devices::Bluetooth::{BLUETOOTH_ADDRESS, BLUETOOTH_DEVICE_INFO};
 
 #[async_trait]
 pub trait Scanner {
@@ -81,8 +80,19 @@ impl From<&str> for BluetoothAdrr {
 }
 
 #[cfg(target_os = "windows")]
-impl From<BLUETOOTH_DEVICE_INFO_STRUCT> for BluetoothDevice {
-    fn from(device_info: BLUETOOTH_DEVICE_INFO_STRUCT) -> BluetoothDevice {
+impl From<u64> for BluetoothAdrr {
+    fn from(address: u64) -> Self {
+        /* used for BluetoothDevice.BluetoothAddress() from windows crate */
+        let bytes = address.to_be_bytes();
+        BluetoothAdrr {
+            address: [bytes[2], bytes[3], bytes[4], bytes[5], bytes[6], bytes[7]],
+        }
+    }
+}
+
+#[cfg(target_os = "windows")]
+impl From<BLUETOOTH_DEVICE_INFO> for BluetoothDevice {
+    fn from(device_info: BLUETOOTH_DEVICE_INFO) -> BluetoothDevice {
         BluetoothDevice {
             name: String::from_utf16_lossy(&device_info.szName).replace('\0', ""),
             address: BluetoothAdrr::from(device_info.Address),
@@ -93,8 +103,8 @@ impl From<BLUETOOTH_DEVICE_INFO_STRUCT> for BluetoothDevice {
 }
 
 #[cfg(target_os = "windows")]
-impl From<BLUETOOTH_ADDRESS_STRUCT> for BluetoothAdrr {
-    fn from(address: BLUETOOTH_ADDRESS_STRUCT) -> BluetoothAdrr {
+impl From<BLUETOOTH_ADDRESS> for BluetoothAdrr {
+    fn from(address: BLUETOOTH_ADDRESS) -> BluetoothAdrr {
         let mut bytes;
         /* Safety: Union type defined by Microsoft docs */
         unsafe {
@@ -110,10 +120,7 @@ impl Display for BluetoothDevice {
         write!(
             f,
             "- Name: {}\n\tAddress: {} Connected: {} Remembered: {}",
-            self.name,
-            self.address,
-            self.connected,
-            self.remembered
+            self.name, self.address, self.connected, self.remembered
         )
     }
 }
@@ -123,14 +130,10 @@ impl Debug for BluetoothDevice {
         write!(
             f,
             "- Name: {}\n\tAddress: {} Connected: {} Remembered: {}",
-            self.name,
-            self.address,
-            self.connected,
-            self.remembered
+            self.name, self.address, self.connected, self.remembered
         )
     }
 }
-
 
 impl Display for BluetoothAdrr {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {

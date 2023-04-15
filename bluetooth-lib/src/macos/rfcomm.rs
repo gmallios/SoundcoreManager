@@ -69,7 +69,7 @@ impl RFCOMMClient for RFCOMM {
                 let mut resp_data = r.into_inner().data;
                 resp_data.resize(num_of_bytes, 0);
                 Ok(resp_data)
-            },
+            }
             Err(_e) => Err(BthError::RecvError),
         }
     }

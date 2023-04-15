@@ -5,13 +5,17 @@ use windows::{
     Win32::{
         Devices::Bluetooth::{AF_BTH, BTHPROTO_RFCOMM, SOCKADDR_BTH},
         Networking::WinSock::{
-            closesocket, connect, recv, send, socket, WSACleanup,
-            INVALID_SOCKET, SEND_RECV_FLAGS, SOCKADDR, SOCKET, SOCKET_ERROR, SOCK_STREAM,
+            closesocket, connect, recv, send, socket, WSACleanup, INVALID_SOCKET, SEND_RECV_FLAGS,
+            SOCKADDR, SOCKET, SOCKET_ERROR, SOCK_STREAM,
         },
     },
 };
 
-use crate::{types::{BluetoothAdrr, RFCOMMClient}, error::BthError, win32::util::init_winsock};
+use crate::{
+    error::BthError,
+    types::{BluetoothAdrr, RFCOMMClient},
+    win32::util::init_winsock,
+};
 
 #[derive(Debug)]
 pub struct RFCOMM {
@@ -27,8 +31,10 @@ impl RFCOMMClient for RFCOMM {
         unsafe {
             fd = socket(
                 AF_BTH.into(),
-                SOCK_STREAM.into(),
-                BTHPROTO_RFCOMM.try_into().map_err(|_| BthError::FdInitError)?,
+                SOCK_STREAM,
+                BTHPROTO_RFCOMM
+                    .try_into()
+                    .map_err(|_| BthError::FdInitError)?,
             );
         }
         if fd == INVALID_SOCKET {
@@ -88,12 +94,11 @@ impl RFCOMMClient for RFCOMM {
         return Ok(());
     }
 
-    async fn connect_port(&mut self, bt_addr: BluetoothAdrr, port: u32) -> Result<(), BthError>{
+    async fn connect_port(&mut self, bt_addr: BluetoothAdrr, port: u32) -> Result<(), BthError> {
         if self.fd == INVALID_SOCKET {
             return Err(BthError::InvalidSocketError);
         }
 
-        
         unsafe {
             let s_addr: SOCKADDR_BTH = SOCKADDR_BTH {
                 addressFamily: AF_BTH,
@@ -122,7 +127,12 @@ impl RFCOMMClient for RFCOMM {
             return Err(BthError::InvalidSocketError);
         }
         unsafe {
-            if send(self.fd, data, windows::Win32::Networking::WinSock::SEND_RECV_FLAGS(0)) == SOCKET_ERROR {
+            if send(
+                self.fd,
+                data,
+                windows::Win32::Networking::WinSock::SEND_RECV_FLAGS(0),
+            ) == SOCKET_ERROR
+            {
                 return Err(BthError::SendError);
             }
         }
