@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: GHA-combine-PRs
-        uses: vic1707/GHA-combine-PRs@1.2.0
+        uses: vic1707/GHA-combine-PRs@1.1.1
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
           branch-prefix: dependabot/
