@@ -56,7 +56,6 @@ function App() {
         <Stack>
           {isStatusSuccess ? (
             <React.Fragment>
-              <AppBar />
               <OverviewCard />
               <ANCModeCard />
               <EQCard />
