@@ -279,7 +279,11 @@ impl ResponseDecoder<DeviceStatus> for A3951 {
 impl ResponseDecoder<BatteryLevel> for A3951 {
     fn decode(&self, arr: &[u8]) -> Result<BatteryLevel, SoundcoreError> {
         if arr.len() < 2 {
-            return Err(SoundcoreError::Unknown);
+            return Err(SoundcoreError::InvalidResponseLength {
+                expected: 2,
+                got: arr.len(),
+                data: arr.to_vec(),
+            });
         }
 
         Ok(BatteryLevel {
@@ -292,7 +296,11 @@ impl ResponseDecoder<BatteryLevel> for A3951 {
 impl ResponseDecoder<BatteryCharging> for A3951 {
     fn decode(&self, arr: &[u8]) -> Result<BatteryCharging, SoundcoreError> {
         if arr.len() < 2 {
-            return Err(SoundcoreError::Unknown);
+            return Err(SoundcoreError::InvalidResponseLength {
+                expected: 2,
+                got: arr.len(),
+                data: arr.to_vec(),
+            });
         }
 
         Ok(BatteryCharging {

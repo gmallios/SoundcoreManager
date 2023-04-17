@@ -44,6 +44,8 @@ pub enum SoundcoreError {
     InvalidArguments,
     #[error("Invalid response")]
     InvalidResponse,
+    #[error("Invalid response length (expected {expected}, got {got}, data: {data:?})")]
+    InvalidResponseLength { expected: usize, got: usize, data: Vec<u8> },
 }
 
 // impl std::fmt::Display for SoundcoreError {

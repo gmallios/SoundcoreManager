@@ -123,7 +123,11 @@ impl SoundcoreDevice for A3040 {
 impl ResponseDecoder<DeviceInfo> for A3040 {
     fn decode(&self, arr: &[u8]) -> Result<DeviceInfo, SoundcoreError> {
         if arr.len() < 85 {
-            return Err(SoundcoreError::InvalidResponse);
+            return Err(SoundcoreError::InvalidResponseLength {
+                expected: 2,
+                got: arr.len(),
+                data: arr.to_vec(),
+            });
         }
 
         Ok(DeviceInfo {
@@ -136,7 +140,11 @@ impl ResponseDecoder<DeviceInfo> for A3040 {
 impl ResponseDecoder<DeviceStatus> for A3040 {
     fn decode(&self, arr: &[u8]) -> Result<DeviceStatus, SoundcoreError> {
         if arr.len() < 85 {
-            return Err(SoundcoreError::InvalidResponse);
+            return Err(SoundcoreError::InvalidResponseLength {
+                expected: 2,
+                got: arr.len(),
+                data: arr.to_vec(),
+            });
         }
 
         let base = arr[54] as usize;

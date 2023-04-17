@@ -181,8 +181,13 @@ impl ResponseDecoder<DeviceInfo> for A3027 {
 impl ResponseDecoder<DeviceStatus> for A3027 {
     fn decode(&self, arr: &[u8]) -> Result<DeviceStatus, SoundcoreError> {
         if arr.len() < 93 {
-            return Err(SoundcoreError::Unknown);
+            return Err(SoundcoreError::InvalidResponseLength {
+                expected: 93,
+                got: arr.len(),
+                data: arr.to_vec(),
+            });
         }
+
         let charge_arr = vec![arr[10], arr[10]];
         let level_arr = vec![arr[9], arr[9]];
 
@@ -209,7 +214,11 @@ impl ResponseDecoder<DeviceStatus> for A3027 {
 impl ResponseDecoder<BatteryLevel> for A3027 {
     fn decode(&self, arr: &[u8]) -> Result<BatteryLevel, SoundcoreError> {
         if arr.len() < 2 {
-            return Err(SoundcoreError::Unknown);
+            return Err(SoundcoreError::InvalidResponseLength {
+                expected: 2,
+                got: arr.len(),
+                data: arr.to_vec(),
+            });
         }
 
         Ok(BatteryLevel {
@@ -222,7 +231,11 @@ impl ResponseDecoder<BatteryLevel> for A3027 {
 impl ResponseDecoder<BatteryCharging> for A3027 {
     fn decode(&self, arr: &[u8]) -> Result<BatteryCharging, SoundcoreError> {
         if arr.len() < 2 {
-            return Err(SoundcoreError::Unknown);
+            return Err(SoundcoreError::InvalidResponseLength {
+                expected: 2,
+                got: arr.len(),
+                data: arr.to_vec(),
+            });
         }
 
         Ok(BatteryCharging {
