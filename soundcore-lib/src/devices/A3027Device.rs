@@ -170,6 +170,13 @@ impl SoundcoreHearID for A3027 {}
 
 impl ResponseDecoder<DeviceInfo> for A3027 {
     fn decode(&self, arr: &[u8]) -> Result<DeviceInfo, SoundcoreError> {
+        if arr.len() < 35 {
+            return Err(SoundcoreError::InvalidResponseLength {
+                expected: 35,
+                got: arr.len(),
+                data: arr.to_vec(),
+            });
+        }
         Ok(DeviceInfo {
             left_fw: String::from_utf8(arr[9..14].to_vec())?,
             right_fw: String::from_utf8(arr[14..19].to_vec())?,
@@ -180,9 +187,9 @@ impl ResponseDecoder<DeviceInfo> for A3027 {
 
 impl ResponseDecoder<DeviceStatus> for A3027 {
     fn decode(&self, arr: &[u8]) -> Result<DeviceStatus, SoundcoreError> {
-        if arr.len() < 93 {
+        if arr.len() < 70 {
             return Err(SoundcoreError::InvalidResponseLength {
-                expected: 93,
+                expected: 70,
                 got: arr.len(),
                 data: arr.to_vec(),
             });

@@ -181,9 +181,9 @@ impl ResponseDecoder<DeviceInfo> for A3935 {
 
 impl ResponseDecoder<DeviceStatus> for A3935 {
     fn decode(&self, arr: &[u8]) -> Result<DeviceStatus, SoundcoreError> {
-        if arr.len() < 93 {
+        if arr.len() < 50 {
             return Err(SoundcoreError::InvalidResponseLength {
-                expected: 93,
+                expected: 50,
                 got: arr.len(),
                 data: arr.to_vec(),
             });
