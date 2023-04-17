@@ -16,5 +16,5 @@ bluetooth-lib = { path = "../bluetooth-lib/" }
 log = "0.4.17"
 typeshare = "1.0.1"
 phf = { version = "0.11", default-features = false, features = ["macros"] }
-dialoguer = { version = "0.10.3", features = ["fuzzy-select"] }
+dialoguer = { version = "0.10.4", features = ["fuzzy-select"] }
 
