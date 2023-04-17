@@ -65,16 +65,16 @@ jobs:
           releaseDraft: true
           prerelease: false
 
-      - name: ⏫ Upload Release Asset
-        id: upload-release-asset
-        uses: actions/upload-release-asset@v1.0.2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.tauri-build.outputs.releaseUploadUrl }}
-          asset_path: src-tauri\target\release\deps\soundcoremanager.exe
-          asset_name: SoundcoreManager-${{ matrix.platform }}-${{ env.SHORT_SHA }}.exe
-          asset_content_type: application/vnd.microsoft.portable-executable.
+      # - name: ⏫ Upload Release Asset
+      #   id: upload-release-asset
+      #   uses: actions/upload-release-asset@v1.0.2
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   with:
+      #     upload_url: ${{ steps.tauri-build.outputs.releaseUploadUrl }}
+      #     asset_path: src-tauri\target\release\deps\soundcoremanager.exe
+      #     asset_name: SoundcoreManager-${{ matrix.platform }}-${{ env.SHORT_SHA }}.exe
+      #     asset_content_type: application/vnd.microsoft.portable-executable.
 
       - name: Rename soundcoremanager.exe
         run: ren src-tauri\target\release\deps\soundcoremanager.exe SoundcoreManager-${{ matrix.platform }}-${{ env.SHORT_SHA }}.exe
