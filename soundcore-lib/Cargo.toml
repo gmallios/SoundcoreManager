@@ -9,7 +9,7 @@ path = "src/cli.rs"
 
 [dependencies]
 serde = { version = "1.0", features = ["derive"] }
-tokio = { version = "1.25.0", features = ["time", "macros", "rt-multi-thread"] }
+tokio = { version = "1.27.0", features = ["time", "macros", "rt-multi-thread"] }
 async-trait = "0.1.59"
 thiserror = "1.0.40"
 bluetooth-lib = { path = "../bluetooth-lib/" }
