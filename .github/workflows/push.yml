@@ -77,9 +77,11 @@ jobs:
       #     asset_content_type: application/vnd.microsoft.portable-executable.
 
       - name: Rename soundcoremanager.exe
+        if: matrix.platform == 'windows-latest'
         run: ren src-tauri\target\release\deps\soundcoremanager.exe SoundcoreManager-${{ matrix.platform }}-${{ env.SHORT_SHA }}.exe
 
       - name: ⏫ Upload Build Artifact
+        if: matrix.platform == 'windows-latest'
         uses: actions/upload-artifact@v3
         with:
           name: SoundcoreManager-${{ matrix.platform }}.exe
