@@ -1,5 +1,6 @@
 use crate::{BluetoothAdrr, BthError, RFCOMMClient};
 use async_trait::async_trait;
+use log::{debug, trace};
 use windows::{
     core::{GUID, HSTRING},
     Devices::{Bluetooth::Rfcomm::RfcommServiceId, Enumeration::DeviceInformation},
@@ -29,6 +30,7 @@ impl RFCOMMClient for RFCOMM {
     }
 
     async fn connect_uuid(&mut self, bt_addr: BluetoothAdrr, uuid: &str) -> Result<(), BthError> {
+        trace!("Connecting to {} with uuid {}", bt_addr, uuid);
         let svc_id = RfcommServiceId::FromUuid(GUID::from(uuid))?;
         let connected_devices = self.get_connected_devices().await?;
         let device = connected_devices
@@ -41,12 +43,34 @@ impl RFCOMMClient for RFCOMM {
             .Services()?
             .First()?
             .Current()?;
+
+        let mut service_guids: Vec<GUID> = Vec::new();
+        for service in device
+            .GetRfcommServicesForIdAsync(&svc_id)?
+            .await?
+            .Services()?
+            .into_iter()
+        {
+            service_guids.push(service.ServiceId()?.Uuid()?);
+        }
+        debug!(
+            "Found {} rfcomm services with guids: {:?}",
+            device
+                .GetRfcommServicesForIdAsync(&svc_id)?
+                .await?
+                .Services()?
+                .Size()?,
+            service_guids
+        );
+
+        
         self.sock
             .ConnectAsync(&svc.ConnectionHostName()?, &svc.ConnectionServiceName()?)?
             .await?;
         self.connected = true;
         self.dr = Some(DataReader::CreateDataReader(&self.sock.InputStream()?)?);
         self.dw = Some(DataWriter::CreateDataWriter(&self.sock.OutputStream()?)?);
+        trace!("Successfully connected to device");
         Ok(())
     }
 

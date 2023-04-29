@@ -5,9 +5,10 @@
 
 use bluetooth_lib::platform::BthScanner;
 use bluetooth_lib::Scanner;
-use env_logger::builder;
 use frontend_types::BthScanResult;
 use soundcore_lib::base::SoundcoreDevice;
+use tauri_plugin_log::LogTarget;
+use std::io::Stdout;
 use std::sync::Arc;
 use soundcore_lib::types::{SupportedModels, SOUNDCORE_NAME_MODEL_MAP};
 use tauri::async_runtime::{Mutex, RwLock};
@@ -52,12 +53,12 @@ fn main() {
     #[cfg(target_os = "macos")]
     server::launch_server();
 
-    builder()
-        .filter(None, log::LevelFilter::Debug)
-        .filter_module("h2", log::LevelFilter::Off)
-        .filter_module("hyper", log::LevelFilter::Off)
-        .filter_module("tower", log::LevelFilter::Off)
-        .init();
+    // builder()
+    //     .filter(None, log::LevelFilter::Debug)
+    //     .filter_module("h2", log::LevelFilter::Off)
+    //     .filter_module("hyper", log::LevelFilter::Off)
+    //     .filter_module("tower", log::LevelFilter::Off)
+    //     .init();
 
     tauri::Builder::default()
         .system_tray(tray::get_system_tray())
@@ -83,6 +84,11 @@ fn main() {
             device::get_eq,
             scan_for_devices,
         ])
+        .plugin(tauri_plugin_log::Builder::default().targets([
+            LogTarget::LogDir,
+            LogTarget::Stdout,
+            LogTarget::Webview
+        ]).build())
         .build(tauri::generate_context!())
         .expect("error while running tauri application")
         .run(|app_handle, event| match event {
