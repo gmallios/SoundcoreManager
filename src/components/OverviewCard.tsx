@@ -45,7 +45,7 @@ export default function OverviewCard() {
         //   <Button size="small">Learn More</Button>
         // </CardActions> */}
         // </Card>
-        <Box sx={{ display: "block", pt: 3, maxWidth: "300px", margin: "auto", mb: 0, mt: 1.5 }}>
+        <Box sx={{ display: "block", maxWidth: "300px", margin: "auto", mb: 0 }}>
             <Paper sx={{ display: "flex", margin: 1.5, justifyContent: "center", alignItems: "center" }} elevation={0}>
                 <OverviewItem />
             </Paper>
