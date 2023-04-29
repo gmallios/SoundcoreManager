@@ -23,8 +23,11 @@ const queryClient = new QueryClient({
   },
 });
 
-const logDir = await appLogDir();
-console.log(`Found a bug or something isn't working? \nCheck out the logs at ${logDir}\nand open/respond to an issue at https://github.com/gmallios/SoundcoreManager`);
+
+(async () => {
+  const logDir = await appLogDir();
+  console.log(`Found a bug or something isn't working? \nCheck out the logs at ${logDir}\nand open/respond to an issue at https://github.com/gmallios/SoundcoreManager`);
+})();
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <ThemeProvider theme={darkTheme}>
