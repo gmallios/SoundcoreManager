@@ -28,4 +28,6 @@ pub enum BthError {
     },
     #[error("Device not found")]
     DeviceNotFound,
+    #[error("Rfcomm service not found")]
+    RfcommServiceNotFound,
 }

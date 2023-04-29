@@ -3,7 +3,10 @@ use async_trait::async_trait;
 use log::{debug, trace};
 use windows::{
     core::{GUID, HSTRING},
-    Devices::{Bluetooth::Rfcomm::RfcommServiceId, Enumeration::DeviceInformation},
+    Devices::{
+        Bluetooth::Rfcomm::{RfcommDeviceService, RfcommServiceId},
+        Enumeration::DeviceInformation,
+    },
     Networking::Sockets::StreamSocket,
     Storage::Streams::{DataReader, DataWriter, InputStreamOptions},
 };
@@ -37,21 +40,20 @@ impl RFCOMMClient for RFCOMM {
             .into_iter()
             .find(|device| BluetoothAdrr::from(device.BluetoothAddress().unwrap()) == bt_addr)
             .ok_or(BthError::DeviceNotFound)?;
-        let svc = device
-            .GetRfcommServicesForIdAsync(&svc_id)?
-            .await?
-            .Services()?
-            .First()?
-            .Current()?;
 
+        let mut service: Option<RfcommDeviceService> = None;
         let mut service_guids: Vec<GUID> = Vec::new();
-        for service in device
+        for s in device
             .GetRfcommServicesForIdAsync(&svc_id)?
             .await?
             .Services()?
             .into_iter()
         {
-            service_guids.push(service.ServiceId()?.Uuid()?);
+            let guid = s.ServiceId()?.Uuid()?;
+            service_guids.push(guid);
+            if guid == GUID::from(uuid) {
+                service = Some(s);
+            }
         }
         debug!(
             "Found {} rfcomm services with guids: {:?}",
@@ -63,15 +65,22 @@ impl RFCOMMClient for RFCOMM {
             service_guids
         );
 
-        
-        self.sock
-            .ConnectAsync(&svc.ConnectionHostName()?, &svc.ConnectionServiceName()?)?
-            .await?;
-        self.connected = true;
-        self.dr = Some(DataReader::CreateDataReader(&self.sock.InputStream()?)?);
-        self.dw = Some(DataWriter::CreateDataWriter(&self.sock.OutputStream()?)?);
-        trace!("Successfully connected to device");
-        Ok(())
+        if service.is_none() {
+            return Err(BthError::RfcommServiceNotFound);
+        } else {
+            let svc = service.unwrap();
+            self.sock
+                .ConnectAsync(
+                    &svc.ConnectionHostName()?,
+                    &svc.ConnectionServiceName()?,
+                )?
+                .await?;
+            self.connected = true;
+            self.dr = Some(DataReader::CreateDataReader(&self.sock.InputStream()?)?);
+            self.dw = Some(DataWriter::CreateDataWriter(&self.sock.OutputStream()?)?);
+            trace!("Successfully connected to device");
+            Ok(())
+        }
     }
 
     async fn connect_port(&mut self, _bt_addr: BluetoothAdrr, _port: u32) -> Result<(), BthError> {
