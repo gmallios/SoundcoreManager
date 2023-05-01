@@ -22,7 +22,7 @@
     "@tanstack/react-query": "^4.20.4",
     "@tanstack/react-query-devtools": "^4.20.4",
     "@tauri-apps/api": "^1.2.0",
-    "chart.js": "^3.9.1",
+    "chart.js": "^4.3.0",
     "chartjs-plugin-dragdata": "^2.2.4",
     "react": "^18.2.0",
     "react-chartjs-2": "^5.0.0",
