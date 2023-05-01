@@ -3,6 +3,7 @@ use crate::{
     utils::{anc_mode_to_profile, anc_profile_to_mode},
     SoundcoreAppState,
 };
+use log::debug;
 use soundcore_lib::{
     base::SoundcoreDevice,
     devices::{A3027, A3951, A3935, A3040},
@@ -21,6 +22,7 @@ pub(crate) async fn is_connected(state: State<'_, SoundcoreAppState>) -> Result<
 
 #[tauri::command]
 pub(crate) async fn close(state: State<'_, SoundcoreAppState>) -> Result<(), String> {
+    debug!("Closing device");
     let mut device = state.device.lock().await;
     if device.is_some() {
         device.as_ref().unwrap().close().await.unwrap();
@@ -92,7 +94,7 @@ pub(crate) async fn connect(
     };
 
     *app_state.model.write().await = Some(device_model.clone());
-
+    debug!("Connected to device: {}", bt_name);
     Ok(())
 }
 

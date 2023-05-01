@@ -1,4 +1,5 @@
 use async_trait::async_trait;
+use log::debug;
 use windows::Win32::{
     Devices::Bluetooth::{
         BluetoothFindFirstDevice, BluetoothFindNextDevice, BLUETOOTH_DEVICE_INFO,
@@ -59,6 +60,7 @@ impl Scanner for BthScanner {
                 devices.push(BluetoothDevice::from(self.device_info));
             }
         }
+        debug!("Found {} devices using win32 bt scan", devices.len());
         devices
     }
 }

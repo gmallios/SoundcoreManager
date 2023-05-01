@@ -78,7 +78,7 @@ impl RFCOMMClient for RFCOMM {
             self.connected = true;
             self.dr = Some(DataReader::CreateDataReader(&self.sock.InputStream()?)?);
             self.dw = Some(DataWriter::CreateDataWriter(&self.sock.OutputStream()?)?);
-            trace!("Successfully connected to device");
+            debug!("Successfully connected to device using winrt");
             Ok(())
         }
     }
@@ -91,6 +91,7 @@ impl RFCOMMClient for RFCOMM {
         let dw = self.dw.clone().unwrap();
         dw.WriteBytes(data)?;
         dw.StoreAsync()?.await?;
+        trace!("Sent: {:?}", data);
         Ok(())
     }
 
@@ -102,10 +103,12 @@ impl RFCOMMClient for RFCOMM {
         while dr.UnconsumedBufferLength()? > 0 {
             out_buf.push(dr.ReadByte()?);
         }
+        trace!("Received: {:?}", out_buf);
         Ok(out_buf)
     }
 
     async fn close(&self) {
+        debug!("Closing winrt socket");
         self.sock.Close().expect("Failed to close socket");
     }
 }
