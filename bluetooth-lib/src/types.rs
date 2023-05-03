@@ -91,6 +91,15 @@ impl From<u64> for BluetoothAdrr {
 }
 
 #[cfg(target_os = "windows")]
+impl Into<u64> for BluetoothAdrr {
+    fn into(self) -> u64 {
+        let mut bytes = [0u8; 8];
+        bytes[2..8].copy_from_slice(&self.address);
+        u64::from_be_bytes(bytes)
+    }
+}
+
+#[cfg(target_os = "windows")]
 impl From<BLUETOOTH_DEVICE_INFO> for BluetoothDevice {
     fn from(device_info: BLUETOOTH_DEVICE_INFO) -> BluetoothDevice {
         BluetoothDevice {

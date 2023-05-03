@@ -4,7 +4,10 @@ use log::{debug, trace};
 use windows::{
     core::{GUID, HSTRING},
     Devices::{
-        Bluetooth::Rfcomm::{RfcommDeviceService, RfcommServiceId},
+        Bluetooth::{
+            BluetoothCacheMode,
+            Rfcomm::{RfcommDeviceService, RfcommServiceId},
+        },
         Enumeration::DeviceInformation,
     },
     Networking::Sockets::StreamSocket,
@@ -33,18 +36,26 @@ impl RFCOMMClient for RFCOMM {
     }
 
     async fn connect_uuid(&mut self, bt_addr: BluetoothAdrr, uuid: &str) -> Result<(), BthError> {
-        trace!("Connecting to {} with uuid {}", bt_addr, uuid);
+        trace!("Trying to connect to {} with uuid {}", bt_addr, uuid);
         let svc_id = RfcommServiceId::FromUuid(GUID::from(uuid))?;
-        let connected_devices = self.get_connected_devices().await?;
-        let device = connected_devices
-            .into_iter()
-            .find(|device| BluetoothAdrr::from(device.BluetoothAddress().unwrap()) == bt_addr)
-            .ok_or(BthError::DeviceNotFound)?;
+        let device = windows::Devices::Bluetooth::BluetoothDevice::FromBluetoothAddressAsync(
+            bt_addr.into(),
+        )?
+        .await?;
+
+        debug!(
+            "Found {} rfcomm services",
+            device
+                .GetRfcommServicesForIdWithCacheModeAsync(&svc_id, BluetoothCacheMode::Uncached)?
+                .await?
+                .Services()?
+                .Size()?,
+        );
 
         let mut service: Option<RfcommDeviceService> = None;
         let mut service_guids: Vec<GUID> = Vec::new();
         for s in device
-            .GetRfcommServicesForIdAsync(&svc_id)?
+            .GetRfcommServicesForIdWithCacheModeAsync(&svc_id, BluetoothCacheMode::Uncached)?
             .await?
             .Services()?
             .into_iter()
@@ -55,30 +66,22 @@ impl RFCOMMClient for RFCOMM {
                 service = Some(s);
             }
         }
-        debug!(
-            "Found {} rfcomm services with guids: {:?}",
-            device
-                .GetRfcommServicesForIdAsync(&svc_id)?
-                .await?
-                .Services()?
-                .Size()?,
-            service_guids
-        );
+
+        debug!("Found rfcomm services with guids: {:?}", service_guids);
 
         if service.is_none() {
             return Err(BthError::RfcommServiceNotFound);
         } else {
             let svc = service.unwrap();
+            trace!("Attempting to connect to service: {}", svc.ConnectionServiceName()?);
             self.sock
-                .ConnectAsync(
-                    &svc.ConnectionHostName()?,
-                    &svc.ConnectionServiceName()?,
-                )?
+                .ConnectAsync(&svc.ConnectionHostName()?, &svc.ConnectionServiceName()?)?
                 .await?;
+            trace!("Successfully connected to service. Creating data reader and writer");
             self.connected = true;
             self.dr = Some(DataReader::CreateDataReader(&self.sock.InputStream()?)?);
             self.dw = Some(DataWriter::CreateDataWriter(&self.sock.OutputStream()?)?);
-            debug!("Successfully connected to device using winrt");
+            trace!("Successfully created data reader and writer");
             Ok(())
         }
     }
@@ -91,7 +94,6 @@ impl RFCOMMClient for RFCOMM {
         let dw = self.dw.clone().unwrap();
         dw.WriteBytes(data)?;
         dw.StoreAsync()?.await?;
-        trace!("Sent: {:?}", data);
         Ok(())
     }
 
@@ -103,38 +105,11 @@ impl RFCOMMClient for RFCOMM {
         while dr.UnconsumedBufferLength()? > 0 {
             out_buf.push(dr.ReadByte()?);
         }
-        trace!("Received: {:?}", out_buf);
         Ok(out_buf)
     }
 
     async fn close(&self) {
         debug!("Closing winrt socket");
         self.sock.Close().expect("Failed to close socket");
-    }
-}
-
-impl RFCOMM {
-    async fn get_connected_devices(
-        &self,
-    ) -> Result<Vec<windows::Devices::Bluetooth::BluetoothDevice>, BthError> {
-        let devices_inf = DeviceInformation::FindAllAsyncAqsFilter(&self._device_selector)?.await?;
-        let connected_devices = devices_inf
-            .into_iter()
-            .collect::<Vec<_>>()
-            .into_iter()
-            .map(|d| {
-                windows::Devices::Bluetooth::BluetoothDevice::FromIdAsync(&d.Id().unwrap())
-                    .unwrap()
-                    .get()
-                    .unwrap()
-            })
-            .collect::<Vec<windows::Devices::Bluetooth::BluetoothDevice>>()
-            .into_iter()
-            .filter(|device| {
-                device.ConnectionStatus().unwrap()
-                    == windows::Devices::Bluetooth::BluetoothConnectionStatus::Connected
-            })
-            .collect::<Vec<windows::Devices::Bluetooth::BluetoothDevice>>();
-        Ok(connected_devices)
     }
 }
