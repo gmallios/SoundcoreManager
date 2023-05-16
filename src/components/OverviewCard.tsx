@@ -1,5 +1,5 @@
 import { Box, Card, CardContent, Grid, Paper, Typography } from "@mui/material";
-import useDeviceStore from "../hooks/useDeviceStore";
+import useGlobalStore from "../hooks/useGlobalStore";
 import A3951ImgLeft from "./../assets/a3951_img_device_left.webp";
 import A3951ImgRight from "./../assets/a3951_img_device_right_edited.webp";
 import A3027Img from "./../assets/a3027_img_device.webp";

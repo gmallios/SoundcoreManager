@@ -27,7 +27,7 @@
         eventsCausingServices: {
           
         };
-        matchesStates: "connecting" | "pending" | "searchError" | "searchSuccess" | "searching";
+        matchesStates: "connecting" | "pending" | "searchError" | "searchSuccess" | "searching" | "successfullConnection";
         tags: never;
       }
   

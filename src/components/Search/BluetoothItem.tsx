@@ -47,7 +47,7 @@ export default function BluetoothItem(props: BluetoothItemProps) {
     const { classes, cx } = useStyles();
     
     return (
-        <Card withBorder radius="md" p="md" className={cx(classes.card)} onClick={(event) => props.onItemClicked(event, props.idx)}>
+        <Card withBorder radius="md" p="md" className={cx(classes.card)} style={props.styles} onClick={(event) => props.onItemClicked(event, props.idx)}>
             <Container className={cx(classes.cardInner)}>
                 <div className={cx(classes.cardTitle, "cardTitle")}>
                     <Text fz="md" fw={500}>
@@ -58,7 +58,7 @@ export default function BluetoothItem(props: BluetoothItemProps) {
                     </Text>
                 </div>
                 <div className={cx(classes.cardImgContainer)}>
-                    <Image className={cx(classes.cardImg, "cardImg")} height={90} fit="contain" src={getSoundcoreIcon(props.model)} />
+                    <Image className={cx(classes.cardImg, "cardImg")} width={110} fit="contain" src={getSoundcoreIcon(props.model)} />
                 </div>
             </Container>
         </Card >
@@ -91,4 +91,5 @@ export interface BluetoothItemProps {
     isConnected: boolean;
     model: SupportedModels;
     onItemClicked: (event: React.MouseEvent<HTMLDivElement, MouseEvent>, index: number) => void;
+    styles?: React.CSSProperties;
 }

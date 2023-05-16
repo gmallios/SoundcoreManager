@@ -13,7 +13,7 @@ import {
   Filler,
 } from 'chart.js';
 import { Button, Paper } from "@mui/material";
-import useDeviceStore, { EQWave } from "../hooks/useDeviceStore";
+import useGlobalStore, { EQWave } from "../hooks/useGlobalStore";
 import { useStatus, useUpdateEQ } from "../hooks/useSoundcoreDevice";
 
 ChartJS.register(

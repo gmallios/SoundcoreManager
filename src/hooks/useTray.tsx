@@ -1,5 +1,5 @@
 import { invoke } from "@tauri-apps/api/tauri";
-import { DeviceConnectionState } from "./useDeviceStore";
+import { DeviceConnectionState } from "./useGlobalStore";
 import { useEffect } from "react";
 import { appWindow } from "@tauri-apps/api/window";
 import { Event, listen } from "@tauri-apps/api/event";

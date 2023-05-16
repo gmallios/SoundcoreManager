@@ -3,7 +3,7 @@ import { CircularProgress, Fab, Stack, Typography } from "@mui/material";
 import { useSearch } from "../hooks/useBluetooth";
 import DeviceList from "./DeviceList";
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
-import useDeviceStore, { DeviceConnectionState } from "../hooks/useDeviceStore";
+import useGlobalStore, { DeviceConnectionState } from "../hooks/useGlobalStore";
 import { setTrayMenu } from "../hooks/useTray";
 import { BthScanResult } from "../types/tauri-backend";
 
@@ -13,10 +13,10 @@ import { BthScanResult } from "../types/tauri-backend";
 export default function DisconnectedScreen() {
     //const { loading, data } = scanForDevices();
     const { isLoading, data } = useSearch();
-    const { connectUUID } = useDeviceStore();
+    const { connectUUID } = useGlobalStore();
     const [selectedDevice, setSelectedDevice] = React.useState<BthScanResult>();
-    const { setDeviceConnectionState, close } = useDeviceStore();
-    const { updateDeviceModel } = useDeviceStore((state) => ({
+    const { setDeviceConnectionState, close } = useGlobalStore();
+    const { updateDeviceModel } = useGlobalStore((state) => ({
         deviceModel: state.deviceModel,
         updateDeviceModel: state.updateDeviceModel,
         shallow: true

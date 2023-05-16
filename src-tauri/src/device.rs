@@ -15,9 +15,7 @@ use tauri::State;
 #[tauri::command]
 pub(crate) async fn is_connected(state: State<'_, SoundcoreAppState>) -> Result<bool, String> {
     let device = state.device.lock().await;
-    let device = device.as_ref().ok_or("No device connected")?;
-    let _status = device.get_info().await.map_err(|e| e.to_string())?;
-    Ok(true)
+    Ok(device.is_some())
 }
 
 #[tauri::command]

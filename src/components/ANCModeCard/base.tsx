@@ -3,7 +3,7 @@ import { Children, ReactNode, useEffect, useState } from "react";
 import ANCIcon from "../../assets/ambient_icon_anc.png";
 import NormalIcon from "../../assets/ambient_icon_off.png";
 import TransIcon from "../../assets/ambient_icon_trans.png";
-import useDeviceStore from "../../hooks/useDeviceStore";
+import useGlobalStore from "../../hooks/useGlobalStore";
 import { useANC, useUpdateANC } from "../../hooks/useSoundcoreDevice";
 import { ANCModes } from "../../types/tauri-backend";
 

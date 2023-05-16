@@ -1,23 +1,13 @@
-/* Move to async state react-query and define here async functions to "fetch" */
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { invoke } from "@tauri-apps/api/tauri";
 import { useEffect, useState } from "react";
 import { BatteryCharging, BatteryLevel, DeviceStatus, SupportedModels } from "../types/soundcore-lib";
 import { ANCModes } from "../types/tauri-backend";
-import useDeviceStore, { DeviceConnectionState, EQWave } from "./useDeviceStore";
+import useGlobalStore, { DeviceConnectionState, EQWave } from "./useGlobalStore";
 
-
-
-export enum SupportedModelIDs {
-    A3951 = "A3951",
-}
-
-export function tryInitialize(modelID: SupportedModelIDs) {
-    invoke("init_device", { device: modelID });
-}
 
 export function connectWithUUID(macAddr: String, uuid: String) {
-    const [status, setStatus] = useState<DeviceConnectionState>(DeviceConnectionState.UNINITIALIZED);
+    const [status, setStatus] = useState<DeviceConnectionState>(DeviceConnectionState.DISCONNECTED);
     const [connecting, setConnecting] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -40,9 +30,8 @@ export function connectWithUUID(macAddr: String, uuid: String) {
     return { status, connecting, error };
 }
 
-//TODO: Add type for result (SupportedModel)
 export function useDeviceModel() {
-    const { deviceConnectionState } = useDeviceStore();
+    const deviceConnectionState = useGlobalStore((state) => state.deviceConnectionState);
     return useQuery<SupportedModels, Error>(["model"], async () => {
         try {
             const result = await invoke("get_model");
@@ -56,7 +45,7 @@ export function useDeviceModel() {
 }
 
 export function useCharging() {
-    const { deviceConnectionState } = useDeviceStore();
+    const deviceConnectionState = useGlobalStore((state) => state.deviceConnectionState);
     return useQuery<BatteryCharging, Error>(["charging"], async () => {
         try {
             const result = await invoke("get_battery_charging");
@@ -72,7 +61,7 @@ export function useCharging() {
 }
 
 export function useBatteryLevel() {
-    const { deviceConnectionState } = useDeviceStore();
+    const deviceConnectionState = useGlobalStore((state) => state.deviceConnectionState);
     return useQuery<BatteryLevel, Error>(["battery"], async () => {
         try {
             const result = await invoke("get_battery_level");
@@ -88,7 +77,7 @@ export function useBatteryLevel() {
 }
 
 export function useStatus() {
-    const { deviceConnectionState } = useDeviceStore();
+    const deviceConnectionState = useGlobalStore((state) => state.deviceConnectionState);
     return useQuery<DeviceStatus, Error>(["status"], async () => {
         const result = await invoke("get_status");
         return result as DeviceStatus;
@@ -99,7 +88,7 @@ export function useStatus() {
 }
 
 export function useANC() {
-    const { deviceConnectionState } = useDeviceStore();
+    const deviceConnectionState = useGlobalStore((state) => state.deviceConnectionState);
     return useQuery<ANCModes, Error>(["anc"], async () => {
         const result = await invoke("get_anc");
         return result as ANCModes;

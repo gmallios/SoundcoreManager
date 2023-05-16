@@ -1,4 +1,4 @@
-import React from "react";
+import React, { createContext } from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
 import "./style.css";
@@ -7,13 +7,16 @@ import CssBaseline from '@mui/material/CssBaseline';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { MantineProvider, MantineThemeOverride } from "@mantine/core";
-import { BluetoothSearchScreen } from "./components/BluetoothSearch";
+import { BluetoothSearchScreen } from "./components/Search";
 import { inspect } from "@xstate/inspect";
-import { useMachine } from "@xstate/react";
-import { createMachine, interpret } from "xstate";
+import { createActorContext, useInterpret, useMachine } from "@xstate/react";
+import { InterpreterFrom, createMachine, interpret } from "xstate";
+import globalMachine from "./components/Search/machine";
+
+
 inspect({
-  // options
-  url: 'https://statecharts.io/inspect', // (default)
+  // url: 'https://statecharts.io/inspect',
+  url: 'https://stately.ai/viz?inspect',
   iframe: false // open in new window
 });import { appLogDir } from '@tauri-apps/api/path';
 
@@ -39,24 +42,9 @@ const theme: MantineThemeOverride = {
 }
 
 
-// const darkTheme = createTheme({
-//   palette: {
-//     mode: 'dark',
-//   },
-// });
 
 
-// ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
-//   <ThemeProvider theme={darkTheme}>
-//     <CssBaseline />
-//     <QueryClientProvider client={queryClient}>
-//       <App />
-//       <ReactQueryDevtools />
-//     </QueryClientProvider>
-//   </ThemeProvider>
-// );
-
-
+// export const ScreenManagerContext = createActorContext(screenManagerMachine, { devTools: true });
 
 
 
@@ -68,8 +56,9 @@ const theme: MantineThemeOverride = {
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <MantineProvider theme={theme} withGlobalStyles withNormalizeCSS>
     <QueryClientProvider client={queryClient}>
-      {/* <App /> */}
-      <BluetoothSearchScreen />
+      {/* <ScreenManagerContext.Provider> */}
+        <App />
+      {/* </ScreenManagerContext.Provider> */}
       <ReactQueryDevtools />
     </QueryClientProvider>
   </MantineProvider>

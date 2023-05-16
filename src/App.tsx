@@ -1,60 +1,41 @@
 import React, { useEffect, useState } from "react";
 import "./App.css";
-import OverviewCard from "./components/OverviewCard";
-import EQCard from "./components/EQCard";
-import AppBar from "./components/AppBar";
-import useDeviceStore, { DeviceConnectionState } from "./hooks/useDeviceStore";
-import Stack from '@mui/material/Stack';
-import ANCModeCard from "./components/ANCModeCard/ANCModeCard";
-import DisconnectedScreen from "./components/DisconnectedScreen";
-import { ITrayStatus, setTrayMenu, useUpdateTray, useWindowEvent } from "./hooks/useTray";
-import { CircularProgress } from "@mui/material";
-import { useANC, useBatteryLevel, useCharging, useDeviceModel, useStatus, useUpdateANC } from "./hooks/useSoundcoreDevice";
-import { ANCModes } from "./types/tauri-backend";
 import { useMachine } from "@xstate/react";
-import { createMachine, interpret } from "xstate";
-import { inspect } from "@xstate/inspect";
+import { assign, createMachine, interpret } from "xstate";
+import { BluetoothSearchScreen as SearchScreen } from "./components/Search";
+import { HomeScreen } from "./components/Home";
+import { BthScanResult } from "./types/tauri-backend";
+import useGlobalStore from "./hooks/useGlobalStore";
+
+
+export type ScreenManagerMachineContext = {
+  device: BthScanResult | null;
+};
+export type ScreenManagerMachineEvent = { type: 'SUCCESS'; device: BthScanResult };
+export const screenManagerMachine = createMachine<ScreenManagerMachineContext, ScreenManagerMachineEvent>({
+  id: 'screen_manager',
+  initial: 'disconnected',
+  predictableActionArguments: true,
+  context: {
+    device: null,
+  },
+  states: {
+    disconnected: {
+      on: {
+        SUCCESS: {
+          target: 'connected',
+          actions: (ctx: ScreenManagerMachineContext, event: ScreenManagerMachineEvent) => { ctx.device = event.device }
+        },
+      }
+    },
+    connected: {},
+  }
+});
 
 
 function App() {
-  const { deviceConnectionState } = useDeviceStore();
-
-  const { data: level, isSuccess: isBatteryLevelSuccess } = useBatteryLevel();
-  const { data: charging, isSuccess: isBatteryChargingSuccess } = useCharging();
-  const { data: ancStatus, isSuccess: isANCStatusSuccess } = useANC();
-  const { data: devStatus, isSuccess: isStatusSuccess } = useStatus();
-  const { data: deviceModel, isSuccess: isDeviceModelSuccess } = useDeviceModel();
-  const isDataSuccess = isBatteryLevelSuccess && isBatteryChargingSuccess && isANCStatusSuccess && isStatusSuccess;
-  const isDataNotNull = level != undefined && charging != undefined && ancStatus != undefined && devStatus != undefined;
-  const trayMutation = useUpdateTray();
-  const ancMutation = useUpdateANC();
-
-
-
-
-  /* On Tray Event - Handles the anc submenu event */
-  useWindowEvent("anc_sub_change", event => {
-    ancMutation.mutate(event.payload as ANCModes);
-  });
-
-  /* Update tray status on every change */
-  useEffect(() => {
-    if (deviceConnectionState == DeviceConnectionState.CONNECTED && isDataSuccess && isDataNotNull) {
-      let trayStatus: ITrayStatus = {
-        deviceConnectionState: deviceConnectionState,
-        level,
-        charging,
-        anc_mode: ancStatus,
-      }
-      trayMutation.mutate(trayStatus);
-    }
-  }, [level, charging, ancStatus, deviceConnectionState]);
-
-  // useEffect(() => {
-  //   console.log("Device connection state changed to: " + deviceConnectionState);
-  //   setTrayMenu(deviceConnectionState);
-  // }, [deviceConnectionState]);
-
+  const [screenManager, _sendScreenManager, screenManagerService] = useMachine(screenManagerMachine, { devTools: true });
+  
   return (
     <React.Fragment>
       {deviceConnectionState != DeviceConnectionState.DISCONNECTED ? (
