@@ -127,7 +127,7 @@ impl EQWave {
 
         let results = Self::eq_int_to_float(arr);
         Ok(EQWave {
-            pos0: arr[0] as f32 / 10.0, //6.0 - 18.0
+            pos0: results[0], //6.0 - 18.0
             pos1: results[1],
             pos2: results[2],
             pos3: results[3],
