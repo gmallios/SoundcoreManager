@@ -1,5 +1,5 @@
 #![allow(warnings, unused)]
-pub(crate) static A3951_RESPONSE_VERIFICATION: bool = true;
+pub(crate) static A3951_RESPONSE_VERIFICATION: bool = false;
 pub(crate) static A3935_RESPONSE_VERIFICATION: bool = false;
 pub(crate) static A3040_RESPONSE_VERIFICATION: bool = false;
 pub(crate) static A3027_RESPONSE_VERIFICATION: bool = false;

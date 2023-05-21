@@ -2,8 +2,6 @@ use serde::{Deserialize, Serialize};
 use soundcore_lib::types::{BatteryCharging, BatteryLevel};
 use typeshare::typeshare;
 
-
-
 #[typeshare]
 #[derive(Serialize, Deserialize, Clone, Copy, Debug)]
 #[serde(tag = "mode", content = "value")]
@@ -16,7 +14,6 @@ pub(crate) enum ANCModes {
     TransparencyFullyTransparentMode,
     TransparencyVocalMode,
 }
-
 
 #[typeshare]
 #[derive(Serialize, Deserialize)]
@@ -44,7 +41,6 @@ pub(crate) struct NewTrayDeviceStatus {
     pub level: BatteryLevel,
     pub anc_mode: ANCModes,
 }
-
 
 #[typeshare]
 #[derive(Serialize, Deserialize)]
