@@ -9,18 +9,25 @@ import A3951Img from "./../assets/a3951_img_device.webp";
 import A3951LImg from "./../assets/a3951_img_device_left.webp";
 import A3951RImg from "./../assets/a3951_img_device_right_edited.webp";
 
-const useDeviceImage = (device: SupportedModels) => {
-    switch (device) {
+interface DeviceImageProps {
+    device: SupportedModels;
+    class?: string;
+}
+
+const useDeviceImage = (props: DeviceImageProps) => {
+    switch (props.device) {
         case "A3951":
             return <img
                 src={A3951Img}
+                className={props.class}
                 alt="device"
-                width={145}
-                height={125}
+                width={130}
+                height={120}
             />;
         case "A3027":
             return <img
                 src={A3027Img}
+                className={props.class}
                 alt="device"
                 width={145}
                 height={125}
@@ -28,6 +35,7 @@ const useDeviceImage = (device: SupportedModels) => {
         case "A3028":
             return <img
                 src={A3028Img}
+                className={props.class}
                 alt="device"
                 width={145}
                 height={125}
@@ -35,6 +43,7 @@ const useDeviceImage = (device: SupportedModels) => {
         case "A3029":
             return <img
                 src={A3029Img}
+                className={props.class}
                 alt="device"
                 width={145}
                 height={125}
@@ -42,6 +51,7 @@ const useDeviceImage = (device: SupportedModels) => {
         case "A3040":
             return <img
                 src={A3040Img}
+                className={props.class}
                 alt="device"
                 width={145}
                 height={125}
@@ -49,6 +59,7 @@ const useDeviceImage = (device: SupportedModels) => {
         case "A3935":
             return <img
                 src={A3935Img}
+                className={props.class}
                 alt="device"
                 width={145}
                 height={125}

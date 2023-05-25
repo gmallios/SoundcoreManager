@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { FC, useEffect, useState } from "react";
 import "./App.css";
 import { useMachine } from "@xstate/react";
 import { assign, createMachine, interpret } from "xstate";
-import { BluetoothSearchScreen as SearchScreen } from "./components/Search";
+import { BluetoothSearchScreen } from "./components/Search";
 import { HomeScreen } from "./components/Home";
 import { BthScanResult } from "./types/tauri-backend";
 import useGlobalStore from "./hooks/useGlobalStore";
@@ -33,30 +33,15 @@ export const screenManagerMachine = createMachine<ScreenManagerMachineContext, S
 });
 
 
-function App() {
+const App: FC = () => {
   const [screenManager, _sendScreenManager, screenManagerService] = useMachine(screenManagerMachine, { devTools: true });
   
   return (
-    <React.Fragment>
-      {deviceConnectionState != DeviceConnectionState.DISCONNECTED ? (
-        <Stack>
-          {isStatusSuccess ? (
-            <React.Fragment>
-              <OverviewCard />
-              <ANCModeCard />
-              <EQCard />
-            </React.Fragment>
-          ) : (
-            <div style={{ width: "100vw", height: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <CircularProgress />
-            </div>
-          )}
-        </Stack>
-      ) : (
-        <DisconnectedScreen />
-      )}
-    </React.Fragment>
-  );
+    <>
+      {screenManager.matches('disconnected') && <BluetoothSearchScreen screenService={screenManagerService} />}
+      {screenManager.matches('connected') && <HomeScreen />}
+    </>
+  )
 }
 
 export default App;

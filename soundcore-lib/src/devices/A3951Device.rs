@@ -364,7 +364,7 @@ impl ANCProfile {
 
     pub fn decode(arr: &[u8]) -> Result<ANCProfile, std::string::FromUtf8Error> {
         let anc_custom: u8;
-
+        
         if arr[3] == 255 {
             anc_custom = 255;
         } else {

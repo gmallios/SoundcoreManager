@@ -6,7 +6,7 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
-import { MantineProvider, MantineThemeOverride } from "@mantine/core";
+import { MantineProvider, MantineTheme, MantineThemeOverride } from "@mantine/core";
 import { BluetoothSearchScreen } from "./components/Search";
 import { inspect } from "@xstate/inspect";
 import { createActorContext, useInterpret, useMachine } from "@xstate/react";
@@ -39,9 +39,7 @@ const theme: MantineThemeOverride = {
       },
     };
   },
-}
-
-
+};
 
 
 // export const ScreenManagerContext = createActorContext(screenManagerMachine, { devTools: true });

@@ -1,109 +1,146 @@
-import { Text, Card, Group, createStyles, rem, RingProgress, Stack } from '@mantine/core';
-import { FC } from 'react';
+import { Text, Card, Group, createStyles, rem, RingProgress, Stack, SegmentedControl, Grid, SimpleGrid, Collapse, Center, Box, SegmentedControlItem } from '@mantine/core';
+import { FC, useEffect, useState } from 'react';
 import useDeviceImage from '../../hooks/useDeviceImage';
-import { useBatteryLevel, useCharging, useDeviceModel } from '../../hooks/useSoundcoreDevice';
+import { useBatteryLevel, useCharging, useDeviceModel, useStatus } from '../../hooks/useSoundcoreDevice';
+import useGlobalStore from '../../hooks/useGlobalStore';
+import { shallow } from 'zustand/shallow';
+import { useDisclosure } from '@mantine/hooks';
+import { GeneralANCSegmentedControl } from '../SegmentedControl';
+import { GeneralANCSegmentedControlValues } from '../SegmentedControl/general';
+
 
 const useStyles = createStyles((theme) => ({
     card: {
         backgroundColor: theme.colorScheme === 'dark' ? theme.colors.dark[7] : theme.white,
     },
-
-    productName: {
-        // // fontFamily: `Greycliff CF, ${theme.fontFamily}`,
-        // fontFamily: `Helvetica, ${theme.fontFamily}`,
-        fontWeight: 400,
-        // lineHeight: 0,
-        marginTop: -7
+    leftCol: {
+        paddingLeft: 0,
+        paddingRight: 0,
     },
-
-    lead: {
-        fontFamily: `Greycliff CF, ${theme.fontFamily}`,
-        fontWeight: 700,
-        fontSize: rem(22),
-        lineHeight: 1,
+    rightCol: {
+        paddingLeft: 0,
     },
-
-    inner: {
+    sideStack: {
+        width: '100%',
+        height: '100%',
         display: 'flex',
-
-        [theme.fn.smallerThan('xs')]: {
-            flexDirection: 'column',
-        },
-    },
-
-    deviceImage: {
-        flex: 1,
-        display: 'flex',
-        justifyContent: 'flex-end',
+        flexDirection: 'column',
+        justifyContent: 'center',
         alignItems: 'center',
-
-        [theme.fn.smallerThan('xs')]: {
-            justifyContent: 'center',
-            marginTop: theme.spacing.md,
-        },
+        padding: 0,
+        paddingRight: 0,
     },
-
-    stack: {
+    deviceWrapper: {
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
+        margin: 0,
+        padding: 0,
+
+    },
+    deviceImage: {
+        filter: 'drop-shadow(10px 10px 7px rgba(0,0,0,0.5))',
+    },
+    deviceName: {
+        color: theme.colorScheme === 'dark' ? theme.colors.dark[1] : theme.black,
+        fontWeight: 400,
+        marginTop: -10,
+    },
+    deviceInfo: {
+        display: 'flex',
+        flex: 1,
+        width: '100%',
     }
 }));
+
+const useSegmentedControlStyles = createStyles((theme) => ({
+    root: {
+        width: '100%',
+        marginTop: 'auto',
+        backgroundColor: theme.colorScheme === 'dark' ? theme.colors.dark[6] : theme.white,
+        boxShadow: theme.shadows.md,
+        border: `${rem(1)} solid ${theme.colorScheme === 'dark' ? theme.colors.dark[5] : theme.colors.gray[1]}`,
+    },
+
+    indicator: {
+        backgroundImage: theme.fn.gradient({ from: 'pink', to: 'yellow' }),
+    },
+
+    control: {
+        border: '0 !important',
+    },
+
+    label: {
+        '&, &:hover': {
+            '&[data-active]': {
+                color: theme.colors.white,
+            },
+        },
+    },
+}));
+
+
 
 interface DeviceCardProps {
 }
 
 const DeviceCard: FC<DeviceCardProps> = (props: DeviceCardProps) => {
-    const { classes, theme } = useStyles();
+    const { classes } = useStyles();
+    const { classes: segmentedControlClasses } = useSegmentedControlStyles();
     const { isLoading: isChargingLoading, data: chargingData, isError: isChargingError } = useCharging();
     const { isLoading: isBatteryLoading, data: batteryData, isError: isBatteryError } = useBatteryLevel();
     const { data: deviceModel, isLoading: isDeviceModelLoading } = useDeviceModel();
+    const btDevice = useGlobalStore((state) => state.btDevice, shallow);
+
+    console.log(batteryData);
+
+    const [currentAncMode, setCurrentAncMode] = useState('NORMAL');
+    const [opened, { open, close }] = useDisclosure(false);
+
+    useEffect(() => {
+        currentAncMode === GeneralANCSegmentedControlValues.NORMAL ? close() : open();
+    }, [currentAncMode]);
 
     return (
         <>
-            {/* <Card withBorder p="md" radius="md" className={classes.card}> */}
-                <Stack className={classes.stack} p="xs">
-                    <div>
-                        {useDeviceImage(deviceModel!)}
-                        <Text fz="xl" className={classes.productName}>
-                            Liberty Air 2 Pro's
-                        </Text>
-                    </div>
-                    
-                </Stack>
-                {/* <div className={classes.inner}>
-                    <div>
-                        <Text fz="xl" className={classes.productName}>
-                            Soundcore Liberty Air 2 Pro
-                        </Text>
-                        <div>
-                            <Text className={classes.lead} mt={30}>
-                                completed
+            <Card withBorder p="xs" radius="lg" className={classes.card}>
+                <Grid columns={3}>
+                    <Grid.Col span={1} className={classes.leftCol}>
+                        <Stack p="xs" className={classes.sideStack} style={{ paddingRight: 0 }}>
+                            {useDeviceImage({ device: deviceModel!, class: classes.deviceImage })}
+                            <Text fz="lg" className={classes.deviceName}>
+                                {removeMfgName(btDevice!.name)}<Text span fz="md">'s</Text>
                             </Text>
-                            <Text fz="xs" color="dimmed">
-                                Completed
-                            </Text>
-                        </div>
-                        <Group mt="lg">
-                            <div>
-                                <Text className={classes.productName}>Value</Text>
-                                <Text size="xs" color="dimmed">
-                                    Label
-                                </Text>
+                        </Stack>
+                    </Grid.Col>
+                    <Grid.Col span={2} className={classes.rightCol}>
+                        <Stack p="xs" className={classes.sideStack} style={{ paddingLeft: 0 }}>
+                            <div className={classes.deviceInfo}>
+                                Device Info
                             </div>
-                        </Group>
-                    </div>
-
-                    <div className={classes.deviceImage}>
-                        {useDeviceImage(deviceModel!)}
-                    </div>
-                </div> */}
-            {/* </Card> */}
-            {/* <Card withBorder p="md" radius="md" className={classes.card}>
-                Example
-            </Card> */}
+                            <GeneralANCSegmentedControl
+                                defaultValue={GeneralANCSegmentedControlValues.ANC}
+                                onChange={(val) => setCurrentAncMode(val)}
+                            />
+                        </Stack>
+                    </Grid.Col>
+                </Grid>
+                <Collapse in={opened} transitionDuration={320} >
+                    <SegmentedControl
+                        fullWidth
+                        radius="lg"
+                        size="xs"
+                        classNames={segmentedControlClasses}
+                        data={['Transport', 'Indoor', 'Outdoor', 'Custom']}
+                    />
+                </Collapse>
+            </Card>
         </>
     )
+}
+
+const removeMfgName = (name: string) => {
+    return name.replace('Soundcore ', '');
 }
 
 

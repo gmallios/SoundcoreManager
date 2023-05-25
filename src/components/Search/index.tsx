@@ -9,7 +9,8 @@ import disconnectedScreenMachine from "./machine";
 import { screenManagerMachine } from "../../App";
 import { BthScanResult } from "../../types/tauri-backend";
 import { IconMoodSad } from "@tabler/icons-react";
-
+import useGlobalStore from "../../hooks/useGlobalStore";
+import { shallow } from "zustand/shallow";
 
 
 export const BluetoothSearchScreen: FC<{
@@ -31,6 +32,7 @@ const BluetoothSearchView: FC<{
     const [device, setDevice] = useState<BthScanResult | null>(null);
     const [showDevices, setShowDevices] = useState<boolean>(false);
     const transitionPeriod = 200;
+    const { setBtDevice } = useGlobalStore((state) => ({ setBtDevice: state.setBtDevice }), shallow);
 
     useEffect(() => {
         service.send('SEARCH');
@@ -67,6 +69,7 @@ const BluetoothSearchView: FC<{
 
     const onItemClicked = (idx: number) => {
         setDevice(data![idx]);
+        setBtDevice(data![idx]);
         setShowDevices(false);
         sleep(transitionPeriod).then(() => {
             service.send({ type: "SELECT_DEVICE", device: data![idx] });
