@@ -47,22 +47,3 @@ pub(crate) struct NewTrayDeviceStatus {
     pub level: BatteryLevel,
     pub anc_mode: ANCModes,
 }
-
-
-#[typeshare]
-#[derive(Serialize, Deserialize)]
-pub struct DeviceFeatures {
-    pub profiles: Vec<SupportedANCProfiles>,
-}
-
-#[typeshare]
-#[derive(Serialize, Deserialize)]
-pub enum SupportedANCProfiles {
-    Normal,
-    AncTransportMode,
-    AncOutdoorMode,
-    AncIndoorMode,
-    AncCustomValue,
-    TransparencyFullyTransparentMode,
-    TransparencyVocalMode,
-}

@@ -1,28 +1,11 @@
 use crate::error::SoundcoreError;
 
-pub(crate) fn i8vec_to_u8vec(arr: Vec<i8>) -> Vec<u8> {
-    let mut vec = Vec::new();
-    for i in arr {
-        vec.push(i as u8);
-    }
-    vec
-}
-
 pub(crate) fn i8_to_u8vec(arr: &[i8]) -> Vec<u8> {
     let mut vec = Vec::new();
     for i in arr.iter() {
         vec.push(*i as u8);
     }
     vec
-}
-
-pub(crate) fn u8_to_i8(val: u8) -> i8 {
-    val as i8
-}
-
-pub(crate) fn mac_str_to_u64(addr: &str) -> Result<u64, std::num::ParseIntError> {
-    let a = u64::from_str_radix(&addr.replace(':', ""), 16)?;
-    Ok(a)
 }
 
 pub(crate) fn verify_resp(resp: &[u8]) -> Result<(), SoundcoreError> {

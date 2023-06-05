@@ -1,7 +1,8 @@
 use std::{slice::from_ref, time::Duration};
 
 use crate::{
-    base::{SoundcoreANC, SoundcoreDevice, SoundcoreEQ, SoundcoreHearID, SoundcoreLDAC},
+    anc_types::ANCRawData,
+    base::{SoundcoreANC, SoundcoreDevice, SoundcoreEQ, SoundcoreHearID, SoundcoreLDAC, SoundcoreFeatures},
     error::SoundcoreError,
     statics::{
         A3040_CMD_DEVICE_BATTERYLEVEL, A3040_CMD_DEVICE_CHARGINSTATUS, A3040_CMD_DEVICE_INFO,
@@ -9,8 +10,7 @@ use crate::{
         A3040_RFCOMM_UUID, EQ_INDEX_CUSTOM,
     },
     types::{
-        ANCProfile, BatteryCharging, BatteryLevel, DeviceInfo, DeviceStatus, EQWave, EQWaveInt,
-        ResponseDecoder,
+        BatteryCharging, BatteryLevel, DeviceInfo, DeviceStatus, EQWave, EQWaveInt, ResponseDecoder, SoundcoreDeviceFeatures,
     },
     utils::{build_command_with_options, i8_to_u8vec, remove_padding, verify_resp, Clamp},
 };
@@ -193,14 +193,14 @@ impl ResponseDecoder<BatteryCharging> for A3040 {
     }
 }
 
-impl ResponseDecoder<ANCProfile> for A3040 {
-    fn decode(&self, arr: &[u8]) -> Result<ANCProfile, SoundcoreError> {
+impl ResponseDecoder<ANCRawData> for A3040 {
+    fn decode(&self, arr: &[u8]) -> Result<ANCRawData, SoundcoreError> {
         match arr.first() {
-            Some(&byte) if get_nth_bit_value(byte, 1) == 1 => Ok(ANCProfile::ANC_OUTDOOR_MODE),
+            Some(&byte) if get_nth_bit_value(byte, 1) == 1 => Ok(ANCRawData::ANC_OUTDOOR_MODE),
             Some(&byte) if get_nth_bit_value(byte, 2) == 1 => {
-                Ok(ANCProfile::TRANSPARENCY_FULLY_TRANSPARENT_MODE)
+                Ok(ANCRawData::TRANSPARENCY_FULLY_TRANSPARENT_MODE)
             }
-            Some(&byte) if get_nth_bit_value(byte, 3) == 1 => Ok(ANCProfile::NORMAL_MODE),
+            Some(&byte) if get_nth_bit_value(byte, 3) == 1 => Ok(ANCRawData::NORMAL_MODE),
             _ => Err(SoundcoreError::InvalidResponse),
         }
     }
@@ -225,7 +225,7 @@ impl ResponseDecoder<EQWave> for A3040 {
 
 #[async_trait]
 impl SoundcoreANC for A3040 {
-    async fn get_anc(&self) -> Result<ANCProfile, SoundcoreError> {
+    async fn get_anc(&self) -> Result<ANCRawData, SoundcoreError> {
         Ok(self.get_status().await?.anc_status)
     }
 
@@ -275,4 +275,10 @@ impl SoundcoreHearID for A3040 {}
 fn get_nth_bit_value(b: u8, n: u8) -> u8 {
     // shift the byte n-1 bits to the right and bitwise AND it with 1 to get the nth bit value
     (b >> (n - 1)) & 1
+}
+
+impl SoundcoreFeatures for A3040 {
+    fn get_features(&self) -> SoundcoreDeviceFeatures {
+       SoundcoreDeviceFeatures::all(crate::types::SoundcoreDeviceType::Headphones)
+    }
 }

@@ -4,12 +4,12 @@ use bluetooth_lib::{platform::RFCOMM, BluetoothAdrr, RFCOMMClient};
 use tokio::time::sleep;
 
 use crate::{
-    base::{SoundcoreANC, SoundcoreDevice, SoundcoreEQ, SoundcoreHearID, SoundcoreLDAC},
+    anc_types::ANCRawData,
+    base::{SoundcoreANC, SoundcoreDevice, SoundcoreEQ, SoundcoreHearID, SoundcoreLDAC, SoundcoreFeatures},
     error::SoundcoreError,
     statics::*,
     types::{
-        ANCProfile, BatteryCharging, BatteryLevel, DeviceInfo, DeviceStatus, EQWave, EQWaveInt,
-        ResponseDecoder,
+        BatteryCharging, BatteryLevel, DeviceInfo, DeviceStatus, EQWave, EQWaveInt, ResponseDecoder, SoundcoreDeviceFeatures,
     },
     utils::{
         build_command_array_with_options_toggle_enabled, i8_to_u8vec, remove_padding, verify_resp,
@@ -110,21 +110,21 @@ impl SoundcoreDevice for A3935 {
 
 #[async_trait]
 impl SoundcoreANC for A3935 {
-    async fn set_anc(&self, profile: ANCProfile) -> Result<(), crate::error::SoundcoreError> {
+    async fn set_anc(&self, profile: ANCRawData) -> Result<(), crate::error::SoundcoreError> {
         self.build_and_send_cmd(A3951_CMD_DEVICE_SETANC, Some(&profile.to_bytes()))
             .await?;
         let _resp = self.recv().await?; /* No response validation - Need more info */
         Ok(())
     }
 
-    async fn get_anc(&self) -> Result<ANCProfile, crate::error::SoundcoreError> {
+    async fn get_anc(&self) -> Result<ANCRawData, crate::error::SoundcoreError> {
         self.build_and_send_cmd(A3951_CMD_DEVICE_GETANC, None)
             .await?;
         let resp = self.recv().await?;
         if A3951_RESPONSE_VERIFICATION {
             verify_resp(&resp)?;
         }
-        Ok(ANCProfile::decode(&resp[9..13])?)
+        Ok(ANCRawData::decode(&resp[9..13])?)
     }
 }
 
@@ -201,7 +201,7 @@ impl ResponseDecoder<DeviceStatus> for A3935 {
             right_hearid: EQWave::default(),
             left_hearid_customdata: EQWave::default(),
             right_hearid_customdata: EQWave::default(),
-            anc_status: ANCProfile::decode(&arr[45..49])?,
+            anc_status: ANCRawData::decode(&arr[45..49])?,
             side_tone_enabled: arr[49] == 1,
             touch_tone_enabled: arr[50] == 1,
             wear_detection_enabled: false, /* Doesn't seem to support it? */
@@ -243,5 +243,11 @@ impl ResponseDecoder<BatteryCharging> for A3935 {
             left: arr[0] == 1,
             right: arr[1] == 1,
         })
+    }
+}
+
+impl SoundcoreFeatures for A3935 {
+    fn get_features(&self) -> SoundcoreDeviceFeatures {
+        SoundcoreDeviceFeatures::all(crate::types::SoundcoreDeviceType::Earbuds)
     }
 }

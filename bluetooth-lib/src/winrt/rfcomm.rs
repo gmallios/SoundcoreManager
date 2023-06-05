@@ -8,7 +8,6 @@ use windows::{
             BluetoothCacheMode,
             Rfcomm::{RfcommDeviceService, RfcommServiceId},
         },
-        Enumeration::DeviceInformation,
     },
     Networking::Sockets::StreamSocket,
     Storage::Streams::{DataReader, DataWriter, InputStreamOptions},

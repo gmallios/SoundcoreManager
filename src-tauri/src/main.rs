@@ -8,15 +8,14 @@ use bluetooth_lib::Scanner;
 use frontend_types::BthScanResult;
 use soundcore_lib::base::SoundcoreDevice;
 use tauri_plugin_log::LogTarget;
-use std::io::Stdout;
 use std::sync::Arc;
 use soundcore_lib::types::{SupportedModels, SOUNDCORE_NAME_MODEL_MAP};
 use tauri::async_runtime::{Mutex, RwLock};
 use tauri::Manager;
 
 mod device;
-pub(crate) mod frontend_types;
 mod tray;
+pub(crate) mod frontend_types;
 pub(crate) mod utils;
 
 #[cfg(target_os = "macos")]
@@ -84,6 +83,7 @@ fn main() {
             device::get_anc,
             device::set_eq,
             device::get_eq,
+            device::get_features,
             scan_for_devices,
         ])
         .plugin(tauri_plugin_log::Builder::default().targets([

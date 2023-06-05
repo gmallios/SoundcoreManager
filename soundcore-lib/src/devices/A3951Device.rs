@@ -4,12 +4,12 @@ use log::debug;
 use tokio::time::sleep;
 
 use crate::{
-    base::{SoundcoreANC, SoundcoreDevice, SoundcoreEQ, SoundcoreHearID, SoundcoreLDAC},
+    anc_types::ANCRawData,
+    base::{SoundcoreANC, SoundcoreDevice, SoundcoreEQ, SoundcoreHearID, SoundcoreLDAC, SoundcoreFeatures},
     error::SoundcoreError,
     statics::*,
     types::{
-        ANCProfile, BatteryCharging, BatteryLevel, DeviceInfo, DeviceStatus, EQWave, EQWaveInt,
-        ResponseDecoder,
+        BatteryCharging, BatteryLevel, DeviceInfo, DeviceStatus, EQWave, EQWaveInt, ResponseDecoder, SoundcoreDeviceFeatures,
     },
     utils::{
         build_command_array_with_options_toggle_enabled, i8_to_u8vec, remove_padding, verify_resp,
@@ -140,21 +140,21 @@ impl SoundcoreDevice for A3951 {
 
 #[async_trait]
 impl SoundcoreANC for A3951 {
-    async fn set_anc(&self, profile: ANCProfile) -> Result<(), crate::error::SoundcoreError> {
+    async fn set_anc(&self, profile: ANCRawData) -> Result<(), crate::error::SoundcoreError> {
         self.build_and_send_cmd(A3951_CMD_DEVICE_SETANC, Some(&profile.to_bytes()))
             .await?;
         let _resp = self.recv().await?; /* No response validation - Need more info */
         Ok(())
     }
 
-    async fn get_anc(&self) -> Result<ANCProfile, crate::error::SoundcoreError> {
+    async fn get_anc(&self) -> Result<ANCRawData, crate::error::SoundcoreError> {
         self.build_and_send_cmd(A3951_CMD_DEVICE_GETANC, None)
             .await?;
         let resp = self.recv().await?;
         if A3951_RESPONSE_VERIFICATION {
             verify_resp(&resp)?;
         }
-        Ok(ANCProfile::decode(&resp[9..13])?)
+        Ok(ANCRawData::decode(&resp[9..13])?)
     }
 }
 
@@ -268,7 +268,7 @@ impl ResponseDecoder<DeviceStatus> for A3951 {
             right_hearid: EQWave::decode(&arr[44..52])?,
             left_hearid_customdata: EQWave::decode(&arr[58..66])?,
             right_hearid_customdata: EQWave::decode(&arr[66..74])?,
-            anc_status: ANCProfile::decode(&arr[86..90])?,
+            anc_status: ANCRawData::decode(&arr[86..90])?,
             side_tone_enabled: arr[90] == 1,
             wear_detection_enabled: arr[91] == 1,
             touch_tone_enabled: arr[92] == 1,
@@ -310,89 +310,8 @@ impl ResponseDecoder<BatteryCharging> for A3951 {
     }
 }
 
-impl ANCProfile {
-    pub const NORMAL_MODE: ANCProfile = ANCProfile {
-        option: 2,
-        anc_option: 0,
-        transparency_option: 0,
-        anc_custom: 6,
-    };
-
-    pub const ANC_TRANSPORT_MODE: ANCProfile = ANCProfile {
-        option: 0,
-        anc_option: 0,
-        transparency_option: 1,
-        anc_custom: 6,
-    };
-
-    pub const ANC_OUTDOOR_MODE: ANCProfile = ANCProfile {
-        option: 0,
-        anc_option: 1,
-        transparency_option: 1,
-        anc_custom: 6,
-    };
-
-    pub const ANC_INDOOR_MODE: ANCProfile = ANCProfile {
-        option: 0,
-        anc_option: 2,
-        transparency_option: 1,
-        anc_custom: 6,
-    };
-
-    pub const TRANSPARENCY_FULLY_TRANSPARENT_MODE: ANCProfile = ANCProfile {
-        option: 1,
-        anc_option: 0,
-        transparency_option: 0,
-        anc_custom: 6,
-    };
-
-    pub const TRANSPARENCY_VOCAL_MODE: ANCProfile = ANCProfile {
-        option: 1,
-        anc_option: 0,
-        transparency_option: 1,
-        anc_custom: 6,
-    };
-
-    pub fn anc_custom_value(val: u8) -> ANCProfile {
-        ANCProfile {
-            option: 0,
-            anc_option: 3,
-            transparency_option: 1,
-            anc_custom: Clamp::clamp(val, 0, 10),
-        }
-    }
-
-    pub fn decode(arr: &[u8]) -> Result<ANCProfile, std::string::FromUtf8Error> {
-        let anc_custom: u8;
-        
-        if arr[3] == 255 {
-            anc_custom = 255;
-        } else {
-            anc_custom = Clamp::clamp(arr[3], 0, 10);
-        }
-
-        Ok(ANCProfile {
-            option: Clamp::clamp(arr[0], 0, 2),
-            anc_option: Clamp::clamp(arr[1], 0, 3),
-            transparency_option: arr[2],
-            anc_custom,
-        })
-    }
-
-    pub fn to_bytes(&self) -> [u8; 4] {
-        let anc_custom: u8;
-
-        if self.anc_custom == 255 {
-            anc_custom = 255;
-        } else {
-            anc_custom = Clamp::clamp(self.anc_custom, 0, 10);
-        }
-
-        [
-            Clamp::clamp(self.option, 0, 2),
-            Clamp::clamp(self.anc_option, 0, 3),
-            self.transparency_option,
-            anc_custom,
-        ]
+impl SoundcoreFeatures for A3951 {
+    fn get_features(&self) -> SoundcoreDeviceFeatures {
+        SoundcoreDeviceFeatures::all(crate::types::SoundcoreDeviceType::Earbuds)
     }
 }

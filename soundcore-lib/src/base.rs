@@ -2,11 +2,9 @@ use async_trait::async_trait;
 use bluetooth_lib::BluetoothAdrr;
 
 use crate::{
+    anc_types::ANCRawData,
     error::SoundcoreError,
-    types::{
-        ANCProfile, BatteryCharging, BatteryLevel, DeviceInfo, DeviceStatus, EQWave,
-        ResponseDecoder,
-    },
+    types::{BatteryCharging, BatteryLevel, DeviceInfo, DeviceStatus, EQWave, ResponseDecoder, SoundcoreDeviceFeatures},
 };
 
 /* Should we require all traits or make this be a SoundcoreBase and have all
@@ -19,6 +17,7 @@ pub trait SoundcoreDevice:
     + SoundcoreEQ
     + SoundcoreLDAC
     + SoundcoreHearID
+    + SoundcoreFeatures
     + ResponseDecoder<DeviceInfo>
     + ResponseDecoder<DeviceStatus>
     + Send
@@ -41,15 +40,16 @@ pub trait SoundcoreDevice:
 }
 
 /* "Optional" traits - Not really since SoundcoreDevice
-has a bound on them but they return Err by default */
+has a bound on them but they return Err by default.
+We could move them behind an enum. */
 #[async_trait]
 pub trait SoundcoreANC: Sync + Send {
-    async fn set_anc(&self, _profile: ANCProfile) -> Result<(), SoundcoreError> {
+    async fn set_anc(&self, _profile: ANCRawData) -> Result<(), SoundcoreError> {
         Err(SoundcoreError::FeatureNotSupported(
             "ANC - set_anc".to_string(),
         ))
     }
-    async fn get_anc(&self) -> Result<ANCProfile, SoundcoreError> {
+    async fn get_anc(&self) -> Result<ANCRawData, SoundcoreError> {
         Err(SoundcoreError::FeatureNotSupported(
             "ANC - get_anc".to_string(),
         ))
@@ -93,4 +93,8 @@ pub trait SoundcoreHearID: Sync + Send {
             "HearID - get_hearid".to_string(),
         ))
     }
+}
+
+pub trait SoundcoreFeatures: Sync + Send {
+    fn get_features(&self) -> SoundcoreDeviceFeatures;
 }

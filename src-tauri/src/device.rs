@@ -1,13 +1,13 @@
 use crate::{
     frontend_types::ANCModes,
-    utils::{anc_mode_to_profile, anc_profile_to_mode},
+    utils::{anc_mode_to_raw, raw_anc_to_mode},
     SoundcoreAppState,
 };
 use log::debug;
 use soundcore_lib::{
     base::SoundcoreDevice,
     devices::{A3027, A3951, A3935, A3040},
-    types::{BatteryCharging, BatteryLevel, DeviceInfo, DeviceStatus, EQWave, SupportedModels},
+    types::{BatteryCharging, BatteryLevel, DeviceInfo, DeviceStatus, EQWave, SupportedModels, SoundcoreDeviceFeatures},
     BluetoothAdrr,
 };
 use tauri::State;
@@ -145,7 +145,7 @@ pub(crate) async fn get_anc(state: State<'_, SoundcoreAppState>) -> Result<ANCMo
     let device = state.device.lock().await;
     let device = device.as_ref().ok_or("No device connected")?;
     let anc = device.get_anc().await.map_err(|e| e.to_string())?;
-    Ok(anc_profile_to_mode(anc))
+    Ok(raw_anc_to_mode(anc))
 }
 
 #[tauri::command]
@@ -156,7 +156,7 @@ pub(crate) async fn set_anc(
     let device = state.device.lock().await;
     let device = device.as_ref().ok_or("No device connected")?;
     device
-        .set_anc(anc_mode_to_profile(mode))
+        .set_anc(anc_mode_to_raw(mode))
         .await
         .map_err(|e| e.to_string())?;
     Ok(())
@@ -176,4 +176,11 @@ pub(crate) async fn set_eq(state: State<'_, SoundcoreAppState>, eq: EQWave) -> R
     let device = device.as_ref().ok_or("No device connected")?;
     device.set_eq(eq).await.map_err(|e| e.to_string())?;
     Ok(())
+}
+
+#[tauri::command]
+pub(crate) async fn get_features(state: State<'_, SoundcoreAppState>) -> Result<SoundcoreDeviceFeatures, String> {
+    let device = state.device.lock().await;
+    let device = device.as_ref().ok_or("No device connected")?;
+    Ok(device.get_features())
 }

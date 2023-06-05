@@ -1,8 +1,9 @@
 use phf::phf_map;
 use serde::{Deserialize, Serialize};
+use strum::IntoEnumIterator;
 use typeshare::typeshare;
 
-use crate::error::SoundcoreError;
+use crate::{error::SoundcoreError, anc_types::{ANCRawData, ANCModeIdentifier, TransModeIdentifier}};
 
 pub type SendFnType<'a> = &'a (dyn Fn(&[u8]) -> Result<(), SoundcoreError> + Send + Sync);
 pub type RecvFnType<'a> = &'a (dyn Fn(usize) -> Result<Vec<u8>, SoundcoreError> + Send + Sync);
@@ -25,6 +26,33 @@ pub enum SupportedModels {
     A3040,
     A3935,
     A3951,
+}
+
+#[typeshare]
+#[derive(Debug, Serialize, Deserialize)]
+pub struct SoundcoreDeviceFeatures {
+    pub device_type: SoundcoreDeviceType,
+    pub anc_modes: Vec<ANCModeIdentifier>,
+    pub trans_modes: Vec<TransModeIdentifier>,
+}
+
+impl SoundcoreDeviceFeatures {
+    pub fn all(device_type: SoundcoreDeviceType) -> SoundcoreDeviceFeatures {
+        SoundcoreDeviceFeatures {
+            device_type,
+            anc_modes: ANCModeIdentifier::iter().collect::<Vec<_>>(),
+            trans_modes: TransModeIdentifier::iter().collect::<Vec<_>>(), 
+        }
+    }
+}
+
+#[typeshare]
+#[derive(Debug, Serialize, Deserialize)]
+pub enum SoundcoreDeviceType {
+    Headphones,
+    Earbuds,
+    Speaker,
+    Unknown,
 }
 
 pub static SOUNDCORE_NAME_MODEL_MAP: phf::Map<&'static str, SupportedModels> = phf_map! {
@@ -55,7 +83,7 @@ pub struct DeviceStatus {
     pub tws_status: bool,
     pub battery_level: BatteryLevel,
     pub battery_charging: BatteryCharging,
-    pub anc_status: ANCProfile,
+    pub anc_status: ANCRawData,
     pub side_tone_enabled: bool,
     pub wear_detection_enabled: bool,
     pub touch_tone_enabled: bool,
@@ -80,15 +108,6 @@ pub struct BatteryCharging {
 pub struct BatteryLevel {
     pub left: u8,
     pub right: u8,
-}
-
-#[typeshare]
-#[derive(Default, Debug, Serialize, Deserialize, PartialEq, Eq, Clone, Copy)]
-pub struct ANCProfile {
-    pub option: u8,
-    pub anc_option: u8,
-    pub transparency_option: u8,
-    pub anc_custom: u8,
 }
 
 /* This gets received from the device and is used to create the EQ to send. */

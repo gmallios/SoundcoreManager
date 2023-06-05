@@ -17,4 +17,4 @@ log = "0.4.17"
 typeshare = "1.0.1"
 phf = { version = "0.11", default-features = false, features = ["macros"] }
 dialoguer = { version = "0.10.4", features = ["fuzzy-select"] }
-
+strum = { version = "0.21", features = ["derive"] }
