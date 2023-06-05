@@ -1,4 +1,4 @@
-import { Text, Card, Group, createStyles, rem, RingProgress, Stack, SegmentedControl, Grid, SimpleGrid, Collapse, Center, Box, SegmentedControlItem } from '@mantine/core';
+import { Text, Card, Group, createStyles, rem, RingProgress, Stack, SegmentedControl, Grid, SimpleGrid, Collapse, Center, Box, SegmentedControlItem, Progress } from '@mantine/core';
 import { FC, useEffect, useState } from 'react';
 import useDeviceImage from '../../hooks/useDeviceImage';
 import { useBatteryLevel, useCharging, useDeviceModel, useStatus } from '../../hooks/useSoundcoreDevice';
@@ -50,6 +50,10 @@ const useStyles = createStyles((theme) => ({
         display: 'flex',
         flex: 1,
         width: '100%',
+    },
+    batteryProgress: {
+        width: rem(75),
+        height: rem(6),
     }
 }));
 
@@ -117,9 +121,10 @@ const DeviceCard: FC<DeviceCardProps> = (props: DeviceCardProps) => {
                         <Stack p="xs" className={classes.sideStack} style={{ paddingLeft: 0 }}>
                             <div className={classes.deviceInfo}>
                                 Device Info
+                                <Progress radius="xl" value={50} className={classes.batteryProgress} />
                             </div>
                             <GeneralANCSegmentedControl
-                                defaultValue={GeneralANCSegmentedControlValues.ANC}
+                                value={GeneralANCSegmentedControlValues.ANC}
                                 onChange={(val) => setCurrentAncMode(val)}
                             />
                         </Stack>

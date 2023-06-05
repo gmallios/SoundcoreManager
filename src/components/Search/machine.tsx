@@ -102,6 +102,7 @@ const closeIfConnected = async () => {
         await invoke("close").then((_msg) => {
             console.log("Closed connection");
             useGlobalStore.getState().setDeviceConnectionState(DeviceConnectionState.DISCONNECTED);
+            useGlobalStore.getState().setBtDevice(null);
         });
     });
 }

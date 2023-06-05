@@ -9,8 +9,8 @@ import { useANC } from "../../hooks/useSoundcoreDevice";
 
 
 export interface GeneralANCSegmentedControlProps {
-    defaultValue: GeneralANCSegmentedControlValues;
     onChange: (value: string) => void;
+    value: GeneralANCSegmentedControlValues;
 }
 
 export enum GeneralANCSegmentedControlValues {
@@ -73,13 +73,7 @@ export const GeneralANCSegmentedControl: FC<GeneralANCSegmentedControlProps> = (
         }
     ];
 
-    const { data: currentANCMode, isSuccess } = useANC();
     const { classes: segmentedControlClasses } = useSegmentedControlStyles();
-    const [value, setValue] = useState(props.defaultValue);
-
-    useEffect(() => {
-        console.log(currentANCMode);
-    }, [currentANCMode]);
 
     return (
         <>
@@ -89,9 +83,8 @@ export const GeneralANCSegmentedControl: FC<GeneralANCSegmentedControlProps> = (
                 size="sm"
                 data={GeneralSegmentedControlData}
                 classNames={segmentedControlClasses}
-                value={value}
+                value={props.value}
                 onChange={(value: GeneralANCSegmentedControlValues) => {
-                    setValue(value);
                     props.onChange(value)
                 }}
             />
