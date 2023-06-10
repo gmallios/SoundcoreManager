@@ -1,7 +1,5 @@
-pub(crate) trait ResponsePacket<T> { 
-    
-}
+pub enum ResponsePacket {}
 
-pub(crate) trait CommandPacket { 
+pub trait CommandPacket {
     fn bytes(&self) -> Vec<u8>;
 }
