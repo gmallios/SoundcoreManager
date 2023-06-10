@@ -6,11 +6,12 @@
 use bluetooth_lib::platform::BthScanner;
 use bluetooth_lib::Scanner;
 use frontend_types::BthScanResult;
+
 use soundcore_lib::base::SoundcoreDevice;
-use tauri_plugin_log::LogTarget;
-use std::io::Stdout;
-use std::sync::Arc;
 use soundcore_lib::types::{SupportedModels, SOUNDCORE_NAME_MODEL_MAP};
+use tauri_plugin_log::LogTarget;
+
+use std::sync::Arc;
 use tauri::async_runtime::{Mutex, RwLock};
 use tauri::Manager;
 
@@ -22,21 +23,20 @@ pub(crate) mod utils;
 #[cfg(target_os = "macos")]
 mod server;
 
-// #[tauri::command]
-// fn close_all(state: State<DeviceState>) -> Result<(), ()> {
-//     let mut device_state = state.device.lock().map_err(|_| ())?;
-//     *device_state = None;
-//     let rfcomm = RFCOMM_STATE.lock().map_err(|_| ())?;
-//     rfcomm.close();
-//     Ok(())
-// }
 
 #[tauri::command]
 async fn scan_for_devices() -> Vec<BthScanResult> {
     let res = BthScanner::new().scan().await;
     let mut scan_res: Vec<BthScanResult> = vec![];
     res.into_iter().for_each(|btdevice| {
-        if !btdevice.connected || !SOUNDCORE_NAME_MODEL_MAP.contains_key(&btdevice.name){
+        /* Sometimes on macOS, the app needs to open the connection in order to open the rfcomm socket */
+        #[cfg(target_os = "macos")]
+        if !SOUNDCORE_NAME_MODEL_MAP.contains_key(&btdevice.name) {
+            return;
+        }
+        /* In other platform that is not the case, so we should filter not connected devices */
+        #[cfg(not(target_os = "macos"))]
+        if !btdevice.connected || !SOUNDCORE_NAME_MODEL_MAP.contains_key(&btdevice.name) {
             return;
         }
         scan_res.push(BthScanResult::from(btdevice));
@@ -52,13 +52,6 @@ struct SoundcoreAppState {
 fn main() {
     #[cfg(target_os = "macos")]
     server::launch_server();
-
-    // builder()
-    //     .filter(None, log::LevelFilter::Debug)
-    //     .filter_module("h2", log::LevelFilter::Off)
-    //     .filter_module("hyper", log::LevelFilter::Off)
-    //     .filter_module("tower", log::LevelFilter::Off)
-    //     .init();
 
     tauri::Builder::default()
         .system_tray(tray::get_system_tray())
@@ -84,11 +77,24 @@ fn main() {
             device::get_eq,
             scan_for_devices,
         ])
-        .plugin(tauri_plugin_log::Builder::default().targets([
-            LogTarget::LogDir,
-            LogTarget::Stdout,
-            LogTarget::Webview
-        ]).build())
+        .plugin(
+            tauri_plugin_log::Builder::default().targets([
+                LogTarget::LogDir,
+                LogTarget::Stdout,
+                LogTarget::Webview
+            ])
+            .level_for("h2", log::LevelFilter::Off)
+            .level_for("hyper", log::LevelFilter::Off)
+            .level_for("tower", log::LevelFilter::Off)
+            .level_for("tracing", log::LevelFilter::Off)
+            .level_for("tokio_util", log::LevelFilter::Off)
+            .level_for("want", log::LevelFilter::Off)
+            .level_for("tonic", log::LevelFilter::Off)
+            .level_for("mio", log::LevelFilter::Off)
+            .level_for("tao", log::LevelFilter::Off)
+            .level_for("soundcoremanager::server", log::LevelFilter::Off)
+            .build()
+        )
         .build(tauri::generate_context!())
         .expect("error while running tauri application")
         .run(|app_handle, event| match event {

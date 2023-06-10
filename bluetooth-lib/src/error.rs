@@ -21,6 +21,7 @@ pub enum BthError {
         #[from]
         source: std::num::ParseIntError,
     },
+    #[cfg(target_os = "windows")]
     #[error("Windows error")]
     Windows {
         #[from]
@@ -28,6 +29,7 @@ pub enum BthError {
     },
     #[error("Device not found")]
     DeviceNotFound,
+    
     #[error("Rfcomm service not found")]
     RfcommServiceNotFound,
 }

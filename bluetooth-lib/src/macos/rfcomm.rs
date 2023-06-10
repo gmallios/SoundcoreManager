@@ -1,10 +1,4 @@
 use async_trait::async_trait;
-use std::{
-    cell::{Ref, RefCell},
-    sync::Arc,
-};
-use tokio::runtime::{Handle, Runtime};
-
 use crate::{BthError, RFCOMMClient};
 
 use iobluetooth::{

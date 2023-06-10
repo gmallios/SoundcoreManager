@@ -6,7 +6,7 @@ use crate::{
 use log::debug;
 use soundcore_lib::{
     base::SoundcoreDevice,
-    devices::{A3027, A3951, A3935, A3040},
+    devices::{A3027, A3040, A3935, A3951},
     types::{BatteryCharging, BatteryLevel, DeviceInfo, DeviceStatus, EQWave, SupportedModels},
     BluetoothAdrr,
 };
@@ -32,7 +32,6 @@ pub(crate) async fn close(state: State<'_, SoundcoreAppState>) -> Result<(), Str
     Ok(())
 }
 
-
 #[tauri::command]
 pub(crate) async fn get_model(
     state: State<'_, SoundcoreAppState>,
@@ -56,10 +55,12 @@ pub(crate) async fn connect(
         }
     }
 
-    let device_model = soundcore_lib::types::SOUNDCORE_NAME_MODEL_MAP.get(&bt_name).ok_or(format!(
-        "No Model ID found for given bluetooth name: {}",
-        bt_name
-    ))?;
+    let device_model = soundcore_lib::types::SOUNDCORE_NAME_MODEL_MAP
+        .get(&bt_name)
+        .ok_or(format!(
+            "No Model ID found for given bluetooth name: {}",
+            bt_name
+        ))?;
 
     let mut device_state = app_state.device.lock().await;
     match device_model {

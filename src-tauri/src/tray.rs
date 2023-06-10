@@ -1,6 +1,6 @@
 use log::debug;
 
-use soundcore_lib::types::{SupportedModels, BatteryCharging};
+use soundcore_lib::types::{BatteryCharging, SupportedModels};
 use tauri::{
     AppHandle, CustomMenuItem, Manager, State, SystemTray, SystemTrayEvent, SystemTrayMenu,
     SystemTrayMenuItem, SystemTraySubmenu,
@@ -101,10 +101,11 @@ pub(crate) async fn set_tray_device_status(app_handle: AppHandle, status: NewTra
     match status {
         NewTrayDeviceStatus {
             is_connected: true,
-            charging: BatteryCharging {
-                left: true,
-                right: true,
-            },
+            charging:
+                BatteryCharging {
+                    left: true,
+                    right: true,
+                },
             ..
         } => {
             // Both Charging
@@ -112,10 +113,11 @@ pub(crate) async fn set_tray_device_status(app_handle: AppHandle, status: NewTra
         }
         NewTrayDeviceStatus {
             is_connected: true,
-            charging: BatteryCharging {
-                left: true,
-                right: false,
-            },
+            charging:
+                BatteryCharging {
+                    left: true,
+                    right: false,
+                },
             ..
         } => {
             // Left Charging
@@ -123,10 +125,11 @@ pub(crate) async fn set_tray_device_status(app_handle: AppHandle, status: NewTra
         }
         NewTrayDeviceStatus {
             is_connected: true,
-            charging: BatteryCharging {
-                left: false,
-                right: true,
-            },
+            charging:
+                BatteryCharging {
+                    left: false,
+                    right: true,
+                },
             ..
         } => {
             // Right Charging
@@ -134,10 +137,11 @@ pub(crate) async fn set_tray_device_status(app_handle: AppHandle, status: NewTra
         }
         NewTrayDeviceStatus {
             is_connected: true,
-            charging: BatteryCharging {
-                left: false,
-                right: false,
-            },
+            charging:
+                BatteryCharging {
+                    left: false,
+                    right: false,
+                },
             ..
         } => {
             // Not Charging
@@ -194,8 +198,10 @@ fn build_anc_menu(model: &SupportedModels) -> SystemTrayMenu {
                 .add_native_item(SystemTrayMenuItem::Separator)
                 .add_item(fully_transparent)
         }
-        _ => SystemTrayMenu::new()
-            .add_item(CustomMenuItem::new("unsoported".to_string(), "Not supported"))
+        _ => SystemTrayMenu::new().add_item(CustomMenuItem::new(
+            "unsoported".to_string(),
+            "Not supported",
+        )),
     }
 }
 
@@ -257,7 +263,9 @@ pub(crate) fn handle_tray_event(app: &AppHandle, event: SystemTrayEvent) {
             }
             match id.as_str() {
                 "hide" => {
-                    let window = app.get_window("main").unwrap_or_else(|| panic!("Could not get window"));
+                    let window = app
+                        .get_window("main")
+                        .unwrap_or_else(|| panic!("Could not get window"));
                     match window.is_visible() {
                         Ok(true) => {
                             window.hide().unwrap();
@@ -266,7 +274,7 @@ pub(crate) fn handle_tray_event(app: &AppHandle, event: SystemTrayEvent) {
                         Ok(false) => {
                             window.show().unwrap();
                             item_handle.set_title("Hide").unwrap();
-                        },
+                        }
                         Err(e) => {
                             panic!("Could not get window visibility: {}", e);
                         }
