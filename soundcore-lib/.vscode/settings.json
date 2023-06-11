@@ -1,5 +1,8 @@
 {
     "rust-analyzer.linkedProjects": [
         ".\\Cargo.toml"
+    ],
+    "conventionalCommits.scopes": [
+        "soundcore-lib"
     ]
 }

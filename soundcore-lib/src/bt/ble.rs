@@ -1,12 +1,12 @@
 use crate::error::SoundcoreResult;
 use async_trait::async_trait;
-use std::collections::HashSet;
+use std::{collections::HashSet, sync::Arc};
 use tokio::sync::mpsc;
 
 #[async_trait]
 pub trait BLEConnection {
-    async fn name() -> SoundcoreResult<String>;
-    async fn mac() -> SoundcoreResult<String>;
+    async fn name(&self) -> SoundcoreResult<String>;
+    async fn mac(&self) -> SoundcoreResult<String>;
     async fn write(&self, data: &[u8], write_type: InternalWriteType) -> SoundcoreResult<()>;
     async fn receive_channel(&self) -> SoundcoreResult<mpsc::Receiver<Vec<u8>>>;
 }
@@ -23,11 +23,15 @@ pub trait BLEConnectionDescriptor {
 
 #[async_trait]
 pub trait BLEConnectionRegistry {
-    type BLEConnType: BLEConnection + Send + Sync;
-    type BLEDescType: BLEConnectionDescriptor + Send + Sync;
+    type ConnType: BLEConnection + Send + Sync;
+    type DescType: BLEConnectionDescriptor + Send + Sync;
 
-    async fn descriptors(&self) -> SoundcoreResult<HashSet<Self::BLEDescType>>;
-    async fn connection(&self, mac_addr: &str) -> SoundcoreResult<Option<Self::BLEConnType>>;
+    async fn descriptors(&self) -> SoundcoreResult<HashSet<Self::DescType>>;
+    async fn connection(
+        &self,
+        mac_addr: &str,
+        uuid_set: BLEConnectionUuidSet,
+    ) -> SoundcoreResult<Option<Arc<Self::ConnType>>>;
 }
 
 pub struct BLEConnectionUuidSet {
