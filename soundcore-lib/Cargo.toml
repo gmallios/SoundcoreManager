@@ -13,7 +13,7 @@ tokio = { version = "1.26.0", features = ["time", "macros", "rt-multi-thread"] }
 async-trait = "0.1.68"
 thiserror = "1.0.40"
 bluetooth-lib = { path = "../bluetooth-lib/" }
-log = "0.4.17"
+log = "0.4.19"
 typeshare = "1.0.1"
 phf = { version = "0.11", default-features = false, features = ["macros"] }
 dialoguer = { version = "0.10.4", features = ["fuzzy-select"] }
