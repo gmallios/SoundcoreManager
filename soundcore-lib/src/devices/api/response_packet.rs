@@ -1,5 +1,5 @@
 use super::state_update::{ResponseStateUpdatePacket, ResponseStateUpdatePackets};
-use crate::devices::SupportedDevices;
+use crate::devices::SupportedModelIDs;
 
 // Response Packet Structure
 // | Byte  | Description              |
@@ -20,19 +20,19 @@ pub enum ResponsePacket {
 }
 
 impl ResponsePacket {
-    fn from_bytes(device: SupportedDevices, bytes: &[u8]) -> Option<ResponsePacket> {
+    fn from_bytes(device: SupportedModelIDs, bytes: &[u8]) -> Option<ResponsePacket> {
         if !bytes.starts_with(&RESPONSE_PREFIX) {
             return None;
         }
 
         match device {
-            SupportedDevices::A3951 => {
+            SupportedModelIDs::A3951 => {
                 let packet = crate::devices::a3951::packets::state_update::StateUpdatePacketResponse::from_bytes(bytes);
                 packet.map(|packet| {
                     ResponsePacket::StateUpdate(ResponseStateUpdatePackets::A3951(packet))
                 })
             }
-            SupportedDevices::A3027 => {
+            SupportedModelIDs::A3027 => {
                 todo!()
             }
         }
@@ -62,17 +62,17 @@ impl ResponsePacket {
 #[cfg(test)]
 mod response_tests {
     use super::ResponsePacket;
-    use crate::devices::SupportedDevices;
+    use crate::devices::SupportedModelIDs;
 
     #[test]
     fn return_none_when_none_match() {
-        let packet = ResponsePacket::from_bytes(SupportedDevices::A3951, &[0x00]);
+        let packet = ResponsePacket::from_bytes(SupportedModelIDs::A3951, &[0x00]);
         assert_eq!(packet, None);
     }
 
     #[test]
     fn handle_wrong_prefix() {
-        let packet = ResponsePacket::from_bytes(SupportedDevices::A3027, &[0x09, 0xfd]);
+        let packet = ResponsePacket::from_bytes(SupportedModelIDs::A3027, &[0x09, 0xfd]);
         assert_eq!(packet, None);
     }
 }

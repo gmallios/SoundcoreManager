@@ -16,7 +16,7 @@ pub enum InternalWriteType {
     WithoutResponse,
 }
 
-pub trait BLEConnectionDescriptor {
+pub trait BLEDeviceDescriptor {
     fn name(&self) -> &str;
     fn mac(&self) -> &str;
 }
@@ -24,7 +24,7 @@ pub trait BLEConnectionDescriptor {
 #[async_trait]
 pub trait BLEConnectionRegistry {
     type ConnType: BLEConnection + Send + Sync;
-    type DescType: BLEConnectionDescriptor + Send + Sync;
+    type DescType: BLEDeviceDescriptor + Send + Sync;
 
     async fn descriptors(&self) -> SoundcoreResult<HashSet<Self::DescType>>;
     async fn connection(

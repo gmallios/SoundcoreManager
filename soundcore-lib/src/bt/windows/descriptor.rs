@@ -1,4 +1,4 @@
-use crate::bt::ble::BLEConnectionDescriptor;
+use crate::bt::ble::BLEDeviceDescriptor;
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub struct WindowsBLEDescriptor {
@@ -15,7 +15,7 @@ impl WindowsBLEDescriptor {
     }
 }
 
-impl BLEConnectionDescriptor for WindowsBLEDescriptor {
+impl BLEDeviceDescriptor for WindowsBLEDescriptor {
     fn name(&self) -> &str {
         &self.name
     }
