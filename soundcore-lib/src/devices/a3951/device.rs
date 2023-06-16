@@ -1,4 +1,7 @@
-use crate::{bt::ble::BLEConnection, devices::api::device::SoundcoreDevice};
+use crate::{
+    api::{SoundcoreDevice, SoundcoreDeviceState},
+    bt::ble::BLEConnection,
+};
 
 pub struct A3951<ConnectionType> {
     connection: ConnectionType,
@@ -16,10 +19,7 @@ where
         todo!()
     }
 
-    fn subscribe_state(
-        &self,
-    ) -> tokio::sync::broadcast::Receiver<crate::devices::api::device_state::SoundcoreDeviceState>
-    {
+    fn subscribe_state(&self) -> tokio::sync::broadcast::Receiver<SoundcoreDeviceState> {
         todo!()
     }
 

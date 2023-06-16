@@ -1,10 +1,8 @@
+use std::sync::Arc;
+
 use async_trait::async_trait;
 
-use crate::{
-    bt::ble::{BLEConnectionRegistry, BLEDeviceDescriptor},
-    devices::SupportedModelIDs,
-    error::SoundcoreResult,
-};
+use crate::{bt::ble::BLEConnectionRegistry, error::SoundcoreResult};
 
 use super::{device::SoundcoreDevices, device_descriptor::DeviceDescriptor};
 
@@ -18,7 +16,6 @@ where
     async fn descriptors(&self) -> SoundcoreResult<Vec<Self::DescriptorType>>;
     async fn device(
         &self,
-        device_mode: SupportedModelIDs,
         mac_addr: &str,
-    ) -> SoundcoreResult<Option<SoundcoreDevices<RegistryType::ConnType>>>;
+    ) -> SoundcoreResult<Option<Arc<SoundcoreDevices<RegistryType::ConnType>>>>;
 }

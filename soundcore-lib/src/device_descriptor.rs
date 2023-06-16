@@ -1,5 +1,6 @@
-use crate::{bt::ble::BLEDeviceDescriptor, devices::api::device_descriptor::DeviceDescriptor};
+use crate::{api::DeviceDescriptor, bt::ble::BLEDeviceDescriptor};
 
+#[derive(Debug)]
 pub struct SoundcoreDeviceDescriptor<T>
 where
     T: BLEDeviceDescriptor + Send + Sync,

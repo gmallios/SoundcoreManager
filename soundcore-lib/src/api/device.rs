@@ -1,10 +1,12 @@
-use super::device_state::SoundcoreDeviceState;
-use crate::bt::ble::BLEConnection;
-use crate::devices::a3951::device::A3951;
-use crate::devices::SupportedModelIDs;
-use crate::error::SoundcoreResult;
 use async_trait::async_trait;
 use enum_dispatch::enum_dispatch;
+
+use crate::{
+    api::SoundcoreDeviceState,
+    bt::ble::BLEConnection,
+    devices::{a3951::device::A3951, SupportedModelIDs},
+    error::SoundcoreResult,
+};
 
 #[enum_dispatch]
 #[async_trait]

@@ -39,3 +39,14 @@ pub struct BLEConnectionUuidSet {
     pub read_uuid: uuid::Uuid,
     pub write_uuid: uuid::Uuid,
 }
+
+#[cfg(any(target_os = "macos", target_os = "linux"))]
+impl BLEConnectionUuidSet {
+    fn to_notify_characteristic() -> btleplug::api::Characteristic {
+        todo!()
+    }
+
+    fn to_write_characteristic() -> btleplug::api::Characteristic {
+        todo!()
+    }
+}

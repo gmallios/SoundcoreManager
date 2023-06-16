@@ -1,10 +1,10 @@
-use crate::devices::api::state_update::ResponseStateUpdatePacket;
+use crate::api::ResponseStateUpdatePacket;
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct StateUpdatePacketResponse {
     /* The data the StateUpdate Response holds (eq_idx, eq, etc) */
-    wear_detection: bool,
-    touch_tone: bool,
+    pub wear_detection: bool,
+    pub touch_tone: bool,
 }
 
 impl ResponseStateUpdatePacket for StateUpdatePacketResponse {
@@ -21,7 +21,7 @@ impl ResponseStateUpdatePacket for StateUpdatePacketResponse {
 
 #[cfg(test)]
 mod packet_tests {
-    use crate::devices::api::state_update::ResponseStateUpdatePacket;
+    use crate::api::ResponseStateUpdatePacket;
 
     #[test]
     fn parse_valid_packet() {

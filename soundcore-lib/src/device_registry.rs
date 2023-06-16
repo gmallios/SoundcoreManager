@@ -1,20 +1,12 @@
-use std::{collections::HashMap, sync::Arc};
+use std::sync::{Arc, Weak};
 
 use async_trait::async_trait;
+use weak_table::{weak_value_hash_map::Entry, WeakValueHashMap};
 
 use crate::{
-    bt::{
-        ble::{BLEConnectionRegistry, BLEConnectionUuidSet},
-        windows::registry::WindowsBLEConnectionRegistry,
-    },
+    api::{DeviceRegistry, SoundcoreDevices},
+    bt::{ble::BLEConnectionRegistry, windows::registry::WindowsBLEConnectionRegistry},
     device_descriptor::SoundcoreDeviceDescriptor,
-    devices::{
-        api::{
-            device::{SoundcoreDevice, SoundcoreDevices},
-            device_registry::DeviceRegistry,
-        },
-        SupportedModelIDs,
-    },
     error::SoundcoreResult,
 };
 
@@ -31,7 +23,7 @@ where
     R: BLEConnectionRegistry + Send + Sync,
 {
     registry: R,
-    devices: tokio::sync::Mutex<HashMap<String, SoundcoreDevices<R::ConnType>>>,
+    devices: tokio::sync::Mutex<WeakValueHashMap<String, Weak<SoundcoreDevices<R::ConnType>>>>,
 }
 
 impl<R> SoundcoreDeviceRegistry<R>
@@ -41,25 +33,24 @@ where
     pub fn new(registry: R) -> Self {
         Self {
             registry,
-            devices: tokio::sync::Mutex::new(HashMap::new()),
+            devices: tokio::sync::Mutex::new(WeakValueHashMap::new()),
         }
     }
 
     async fn new_device(
         &self,
-        device_model: SupportedModelIDs,
-        mac_addr: &str,
-        uuid_set: BLEConnectionUuidSet,
-    ) -> SoundcoreResult<Option<Arc<SoundcoreDevices<R::ConnType>>>> {
-        match self.registry.connection(mac_addr, uuid_set).await? {
-            Some(_conn) => match device_model {
-                SupportedModelIDs::A3951 => {
-                    todo!()
-                }
-                _ => todo!(),
-            },
-            None => Ok(None),
-        }
+        _mac_addr: &str,
+    ) -> SoundcoreResult<Option<SoundcoreDevices<R::ConnType>>> {
+        // match self.registry.connection(mac_addr, uuid_set).await? {
+        //     Some(_conn) => match device_model {
+        //         SupportedModelIDs::A3951 => {
+        //             todo!()
+        //         }
+        //         _ => todo!(),
+        //     },
+        //     None => Ok(None),
+        // }
+        todo!()
     }
 }
 
@@ -82,9 +73,19 @@ where
 
     async fn device(
         &self,
-        device_model: SupportedModelIDs,
         mac_addr: &str,
-    ) -> SoundcoreResult<Option<SoundcoreDevices<R::ConnType>>> {
-        todo!()
+    ) -> SoundcoreResult<Option<Arc<SoundcoreDevices<R::ConnType>>>> {
+        match self.devices.lock().await.entry(mac_addr.to_owned()) {
+            Entry::Occupied(e) => Ok(Some(e.get().to_owned())),
+            Entry::Vacant(e) => {
+                if let Some(device) = self.new_device(mac_addr).await? {
+                    let device = Arc::new(device);
+                    e.insert(device.to_owned());
+                    Ok(Some(device))
+                } else {
+                    Ok(None)
+                }
+            }
+        }
     }
 }
