@@ -26,7 +26,6 @@ mod mac_tests {
     fn test_from_windows_u64() {
         let address_value: u64 = 0xB123456789AB;
         let address = BluetoothAdrr::from(address_value);
-
         assert_eq!(address.address, [0xB1, 0x23, 0x45, 0x67, 0x89, 0xAB])
     }
 
@@ -34,7 +33,6 @@ mod mac_tests {
     fn test_from_windows_u64_to_string() {
         let address_value: u64 = 0xB123456789AB;
         let address = BluetoothAdrr::from(address_value);
-
         assert_eq!(address.to_string(), "B1:23:45:67:89:AB")
     }
 
@@ -43,10 +41,7 @@ mod mac_tests {
         let address = BluetoothAdrr {
             address: [0x33, 0x44, 0x55, 0x66, 0x77, 0x00],
         };
-
         let address_value: u64 = address.into();
-        println!("{:X}", address_value);
-
         assert_eq!(address_value, 0x334455667700);
     }
 }

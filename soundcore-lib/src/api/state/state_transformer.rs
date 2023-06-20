@@ -1,5 +1,5 @@
 use super::device_state::SoundcoreDeviceState;
 
-trait SoundcoreDeviceStateTransformer {
+pub trait SoundcoreDeviceStateTransformer {
     fn transform(&self, state: &SoundcoreDeviceState) -> SoundcoreDeviceState;
 }

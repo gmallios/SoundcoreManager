@@ -1,19 +1,25 @@
 use std::{collections::HashSet, sync::Arc, time::Duration};
 
-use async_trait::async_trait;
-use windows::{
-    core::HSTRING,
-    Devices::{
-        Bluetooth::{self, BluetoothConnectionStatus},
-        Enumeration::{DeviceInformation, DeviceInformationKind},
-    },
-    Foundation::{Collections::IVectorView, TypedEventHandler},
-};
-
 use crate::{
     bt::ble::{BLEConnectionRegistry, BLEConnectionUuidSet},
     error::{SoundcoreError, SoundcoreResult},
     mac::BluetoothAdrr,
+};
+use async_trait::async_trait;
+use std::sync::Mutex;
+use windows::{
+    core::HSTRING,
+    Devices::{
+        Bluetooth::{
+            self,
+            Advertisement::{
+                BluetoothLEAdvertisementReceivedEventArgs, BluetoothLEAdvertisementWatcher,
+            },
+            BluetoothConnectionStatus,
+        },
+        Enumeration::{DeviceInformation, DeviceInformationKind},
+    },
+    Foundation::{Collections::IVectorView, TypedEventHandler},
 };
 
 use super::{connection::WindowsBLEConnection, descriptor::WindowsBLEDescriptor};
@@ -29,6 +35,7 @@ impl WindowsBLEConnectionRegistry {
     }
 
     fn ble_scan() -> SoundcoreResult<()> {
+        /* We shouldn't need it since actual BLE scanning takes place in descriptors fn */
         let props = IVectorView::try_from(vec![
             HSTRING::from("System.Devices.Aep.DeviceAddress"),
             HSTRING::from("System.Devices.Aep.IsConnected"),
@@ -66,21 +73,48 @@ impl BLEConnectionRegistry for WindowsBLEConnectionRegistry {
 
     async fn descriptors(&self) -> SoundcoreResult<HashSet<Self::DescType>> {
         tokio::task::spawn_blocking(move || {
-            Self::ble_scan()?;
-            let devices = DeviceInformation::FindAllAsyncAqsFilter(
-                &Bluetooth::BluetoothDevice::GetDeviceSelectorFromConnectionStatus(
-                    BluetoothConnectionStatus::Connected,
-                )?,
-            )?
-            .get()?;
-            let descriptors = devices
-                .into_iter()
+            let discovered_mac_addresses: Arc<Mutex<HashSet<String>>> =
+                Arc::new(Mutex::new(HashSet::new()));
+            let discovered_mac_addresses_clone = Arc::clone(&discovered_mac_addresses);
+            let ble_watcher = BluetoothLEAdvertisementWatcher::new()?;
+
+            let handler = TypedEventHandler::new(
+                move |_, args: &Option<BluetoothLEAdvertisementReceivedEventArgs>| {
+                    if let Some(args) = args {
+                        let mac = BluetoothAdrr::from(args.BluetoothAddress()?);
+                        log::trace!(
+                            "Discovered BLE device with MAC {:?}",
+                            BluetoothAdrr::from(args.BluetoothAddress()?).to_string()
+                        );
+                        if mac.is_soundcore_mac() {
+                            log::debug!("Discovered Soundcore device {:?}", mac);
+                            discovered_mac_addresses_clone
+                                .lock()
+                                .unwrap()
+                                .insert(mac.to_string());
+                        }
+                    }
+                    Ok(())
+                },
+            );
+
+            ble_watcher.Received(&handler).unwrap();
+            ble_watcher.Start().unwrap();
+            std::thread::sleep(Duration::from_secs(WATCH_DURATION));
+            ble_watcher.Stop().unwrap();
+
+            let descriptors = discovered_mac_addresses
+                .lock()
+                .map_err(|_| SoundcoreError::MutexLockError {})?
+                .iter()
                 .map(|device| {
-                    let device_id = device.Id()?;
-                    let bt_device = Bluetooth::BluetoothDevice::FromIdAsync(&device_id)?.get()?;
+                    let bt_device = Bluetooth::BluetoothDevice::FromBluetoothAddressAsync(
+                        BluetoothAdrr::from_str(&device)?.into(),
+                    )?
+                    .get()?;
                     Ok(WindowsBLEDescriptor::new(
-                        device.Name()?.to_string(),
-                        BluetoothAdrr::from(bt_device.BluetoothAddress()?).to_string(),
+                        bt_device.Name()?.to_string(),
+                        device,
                     )) as SoundcoreResult<WindowsBLEDescriptor>
                 })
                 .filter_map(|res| match res {
@@ -104,6 +138,7 @@ impl BLEConnectionRegistry for WindowsBLEConnectionRegistry {
         mac_addr: &str,
         uuid_set: BLEConnectionUuidSet,
     ) -> SoundcoreResult<Option<Arc<Self::ConnType>>> {
+        println!("Connecting to {:?}", mac_addr);
         Ok(
             WindowsBLEConnection::new(BluetoothAdrr::from_str(mac_addr)?.into(), uuid_set)
                 .await?

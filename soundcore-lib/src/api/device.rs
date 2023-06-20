@@ -1,5 +1,8 @@
+use std::sync::Arc;
+
 use async_trait::async_trait;
 use enum_dispatch::enum_dispatch;
+use tokio::sync::broadcast;
 
 use crate::{
     api::SoundcoreDeviceState,
@@ -15,12 +18,13 @@ where
     ConnectionType: BLEConnection + Send + Sync,
 {
     /* TODO: Add Get/Set ANC,EQ,LDAC */
-    fn new(connection: ConnectionType) -> SoundcoreResult<Self>
+    async fn new(connection: Arc<ConnectionType>) -> SoundcoreResult<Self>
     where
         Self: Sized;
-    fn get_supported_device(&self) -> SupportedModelIDs;
-    fn get_device_name(&self) -> String;
-    fn subscribe_state(&self) -> tokio::sync::broadcast::Receiver<SoundcoreDeviceState>;
+    async fn get_initial_state() -> SoundcoreResult<SoundcoreDeviceState>;
+    async fn name(&self) -> String;
+    fn model_id(&self) -> SupportedModelIDs;
+    fn subscribe_state(&self) -> broadcast::Receiver<SoundcoreDeviceState>;
 }
 
 #[enum_dispatch(SoundcoreDevice)]

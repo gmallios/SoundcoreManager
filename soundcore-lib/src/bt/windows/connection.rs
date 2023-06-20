@@ -5,11 +5,14 @@ use tokio::sync::mpsc;
 use uuid::Uuid;
 use windows::{
     core::HRESULT,
-    Devices::Bluetooth::{
-        BluetoothLEDevice,
-        GenericAttributeProfile::{
-            GattCharacteristic, GattClientCharacteristicConfigurationDescriptorValue,
-            GattDeviceService, GattValueChangedEventArgs, GattWriteOption,
+    Devices::{
+        self,
+        Bluetooth::{
+            BluetoothLEDevice,
+            GenericAttributeProfile::{
+                GattCharacteristic, GattClientCharacteristicConfigurationDescriptorValue,
+                GattDeviceService, GattValueChangedEventArgs, GattWriteOption,
+            },
         },
     },
     Foundation::{EventRegistrationToken, TypedEventHandler},
@@ -40,6 +43,10 @@ impl WindowsBLEConnection {
                     },
                     false => err.into(),
                 })?;
+            println!(
+                "Found device: {:?}",
+                device.GetGattServicesAsync()?.get()?.Services()?.Size()
+            );
             let ble_svc = Self::service(&device, &uuid_set.service_uuid)?;
             let read_characteristic = Self::characteristic(&ble_svc, &uuid_set.read_uuid)?;
             let write_characteristic = Self::characteristic(&ble_svc, &uuid_set.write_uuid)?;
@@ -75,7 +82,7 @@ impl WindowsBLEConnection {
 
     pub fn service(device: &BluetoothLEDevice, uuid: &Uuid) -> SoundcoreResult<GattDeviceService> {
         device
-            .GetGattServicesAsync()?
+            .GetGattServicesWithCacheModeAsync(Devices::Bluetooth::BluetoothCacheMode::Uncached)?
             .get()?
             .Services()?
             .into_iter()

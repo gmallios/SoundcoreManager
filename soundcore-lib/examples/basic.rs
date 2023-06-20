@@ -13,5 +13,6 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let desc = desc.get(0).unwrap();
     // registry.device(desc.model_id(), desc.mac_address()).await?;
     println!("{:?}", desc.name());
+    let _dev = registry.device(desc.mac_address()).await?;
     Ok(())
 }

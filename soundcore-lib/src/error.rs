@@ -1,3 +1,5 @@
+use crate::devices::SupportedModelIDs;
+
 pub type SoundcoreResult<E> = std::result::Result<E, SoundcoreError>;
 type ErrorWrapper = Box<dyn std::error::Error + Send + Sync>;
 
@@ -5,6 +7,10 @@ type ErrorWrapper = Box<dyn std::error::Error + Send + Sync>;
 pub enum SoundcoreError {
     #[error("Device not found")]
     DeviceNotFound { source: ErrorWrapper },
+    #[error("No UUID set found for device model")]
+    NoUUIDSetFoundForDeviceModel { model_id: SupportedModelIDs },
+    #[error("Device is not supported")]
+    DeviceNotSupported { name: String },
     #[error("Device not connected")]
     NotConnected { source: ErrorWrapper },
     #[error("BLE Service not found")]
@@ -21,4 +27,6 @@ pub enum SoundcoreError {
     },
     #[error("Unknown Error")]
     UnknownError { source: ErrorWrapper },
+    #[error("Mutex Lock Error")]
+    MutexLockError {},
 }

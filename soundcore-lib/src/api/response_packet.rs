@@ -24,10 +24,12 @@ pub enum ResponsePackets {
 }
 
 impl ResponsePackets {
-    fn from_bytes(device: SupportedModelIDs, bytes: &[u8]) -> Option<ResponsePackets> {
+    pub fn from_bytes(device: SupportedModelIDs, bytes: &[u8]) -> Option<ResponsePackets> {
         if !bytes.starts_with(&RESPONSE_PREFIX) {
             return None;
         }
+
+        println!("bytes: {:?}", bytes);
 
         match device {
             SupportedModelIDs::A3951 => {
@@ -42,27 +44,6 @@ impl ResponsePackets {
         }
     }
 }
-
-// fn get() {
-//     let packet = ResponsePacket::from_bytes(SupportedDevices::A3951, &[0x00]);
-//     match packet {
-//         Some(packet) => {
-//             match packet {
-//                 ResponsePacket::StateUpdate(state_update_packet) => {
-//                     match state_update_packet {
-//                         ResponseStateUpdatePackets::A3951(_a3951_state_update_packet) => {
-//                             // Do something with a3951_state_update_packet
-//                         }
-//                     }
-//                 }
-//             }
-//         }
-//         None => {
-//             // Do something
-//         }
-//     }
-// }
-
 #[cfg(test)]
 mod response_tests {
     use super::*;

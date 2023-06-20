@@ -1,4 +1,4 @@
-use crate::api::ResponseStateUpdatePacket;
+use crate::api::{RequestPacket, ResponseStateUpdatePacket};
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct StateUpdatePacketResponse {
@@ -16,6 +16,21 @@ impl ResponseStateUpdatePacket for StateUpdatePacketResponse {
             wear_detection: bytes[91] == 0x01,
             touch_tone: bytes[92] == 0x01,
         })
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
+pub struct StateUpdateRequestPacket {}
+
+impl StateUpdateRequestPacket {
+    pub fn new() -> StateUpdateRequestPacket {
+        StateUpdateRequestPacket {}
+    }
+}
+
+impl RequestPacket for StateUpdateRequestPacket {
+    fn bytes(&self) -> Vec<u8> {
+        todo!()
     }
 }
 

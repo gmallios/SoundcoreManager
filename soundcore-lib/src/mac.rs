@@ -2,6 +2,8 @@ use std::fmt::Display;
 
 use crate::error::{SoundcoreError, SoundcoreResult};
 
+const SOUNDCORE_MAC_PREFIXES: [[u8; 3]; 2] = [[0xAC, 0x12, 0x2F], [0xE8, 0xEE, 0xCC]];
+
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct BluetoothAdrr {
     pub address: [u8; 6],
@@ -47,6 +49,12 @@ impl BluetoothAdrr {
                     addr: address.into(),
                 })?,
         })
+    }
+
+    pub fn is_soundcore_mac(&self) -> bool {
+        SOUNDCORE_MAC_PREFIXES
+            .iter()
+            .any(|prefix| self.address.starts_with(prefix))
     }
 }
 
@@ -119,5 +127,20 @@ mod mac_tests {
         let formatted_address = format!("{}", address);
 
         assert_eq!(formatted_address, "11:22:33:44:55:66");
+    }
+
+    #[test]
+    fn check_soundcore_mac() {
+        let address = BluetoothAdrr {
+            address: [0xAC, 0x12, 0x2F, 0x44, 0x55, 0x66],
+        };
+
+        assert!(address.is_soundcore_mac());
+
+        let non_soundcore = BluetoothAdrr {
+            address: [0x11, 0x22, 0x33, 0x44, 0x55, 0x66],
+        };
+
+        assert!(!non_soundcore.is_soundcore_mac());
     }
 }
