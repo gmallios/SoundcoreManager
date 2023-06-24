@@ -116,7 +116,7 @@ impl BLEConnectionRegistry for WindowsBLEConnectionRegistry {
                     let mut addr = BluetoothAdrr::from(device.BluetoothAddress()?);
                     match swap_map.lock().unwrap().get(&addr) {
                         Some(new_addr) => {
-                            println!(
+                            debug!(
                                 "Swapping MAC address {:?} -> {:?}",
                                 addr.to_string(),
                                 new_addr.to_string()
