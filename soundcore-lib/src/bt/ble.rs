@@ -24,7 +24,7 @@ pub trait BLEDeviceDescriptor {
 #[async_trait]
 pub trait BLEConnectionRegistry {
     type ConnType: BLEConnection + Send + Sync;
-    type DescType: BLEDeviceDescriptor + Send + Sync;
+    type DescType: BLEDeviceDescriptor + Send + Sync + Clone;
 
     async fn descriptors(&self) -> SoundcoreResult<HashSet<Self::DescType>>;
     async fn connection(

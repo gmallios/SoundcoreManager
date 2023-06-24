@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use async_trait::async_trait;
 use enum_dispatch::enum_dispatch;
-use tokio::sync::broadcast;
+use tokio::sync::{broadcast, mpsc::Receiver};
 
 use crate::{
     api::SoundcoreDeviceState,
@@ -21,7 +21,10 @@ where
     async fn new(connection: Arc<ConnectionType>) -> SoundcoreResult<Self>
     where
         Self: Sized;
-    async fn get_initial_state() -> SoundcoreResult<SoundcoreDeviceState>;
+    async fn get_initial_state(
+        connection: &Arc<ConnectionType>,
+        receiver: &mut Receiver<Vec<u8>>,
+    ) -> SoundcoreResult<SoundcoreDeviceState>;
     async fn name(&self) -> String;
     fn model_id(&self) -> SupportedModelIDs;
     fn subscribe_state(&self) -> broadcast::Receiver<SoundcoreDeviceState>;

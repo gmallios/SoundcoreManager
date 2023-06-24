@@ -10,13 +10,18 @@ impl SoundcoreDeviceStateTransformer for StateUpdatePacketResponse {
 }
 
 impl From<&StateUpdatePacketResponse> for SoundcoreDeviceState {
-    fn from(_value: &StateUpdatePacketResponse) -> Self {
+    fn from(value: &StateUpdatePacketResponse) -> Self {
         Self {
-            eq: todo!(),
-            anc_mode: todo!(),
-            charging_status: todo!(),
-            battery_level: todo!(),
-            ldac_status: todo!(),
+            eq: value.eq.0,
+            sound_mode: value.sound_mode,
+            charging_status: value.charging_status,
+            battery_level: value.battery_level,
         }
+    }
+}
+
+impl From<StateUpdatePacketResponse> for SoundcoreDeviceState {
+    fn from(packet: StateUpdatePacketResponse) -> Self {
+        (&packet).into()
     }
 }

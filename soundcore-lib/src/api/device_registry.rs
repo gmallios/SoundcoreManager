@@ -16,6 +16,7 @@ where
     async fn descriptors(&self) -> SoundcoreResult<Vec<Self::DescriptorType>>;
     async fn device(
         &self,
+        name: &str,
         mac_addr: &str,
     ) -> SoundcoreResult<Option<Arc<SoundcoreDevices<RegistryType::ConnType>>>>;
 }

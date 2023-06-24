@@ -4,7 +4,7 @@ use crate::error::{SoundcoreError, SoundcoreResult};
 
 const SOUNDCORE_MAC_PREFIXES: [[u8; 3]; 2] = [[0xAC, 0x12, 0x2F], [0xE8, 0xEE, 0xCC]];
 
-#[derive(Debug, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
 pub struct BluetoothAdrr {
     pub address: [u8; 6],
 }
@@ -15,6 +15,17 @@ impl BluetoothAdrr {
             true => Self::from_colon_str(address),
             false => Self::from_dash_str(address),
         }
+    }
+
+    pub fn from_bytes(bytes: &[u8]) -> SoundcoreResult<Self> {
+        if bytes.len() != 6 {
+            return Err(SoundcoreError::InvalidMACAddress {
+                addr: format!("{:?}", bytes),
+            });
+        }
+        Ok(Self {
+            address: bytes.try_into().unwrap(),
+        })
     }
 
     fn from_colon_str(address: &str) -> SoundcoreResult<Self> {

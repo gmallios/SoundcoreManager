@@ -1,14 +1,13 @@
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
-use crate::api::{BatteryLevel, ChargingStatus};
+use crate::api::{BatteryLevel, ChargingStatus, EQValues, SoundMode};
 
 #[typeshare]
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct SoundcoreDeviceState {
-    pub eq: u8,
-    pub anc_mode: u8,
+    pub eq: EQValues,
+    pub sound_mode: SoundMode,
     pub charging_status: ChargingStatus,
     pub battery_level: BatteryLevel,
-    pub ldac_status: bool,
 }

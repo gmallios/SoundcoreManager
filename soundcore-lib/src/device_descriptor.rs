@@ -1,16 +1,16 @@
 use crate::{api::DeviceDescriptor, bt::ble::BLEDeviceDescriptor};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct SoundcoreDeviceDescriptor<T>
 where
-    T: BLEDeviceDescriptor + Send + Sync,
+    T: BLEDeviceDescriptor + Send + Sync + Clone,
 {
     inner: T,
 }
 
 impl<T> SoundcoreDeviceDescriptor<T>
 where
-    T: BLEDeviceDescriptor + Send + Sync,
+    T: BLEDeviceDescriptor + Send + Sync + Clone,
 {
     pub fn new(t: T) -> Self {
         Self { inner: t }
@@ -19,7 +19,7 @@ where
 
 impl<T> DeviceDescriptor for SoundcoreDeviceDescriptor<T>
 where
-    T: BLEDeviceDescriptor + Send + Sync,
+    T: BLEDeviceDescriptor + Send + Sync + Clone,
 {
     fn name(&self) -> &str {
         self.inner.name()

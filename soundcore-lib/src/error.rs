@@ -19,6 +19,8 @@ pub enum SoundcoreError {
     BLECharacteristicNotFound { uuid: String },
     #[error("Invalid MAC Address")]
     InvalidMACAddress { addr: String },
+    #[error("No response from device")]
+    NoResponse,
     #[cfg(target_os = "windows")]
     #[error("Unknown Windows Error")]
     UnknownWindowsError {

@@ -13,7 +13,7 @@ use crate::{
     devices::{
         a3951::device::A3951, match_model_id_to_uuid_set, match_name_to_model_id, SupportedModelIDs,
     },
-    error::{SoundcoreResult},
+    error::SoundcoreResult,
 };
 
 pub async fn create_soundcore_device_registry() -> impl BLEConnectionRegistry {
@@ -93,32 +93,16 @@ where
 
     async fn device(
         &self,
+        name: &str,
         mac_addr: &str,
     ) -> SoundcoreResult<Option<Arc<SoundcoreDevices<R::ConnType>>>> {
         match self.devices.lock().await.entry(mac_addr.to_owned()) {
             Entry::Occupied(e) => Ok(Some(e.get().to_owned())),
             Entry::Vacant(e) => {
-                let name = self
-                    .registry
-                    .descriptors()
-                    .await?
-                    .into_iter()
-                    .find_map(|d| {
-                        if d.mac() == mac_addr {
-                            Some(d.name().to_owned())
-                        } else {
-                            None
-                        }
-                    });
-
-                if let Some(name) = name {
-                    if let Some(device) = self.new_device(&name, mac_addr).await? {
-                        let device = Arc::new(device);
-                        e.insert(device.to_owned());
-                        Ok(Some(device))
-                    } else {
-                        Ok(None)
-                    }
+                if let Some(device) = self.new_device(&name, mac_addr).await? {
+                    let device = Arc::new(device);
+                    e.insert(device.to_owned());
+                    Ok(Some(device))
                 } else {
                     Ok(None)
                 }

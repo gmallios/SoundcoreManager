@@ -11,8 +11,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let registry = SoundcoreDeviceRegistry::new(reg);
     let desc = registry.descriptors().await?;
     let desc = desc.get(0).unwrap();
-    // registry.device(desc.model_id(), desc.mac_address()).await?;
-    println!("{:?}", desc.name());
-    let _dev = registry.device(desc.mac_address()).await?;
+    // // registry.device(desc.model_id(), desc.mac_address()).await?;
+    // println!("{:?}", desc.name());
+    let _dev = registry.device(&desc.name(), &desc.mac_address()).await?;
     Ok(())
 }

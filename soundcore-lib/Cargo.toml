@@ -23,6 +23,7 @@ weak-table = "0.3.2"
 btleplug = { version = "0.10.5" }
 
 [target.'cfg(target_os = "windows")'.dependencies]
+cached = "0.44.0"
 windows = { version = "0.48", features = [
     "Storage_Streams",
     "Foundation",

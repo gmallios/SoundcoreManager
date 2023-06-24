@@ -44,9 +44,10 @@ impl WindowsBLEConnection {
                     false => err.into(),
                 })?;
             println!(
-                "Found device: {:?}",
-                device.GetGattServicesAsync()?.get()?.Services()?.Size()
+                "Found device with num of services: {:?}",
+                device.GetGattServicesAsync()?.get()?.Services()?.Size()?
             );
+            println!("Device ID: {:?}", device.DeviceId()?);
             let ble_svc = Self::service(&device, &uuid_set.service_uuid)?;
             let read_characteristic = Self::characteristic(&ble_svc, &uuid_set.read_uuid)?;
             let write_characteristic = Self::characteristic(&ble_svc, &uuid_set.write_uuid)?;
