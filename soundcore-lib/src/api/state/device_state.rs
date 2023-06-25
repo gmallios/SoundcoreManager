@@ -4,7 +4,7 @@ use typeshare::typeshare;
 use crate::api::{BatteryLevel, ChargingStatus, EQValues, SoundMode};
 
 #[typeshare]
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, Copy, Eq, PartialEq)]
 pub struct SoundcoreDeviceState {
     pub eq: EQValues,
     pub sound_mode: SoundMode,

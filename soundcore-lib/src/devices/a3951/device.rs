@@ -18,9 +18,10 @@ use crate::{
 };
 
 pub struct A3951<ConnectionType> {
-    connection: ConnectionType,
+    connection: Arc<ConnectionType>,
     state: Arc<RwLock<SoundcoreDeviceState>>,
     receiver_handle: JoinHandle<()>,
+    state_sender: broadcast::Sender<SoundcoreDeviceState>,
 }
 
 #[async_trait]
@@ -35,22 +36,39 @@ where
         let mut receive_channel = connection.receive_channel().await?;
         let initial_state = Self::get_initial_state(&connection, &mut receive_channel).await?;
         println!("Initial state: {:?}", initial_state);
-        let _current_state_lock = Arc::new(RwLock::new(initial_state));
+        let current_state_lock = Arc::new(RwLock::new(initial_state));
+        let cureent_state_lock_clone = current_state_lock.clone();
         let (state_tx, _) = broadcast::channel::<SoundcoreDeviceState>(1);
-        let _state_tx_clone = state_tx;
-        let _handle = tokio::spawn(async move {
+        let state_tx_clone = state_tx.to_owned();
+        let handle = tokio::spawn(async move {
             while let Some(bytes) = receive_channel.recv().await {
                 println!("Received bytes: {:?}", bytes);
                 match ResponsePackets::from_bytes(devices::SupportedModelIDs::A3951, &bytes) {
-                    Some(_packet) => {
+                    Some(packet) => {
                         /* TODO: Map packet to transformer */
-                        todo!()
+                        if let Some(transformer) =
+                            devices::a3951::transformers::packet_to_transformer(packet)
+                        {
+                            let mut state = cureent_state_lock_clone.write().await;
+                            let new_state = transformer.transform(&state);
+                            if new_state != *state {
+                                *state = new_state;
+                                if let Err(err) = state_tx_clone.send(new_state) {
+                                    warn!("Failed to send state update: {:?}", err);
+                                }
+                            }
+                        }
                     }
                     None => {}
                 }
             }
         });
-        todo!()
+        Ok(Self {
+            connection,
+            state: current_state_lock,
+            receiver_handle: handle,
+            state_sender: state_tx,
+        })
     }
 
     async fn get_initial_state(
