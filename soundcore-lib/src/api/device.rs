@@ -42,31 +42,14 @@ impl<ConnectionType> SoundcoreDevices<ConnectionType>
 where
     ConnectionType: BLEConnection + Send + Sync,
 {
-    pub fn downcast(&self) -> Box<&dyn SoundcoreDevice<ConnectionType>> {
-        match self {
-            SoundcoreDevices::A3951(device) => Box::new(device.to_owned()),
-        }
-    }
-
     pub fn to_device(&self) -> &impl SoundcoreDevice<ConnectionType> {
         match self {
-            SoundcoreDevices::A3951(device) => device.to_owned(),
-        }
-    }
-
-    pub fn model_id(&self) -> SupportedModelIDs {
-        match self {
-            SoundcoreDevices::A3951(device) => device.model_id(),
-        }
-    }
-
-    pub fn subscribe_state(&self) -> broadcast::Receiver<SoundcoreDeviceState> {
-        match self {
-            SoundcoreDevices::A3951(device) => device.subscribe_state(),
+            SoundcoreDevices::A3951(device) => device,
         }
     }
 
     fn check(&self) {
-        let device = self.to_device();
+        let a = Arc::new(self);
+        let device = a.to_device();
     }
 }

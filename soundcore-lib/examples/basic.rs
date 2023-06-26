@@ -1,8 +1,7 @@
 use std::{error::Error, sync::Arc};
 
-use soundcore_lib::api::SoundcoreDevice;
 use soundcore_lib::{
-    api::{DeviceDescriptor, DeviceRegistry},
+    api::{DeviceDescriptor, DeviceRegistry, SoundcoreDevice},
     device_registry::{create_soundcore_device_registry, SoundcoreDeviceRegistry},
 };
 
@@ -18,7 +17,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
         .device(&desc.name(), &desc.mac_address())
         .await?
         .unwrap();
-
+    
     let device = dev.to_device();
 
     println!("{:?}", device.name().await);
