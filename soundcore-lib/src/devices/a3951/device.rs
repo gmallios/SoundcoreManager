@@ -114,7 +114,7 @@ where
     }
 
     async fn name(&self) -> String {
-        todo!()
+        "Soundcore Liberty Air 2 Pro".to_owned()
     }
 
     fn subscribe_state(&self) -> broadcast::Receiver<SoundcoreDeviceState> {
