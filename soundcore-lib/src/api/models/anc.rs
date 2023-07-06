@@ -5,7 +5,7 @@ use typeshare::typeshare;
 /// | Byte | Description           | Values |
 /// |------|-----------------------|--------|
 /// | 0    | Mode                  | 0 for ANC, 1 for Transparency, 2 for Normal |
-/// | 1    | ANC Sub-mode          | 0/1/2/3 - Transport/Outdoor,Indoor,Custom  |
+/// | 1    | ANC Sub-mode          | 0/1/2/3 - Transport,Outdoor,Indoor,Custom  |
 /// | 2    | Transparency Sub-mode | 0 for Fully Transparent 1 for Vocal for Transparency |
 /// | 3    | Sub-mode value        | Used only in the Custom mode |
 
@@ -30,6 +30,23 @@ impl SoundMode {
             [2, _, _, _] => Some(Self::NormalMode),
             _ => None,
         }
+    }
+
+    pub fn bytes(&self) -> Vec<u8> {
+        let bytes = match self {
+            Self::NoiseCancelling(mode) => match mode {
+                ANCModes::Transport => [0, 0, 0, 0],
+                ANCModes::Outdoor => [0, 1, 0, 0],
+                ANCModes::Indoor => [0, 2, 0, 0],
+                ANCModes::Custom(_value) => [0, 3, 0, 0],
+            },
+            Self::TransparencyMode(mode) => match mode {
+                TransparencyModes::FullyTransparent => [1, 0, 0, 0],
+                TransparencyModes::Vocal => [1, 0, 1, 0],
+            },
+            Self::NormalMode => [2, 0, 0, 0],
+        };
+        bytes.to_vec()
     }
 }
 

@@ -5,10 +5,7 @@ use weak_table::{weak_value_hash_map::Entry, WeakValueHashMap};
 
 use crate::{
     api::{DeviceRegistry, SoundcoreDevice, SoundcoreDevices},
-    bt::{
-        ble::{BLEConnectionRegistry, BLEDeviceDescriptor},
-        windows::registry::WindowsBLEConnectionRegistry,
-    },
+    bt::{ble::BLEConnectionRegistry, windows::registry::WindowsBLEConnectionRegistry},
     device_descriptor::SoundcoreDeviceDescriptor,
     devices::{
         a3951::device::A3951, match_model_id_to_uuid_set, match_name_to_model_id, SupportedModelIDs,
@@ -99,7 +96,7 @@ where
         match self.devices.lock().await.entry(mac_addr.to_owned()) {
             Entry::Occupied(e) => Ok(Some(e.get().to_owned())),
             Entry::Vacant(e) => {
-                if let Some(device) = self.new_device(&name, mac_addr).await? {
+                if let Some(device) = self.new_device(name, mac_addr).await? {
                     let device = Arc::new(device);
                     e.insert(device.to_owned());
                     Ok(Some(device))

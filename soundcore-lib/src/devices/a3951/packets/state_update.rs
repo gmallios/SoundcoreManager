@@ -1,7 +1,7 @@
 use log::warn;
 
 use crate::api::{
-    BatteryLevel, ChargingStatus, EQValues, RequestPacket, ResponseStateUpdatePacket, SoundMode,
+    BatteryLevel, ChargingStatus, EQValues, RequestPacket, ResponsePacket, SoundMode,
 };
 
 #[derive(Debug, PartialEq, Eq)]
@@ -19,9 +19,9 @@ pub struct StateUpdatePacketResponse {
     pub side_tone: bool,
 }
 
-impl ResponseStateUpdatePacket for StateUpdatePacketResponse {
+impl ResponsePacket for StateUpdatePacketResponse {
     fn from_bytes(bytes: &[u8]) -> Option<StateUpdatePacketResponse> {
-        if bytes[5] != 0x01 && bytes[6] != 0x01 && bytes.len() > 93 {
+        if bytes[5] != 0x01 && bytes[6] != 0x01 && bytes.len() < 93 {
             return None;
         }
 

@@ -1,7 +1,10 @@
 pub mod api;
 pub mod bt;
+#[cfg(feature = "bluetooth")]
 pub mod device_descriptor;
+#[cfg(feature = "bluetooth")]
 pub mod device_registry;
 pub mod devices;
 pub mod error;
 pub mod mac;
+pub mod utils;

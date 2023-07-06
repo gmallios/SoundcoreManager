@@ -32,6 +32,11 @@ function App() {
     ancMutation.mutate(event.payload as ANCModes);
   });
 
+  useWindowEvent("soundcore_event", event => {
+    console.log("Soundcore event: " );
+    console.log(event);
+  });
+
   /* Update tray status on every change */
   useEffect(() => {
     if (deviceConnectionState == DeviceConnectionState.CONNECTED && isDataSuccess && isDataNotNull) {

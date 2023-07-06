@@ -1,9 +1,11 @@
 use crate::devices::{a3951::packets::state_update::StateUpdatePacketResponse, SupportedModelIDs};
 
-use crate::api::{state::ResponseStateUpdatePacket, ResponseStateUpdatePackets};
+use crate::api::ResponseStateUpdatePackets;
 
 /// The ResponsePackets enum is used to represent the different types of response packets that can be received from a device.
 ///  
+///
+///
 /// Response Packet Structure
 /// | Byte  | Description              |
 /// |-------|--------------------------|
@@ -25,11 +27,10 @@ pub enum ResponsePackets {
 
 impl ResponsePackets {
     pub fn from_bytes(device: SupportedModelIDs, bytes: &[u8]) -> Option<ResponsePackets> {
+        println!("bytes: {:?}", bytes);
         if !bytes.starts_with(&RESPONSE_PREFIX) {
             return None;
         }
-
-        println!("bytes: {:?}", bytes);
 
         match device {
             SupportedModelIDs::A3951 => {
@@ -44,6 +45,13 @@ impl ResponsePackets {
         }
     }
 }
+
+pub trait ResponsePacket {
+    fn from_bytes(bytes: &[u8]) -> Option<Self>
+    where
+        Self: Sized;
+}
+
 #[cfg(test)]
 mod response_tests {
     use super::*;

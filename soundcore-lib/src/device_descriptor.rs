@@ -1,4 +1,4 @@
-use crate::{api::DeviceDescriptor, bt::ble::BLEDeviceDescriptor};
+use crate::{api::DeviceDescriptor, bt::ble::BLEDeviceDescriptor, devices::match_name_to_model_id};
 
 #[derive(Debug, Clone)]
 pub struct SoundcoreDeviceDescriptor<T>
@@ -27,5 +27,9 @@ where
 
     fn mac_address(&self) -> &str {
         self.inner.mac()
+    }
+
+    fn model_id(&self) -> Option<&str> {
+        match_name_to_model_id(self.name()).map(|id| id.into())
     }
 }

@@ -1,28 +1,26 @@
 [package]
 name = "soundcoremanager"
-version = "0.1.1"
+version = "0.2.1"
 description = "A Tauri desktop app for managing Soundcore devices"
-authors = ["Grigorios Mallios"]
+authors = ["Gregory Mallios"]
 license = "MIT"
 repository = "https://github.com/gmallios/SoundcoreManager"
 edition = "2021"
-rust-version = "1.57"
-build = "build.rs"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [build-dependencies]
-tauri-build = { version = "1.2", features = [] }
+tauri-build = { version = "1.4", features = [] }
 
 [dependencies]
 tauri-plugin-log = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "dev" }
-log = "0.4.17"
+log = "0.4.19"
 serde_json = "1.0"
 typeshare = "1.0.1"
+thiserror = "1.0.40"
+tokio = { version = "1.29.1", features = ["full"] }
 serde = { version = "1.0", features = ["derive"] }
-tauri = { version = "1.2.5", features = ["api-all", "devtools", "process-command-api", "system-tray"] }
+tauri = { version = "1.4.1", features = ["api-all", "devtools", "process-command-api", "system-tray"] }
+async-trait = "0.1.70"
 soundcore-lib = { path = "../soundcore-lib/" }
-bluetooth-lib = { path = "../bluetooth-lib/" }
 
 [features]
 # by default Tauri runs in production mode

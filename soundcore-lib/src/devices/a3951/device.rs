@@ -1,12 +1,13 @@
 use std::sync::Arc;
 
 use async_trait::async_trait;
-use log::warn;
+use log::{trace, warn};
 use tokio::{
     sync::{broadcast, mpsc::Receiver, RwLock},
     task::JoinHandle,
 };
 
+use crate::api::{BatteryLevel, ChargingStatus, EQValues, SoundMode};
 use crate::{
     api::{
         RequestPacket, ResponsePackets, ResponseStateUpdatePackets, SoundcoreDevice,
@@ -16,6 +17,8 @@ use crate::{
     devices::{self, a3951::packets::state_update::StateUpdateRequestPacket},
     error::{SoundcoreError, SoundcoreResult},
 };
+
+use super::packets::sound_mode::SoundModeRequestPacket;
 
 pub struct A3951<ConnectionType> {
     connection: Arc<ConnectionType>,
@@ -35,28 +38,28 @@ where
     {
         let mut receive_channel = connection.receive_channel().await?;
         let initial_state = Self::get_initial_state(&connection, &mut receive_channel).await?;
-        println!("Initial state: {:?}", initial_state);
         let current_state_lock = Arc::new(RwLock::new(initial_state));
-        let cureent_state_lock_clone = current_state_lock.clone();
+        let current_state_lock_clone = current_state_lock.clone();
         let (state_tx, _) = broadcast::channel::<SoundcoreDeviceState>(1);
         let state_tx_clone = state_tx.to_owned();
+
         let handle = tokio::spawn(async move {
             while let Some(bytes) = receive_channel.recv().await {
-                println!("Received bytes: {:?}", bytes);
                 match ResponsePackets::from_bytes(devices::SupportedModelIDs::A3951, &bytes) {
                     Some(packet) => {
-                        /* TODO: Map packet to transformer */
                         if let Some(transformer) =
                             devices::a3951::transformers::packet_to_transformer(packet)
                         {
-                            let mut state = cureent_state_lock_clone.write().await;
+                            let mut state = current_state_lock_clone.write().await;
                             let new_state = transformer.transform(&state);
-                            if new_state != *state {
-                                *state = new_state;
-                                if let Err(err) = state_tx_clone.send(new_state) {
-                                    warn!("Failed to send state update: {:?}", err);
-                                }
+                            // TODO: Remove this
+                            // if new_state != *state {
+                            *state = new_state;
+                            println!("Got new state: {:?}", new_state);
+                            if let Err(err) = state_tx_clone.send(new_state) {
+                                warn!("Failed to send state update: {:?}", err);
                             }
+                            // }
                         }
                     }
                     None => {}
@@ -118,6 +121,54 @@ where
     }
 
     fn subscribe_state(&self) -> broadcast::Receiver<SoundcoreDeviceState> {
+        self.state_sender.subscribe()
+    }
+
+    async fn refresh_state(&self) -> SoundcoreResult<()> {
+        self.connection
+            .write(
+                &StateUpdateRequestPacket::new().bytes(),
+                InternalWriteType::WithoutResponse,
+            )
+            .await
+    }
+
+    async fn set_sound_mode(&self, mode: SoundMode) -> SoundcoreResult<()> {
+        println!(
+            "Writing bytes: {:?}",
+            SoundModeRequestPacket::new(mode).bytes()
+        );
+        self.connection
+            .write(
+                &SoundModeRequestPacket::new(mode).bytes(),
+                InternalWriteType::WithResponse,
+            )
+            .await
+    }
+
+    async fn set_eq(&self, _eq: EQValues) -> SoundcoreResult<()> {
         todo!()
+    }
+
+    async fn battery_level(&self) -> BatteryLevel {
+        self.state.read().await.battery_level
+    }
+
+    async fn charging_status(&self) -> ChargingStatus {
+        self.state.read().await.charging_status
+    }
+
+    async fn sound_mode(&self) -> SoundMode {
+        self.state.read().await.sound_mode
+    }
+
+    async fn eq(&self) -> EQValues {
+        self.state.read().await.eq
+    }
+}
+
+impl<ConnectionType> Drop for A3951<ConnectionType> {
+    fn drop(&mut self) {
+        self.receiver_handle.abort();
     }
 }

@@ -11,6 +11,15 @@ pub enum SupportedModelIDs {
     A3027,
 }
 
+impl From<SupportedModelIDs> for &str {
+    fn from(model_id: SupportedModelIDs) -> Self {
+        match model_id {
+            SupportedModelIDs::A3951 => "A3951",
+            SupportedModelIDs::A3027 => "A3027",
+        }
+    }
+}
+
 pub fn match_name_to_model_id(name: &str) -> Option<SupportedModelIDs> {
     let models = vec![
         ("Soundcore Liberty Air 2 Pro", SupportedModelIDs::A3951),

@@ -3,50 +3,20 @@
     windows_subsystem = "windows"
 )]
 
-use bluetooth_lib::platform::BthScanner;
-use bluetooth_lib::Scanner;
-use frontend_types::BthScanResult;
-use soundcore_lib::base::SoundcoreDevice;
-use tauri_plugin_log::LogTarget;
-use std::io::Stdout;
-use std::sync::Arc;
-use soundcore_lib::types::{SupportedModels, SOUNDCORE_NAME_MODEL_MAP};
-use tauri::async_runtime::{Mutex, RwLock};
+// use frontend_types::BthScanResult;
+
+use soundcore_process::{SoundcoreResponseMessage, SoundcoreRequestMessage};
 use tauri::Manager;
+use tauri_plugin_log::LogTarget;
+use tokio::sync::mpsc;
 
-mod device;
-pub(crate) mod frontend_types;
-mod tray;
-pub(crate) mod utils;
-
-#[cfg(target_os = "macos")]
-mod server;
-
-// #[tauri::command]
-// fn close_all(state: State<DeviceState>) -> Result<(), ()> {
-//     let mut device_state = state.device.lock().map_err(|_| ())?;
-//     *device_state = None;
-//     let rfcomm = RFCOMM_STATE.lock().map_err(|_| ())?;
-//     rfcomm.close();
-//     Ok(())
-// }
-
-#[tauri::command]
-async fn scan_for_devices() -> Vec<BthScanResult> {
-    let res = BthScanner::new().scan().await;
-    let mut scan_res: Vec<BthScanResult> = vec![];
-    res.into_iter().for_each(|btdevice| {
-        if !btdevice.connected || !SOUNDCORE_NAME_MODEL_MAP.contains_key(&btdevice.name){
-            return;
-        }
-        scan_res.push(BthScanResult::from(btdevice));
-    });
-    scan_res
-}
+// pub(crate) mod frontend_types;
+// mod tray;
+// pub(crate) mod utils;
+mod soundcore_process;
 
 struct SoundcoreAppState {
-    device: Arc<Mutex<Option<Box<dyn SoundcoreDevice>>>>,
-    model: Arc<RwLock<Option<SupportedModels>>>,
+    soundcore_tx: tokio::sync::Mutex<mpsc::Sender<soundcore_process::SoundcoreRequestMessage>>
 }
 
 fn main() {
@@ -60,30 +30,37 @@ fn main() {
     //     .filter_module("tower", log::LevelFilter::Off)
     //     .init();
 
+    let (async_proc_input_tx, async_proc_input_rx) = mpsc::channel(1);
+    let (async_proc_output_tx, mut async_proc_output_rx) = mpsc::channel(1);
+
     tauri::Builder::default()
-        .system_tray(tray::get_system_tray())
-        .on_system_tray_event(tray::handle_tray_event)
+        // .system_tray(tray::get_system_tray())
+        // .on_system_tray_event(tray::handle_tray_event)
         .manage(SoundcoreAppState {
-            device: Arc::new(Mutex::new(None)),
-            model: Arc::new(RwLock::new(None)),
+            soundcore_tx: tokio::sync::Mutex::new(async_proc_input_tx) 
         })
         .invoke_handler(tauri::generate_handler![
-            tray::set_tray_device_status,
-            tray::set_tray_menu,
-            device::connect,
-            device::close,
-            device::get_model,
-            device::is_connected,
-            device::get_info,
-            device::get_status,
-            device::get_battery_level,
-            device::get_battery_charging,
-            device::set_anc,
-            device::get_anc,
-            device::set_eq,
-            device::get_eq,
-            scan_for_devices,
+            soundcore_command
         ])
+        .setup(|app| {
+            // Spawn the soundcore async process
+            tauri::async_runtime::spawn(async move {
+                soundcore_process::soundcore_process(async_proc_input_rx, async_proc_output_tx).await;
+            });       
+
+            //TODO: Maybe spawn a thread to poll the device periodically for battery status/level
+
+            // Spawn the soundcore output handler
+            let app_handle = app.handle();
+            tauri::async_runtime::spawn(async move {
+                loop {
+                    if let Some(event) = async_proc_output_rx.recv().await {
+                        handle_soundcore_event(event, &app_handle);
+                    }
+                }
+            });
+            Ok(())
+        })
         .plugin(tauri_plugin_log::Builder::default().targets([
             LogTarget::LogDir,
             LogTarget::Stdout,
@@ -115,4 +92,15 @@ fn main() {
             }
             _ => {}
         });
+}
+
+fn handle_soundcore_event<R: tauri::Runtime>(message: SoundcoreResponseMessage, manager: &impl Manager<R>){
+    // TODO: Update the tray menu
+    manager.emit_all("soundcore_event", message).unwrap();
+}
+
+#[tauri::command]
+async fn soundcore_command(message: SoundcoreRequestMessage, state: tauri::State<'_, SoundcoreAppState>) -> Result<(), String> {
+    let tx = state.soundcore_tx.lock().await;
+    tx.send(message).await.map_err(|e| e.to_string())
 }

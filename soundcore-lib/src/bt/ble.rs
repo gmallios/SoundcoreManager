@@ -26,7 +26,9 @@ pub trait BLEConnectionRegistry {
     type ConnType: BLEConnection + Send + Sync;
     type DescType: BLEDeviceDescriptor + Send + Sync + Clone;
 
+    /// Returns a list of BLE device descriptors after scanning.
     async fn descriptors(&self) -> SoundcoreResult<HashSet<Self::DescType>>;
+    /// Attempts to connect to a BLE device with the given MAC address and UUID set.
     async fn connection(
         &self,
         mac_addr: &str,
@@ -42,11 +44,11 @@ pub struct BLEConnectionUuidSet {
 
 #[cfg(any(target_os = "macos", target_os = "linux"))]
 impl BLEConnectionUuidSet {
-    fn to_notify_characteristic() -> btleplug::api::Characteristic {
+    fn notify_characteristic() -> btleplug::api::Characteristic {
         todo!()
     }
 
-    fn to_write_characteristic() -> btleplug::api::Characteristic {
+    fn write_characteristic() -> btleplug::api::Characteristic {
         todo!()
     }
 }

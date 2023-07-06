@@ -1,26 +1,40 @@
-use std::{error::Error, sync::Arc};
-
 use soundcore_lib::{
-    api::{DeviceDescriptor, DeviceRegistry, SoundcoreDevice},
+    api::{DeviceDescriptor, DeviceRegistry},
     device_registry::{create_soundcore_device_registry, SoundcoreDeviceRegistry},
 };
+use std::{error::Error, sync::Arc};
 
-#[tokio::main]
+#[tokio::main(flavor = "current_thread")]
 async fn main() -> Result<(), Box<dyn Error>> {
     let reg = create_soundcore_device_registry().await;
     let registry = SoundcoreDeviceRegistry::new(reg);
     let desc = registry.descriptors().await?;
     let desc = desc.get(0).unwrap();
-    // // registry.device(desc.model_id(), desc.mac_address()).await?;
-    // println!("{:?}", desc.name());
     let dev = registry
-        .device(&desc.name(), &desc.mac_address())
+        .device(desc.name(), desc.mac_address())
         .await?
         .unwrap();
-    
-    let device = dev.to_device();
-
-    println!("{:?}", device.name().await);
+    // Create thread to listen for state changes
+    let device = Arc::new(dev.clone());
+    let device_clone = device.clone();
+    let rx = tokio::spawn(async move {
+        println!("subscribing to state changes");
+        let mut state_receiver = device_clone.to_device().unwrap().subscribe_state();
+        while let Ok(state) = state_receiver.recv().await {
+            println!("new_state: {:?}", state);
+        }
+    });
+    // Create thread to request state update
+    let device_clone = device.clone();
+    let tx = tokio::spawn(async move {
+        loop {
+            println!("requesting state update");
+            let _ = device_clone.to_device().unwrap().refresh_state().await;
+            tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
+        }
+    });
+    // Await both threads
+    let _ = tokio::join!(rx, tx);
     Ok(())
 }
 
