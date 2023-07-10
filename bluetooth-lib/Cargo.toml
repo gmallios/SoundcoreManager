@@ -7,7 +7,7 @@ edition = "2021"
 
 [dependencies]
 tokio = { version = "1.24.2", features = ["time", "macros", "rt-multi-thread"] }
-async-trait = "0.1.68"
+async-trait = "0.1.71"
 log = "0.4.17"
 thiserror = "1.0.40"
 
