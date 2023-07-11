@@ -10,7 +10,7 @@ path = "src/cli.rs"
 [dependencies]
 serde = { version = "1.0", features = ["derive"] }
 tokio = { version = "1.26.0", features = ["time", "macros", "rt-multi-thread"] }
-async-trait = "0.1.68"
+async-trait = "0.1.71"
 thiserror = "1.0.40"
 bluetooth-lib = { path = "../bluetooth-lib/" }
 log = "0.4.19"
