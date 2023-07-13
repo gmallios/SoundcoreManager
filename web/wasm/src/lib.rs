@@ -1,9 +1,13 @@
+use std::str::FromStr;
 use wasm_bindgen::{prelude::wasm_bindgen, JsValue};
+
+mod ble_uuid;
 
 #[wasm_bindgen(typescript_custom_section)]
 const MAC_ADDRESS_PREFIXES: &'static str = r#"
 type MacAddressPrefixes = number[][]
 "#;
+
 #[wasm_bindgen]
 extern "C" {
     #[wasm_bindgen(typescript_type = "MacAddressPrefixes")]
@@ -17,4 +21,31 @@ pub fn get_soundcore_mac_prefixes() -> Result<MacAddressPrefixes, JsValue> {
         .map(|prefix| prefix.to_vec())
         .collect::<Vec<Vec<u8>>>();
     Ok(serde_wasm_bindgen::to_value(&prefixes)?.into())
+}
+
+#[wasm_bindgen(js_name = "getUUIDSet")]
+pub fn get_uuid_set(model: &str) -> Result<ble_uuid::BLEConnectionUuidSet, JsValue> {
+    let model = soundcore_lib::devices::SupportedModelIDs::from_str(model);
+    if let Ok(model) = model {
+        let uuids = soundcore_lib::devices::match_model_id_to_uuid_set(&model);
+        Ok(serde_wasm_bindgen::to_value(&uuids)?.into())
+    } else {
+        Err(JsValue::from_str("Invalid model"))
+    }
+}
+
+#[wasm_bindgen(js_name = "matchNameToModelID")]
+pub fn match_name_to_model_id(name: &str) -> Result<String, JsValue> {
+    let model = soundcore_lib::devices::match_name_to_model_id(name);
+    if let Some(model) = model {
+        Ok(model.to_string())
+    } else {
+        Err(JsValue::from_str("Invalid model"))
+    }
+}
+
+#[wasm_bindgen(js_name = "getAllUUIDSets")]
+pub fn get_all_uuid_sets() -> Result<JsValue, JsValue> {
+    let uuid_sets = soundcore_lib::devices::get_all_uuid_sets();
+    Ok(serde_wasm_bindgen::to_value(&uuid_sets)?.into())
 }

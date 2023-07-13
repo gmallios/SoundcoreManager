@@ -1,5 +1,6 @@
 [workspace]
 members = [
     "soundcore-lib",
-    "src-tauri"
+    "src-tauri",
+    "web/wasm"
 ]

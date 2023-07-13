@@ -11,6 +11,7 @@ import { ITrayStatus, setTrayMenu, useUpdateTray, useWindowEvent } from "./hooks
 import { CircularProgress } from "@mui/material";
 import { useANC, useBatteryLevel, useCharging, useDeviceModel, useStatus, useUpdateANC } from "./hooks/useSoundcoreDevice";
 import { ANCModes } from "./types/tauri-backend";
+import { emitSoundcoreEvent }  from "../hooks/useSoundcoreEvent";
 
 
 function App() {
@@ -32,10 +33,6 @@ function App() {
     ancMutation.mutate(event.payload as ANCModes);
   });
 
-  useWindowEvent("soundcore_event", event => {
-    console.log("Soundcore event: " );
-    console.log(event);
-  });
 
   /* Update tray status on every change */
   useEffect(() => {

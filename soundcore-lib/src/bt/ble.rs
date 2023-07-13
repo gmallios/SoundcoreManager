@@ -1,5 +1,6 @@
 use crate::error::SoundcoreResult;
 use async_trait::async_trait;
+use serde::{Deserialize, Serialize};
 use std::{collections::HashSet, sync::Arc};
 use tokio::sync::mpsc;
 
@@ -36,6 +37,7 @@ pub trait BLEConnectionRegistry {
     ) -> SoundcoreResult<Option<Arc<Self::ConnType>>>;
 }
 
+#[derive(Debug, Serialize, Deserialize)]
 pub struct BLEConnectionUuidSet {
     pub service_uuid: uuid::Uuid,
     pub read_uuid: uuid::Uuid,

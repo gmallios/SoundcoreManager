@@ -6,7 +6,7 @@ import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import useDeviceStore, { DeviceConnectionState } from "../hooks/useDeviceStore";
 import { setTrayMenu } from "../hooks/useTray";
 import { BthScanResult } from "../types/tauri-backend";
-
+import { emitSoundcoreEvent }  from "../hooks/useSoundcoreEvent";
 
 
 

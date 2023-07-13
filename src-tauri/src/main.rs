@@ -96,7 +96,22 @@ fn main() {
 
 fn handle_soundcore_event<R: tauri::Runtime>(message: SoundcoreResponseMessage, manager: &impl Manager<R>){
     // TODO: Update the tray menu
-    manager.emit_all("soundcore_event", message).unwrap();
+    println!("Soundcore event: {:?}", message);
+    manager.emit_all(SoundcoreUIEvent::SoundcoreEvent.to_str(), message).unwrap();
+}
+
+pub enum SoundcoreUIEvent {
+    TrayUpdate,
+    SoundcoreEvent
+}
+
+impl SoundcoreUIEvent {
+    fn to_str(&self) -> &str {
+        match self {
+            SoundcoreUIEvent::TrayUpdate => "tray_update",
+            SoundcoreUIEvent::SoundcoreEvent => "soundcore_event"
+        }
+    }
 }
 
 #[tauri::command]

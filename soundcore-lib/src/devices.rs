@@ -1,3 +1,5 @@
+use serde::{Deserialize, Serialize};
+use strum::{Display, EnumIter, EnumString, IntoEnumIterator};
 use uuid::Uuid;
 
 use crate::bt::ble::BLEConnectionUuidSet;
@@ -5,19 +7,23 @@ use crate::bt::ble::BLEConnectionUuidSet;
 pub mod a3027;
 pub mod a3951;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(
+    Debug,
+    Serialize,
+    Deserialize,
+    EnumString,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Display,
+    EnumIter,
+)]
 pub enum SupportedModelIDs {
     A3951,
     A3027,
-}
-
-impl From<SupportedModelIDs> for &str {
-    fn from(model_id: SupportedModelIDs) -> Self {
-        match model_id {
-            SupportedModelIDs::A3951 => "A3951",
-            SupportedModelIDs::A3027 => "A3027",
-        }
-    }
 }
 
 pub fn match_name_to_model_id(name: &str) -> Option<SupportedModelIDs> {
@@ -49,4 +55,14 @@ pub fn match_model_id_to_uuid_set(model_id: &SupportedModelIDs) -> Option<BLECon
         // }),
         _ => None,
     }
+}
+
+pub fn get_all_uuid_sets() -> Vec<BLEConnectionUuidSet> {
+    let mut uuid_sets = Vec::new();
+    for model_id in SupportedModelIDs::iter() {
+        if let Some(uuid_set) = match_model_id_to_uuid_set(&model_id) {
+            uuid_sets.push(uuid_set);
+        }
+    }
+    uuid_sets
 }

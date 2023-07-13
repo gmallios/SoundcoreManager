@@ -14,7 +14,7 @@ crate-type = ["lib"]
 [dependencies]
 serde = { version = "1.0", features = ["derive"] }
 tokio = { version = "1.29.1", features = ["time", "macros", "sync", "rt"] }
-uuid = "1.4.0"
+uuid = { version = "1.4.0", features = ["serde"] }
 async-trait = "0.1.69"
 thiserror = "1.0.40"
 log = "0.4.19"
@@ -22,7 +22,7 @@ phf = { version = "0.11", default-features = false, features = ["macros"] }
 typeshare = "1.0.1"
 enum_dispatch = "0.3.11"
 weak-table = "0.3.2"
-
+strum = { version = "0.25", features = ["derive"] }
 
 [target.'cfg(any(target_os = "linux", target_os = "macos"))'.dependencies]
 btleplug = { version = "0.10.5", optional = true }

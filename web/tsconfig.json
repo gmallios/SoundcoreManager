@@ -18,8 +18,17 @@
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
+    /* Paths */
+    "baseUrl": ".",
+    "paths": {
+      "/@wasm/soundcore-lib-wasm": ["wasm/pkg/soundcore_lib_wasm"],
+      "@bluetooth": ["./src/bluetooth"],
+      "@hooks": ["./src/hooks"],
+      "@components": ["./src/components"],
+      "@assets": ["./src/assets"],
+    }
   },
-  "include": ["src"],
+  "include": ["./src", "./wasm/pkg"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }
