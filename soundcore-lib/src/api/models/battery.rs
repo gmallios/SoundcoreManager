@@ -4,8 +4,8 @@ use typeshare::typeshare;
 #[typeshare]
 #[derive(Debug, Serialize, Deserialize, Clone, Copy, Eq, PartialEq)]
 pub struct BatteryLevel {
-    left: u8,
-    right: u8,
+    pub left: u8,
+    pub right: u8,
 }
 
 impl BatteryLevel {
@@ -20,8 +20,8 @@ impl BatteryLevel {
 #[typeshare]
 #[derive(Debug, Serialize, Deserialize, Clone, Copy, Eq, PartialEq)]
 pub struct ChargingStatus {
-    left: bool,
-    right: bool,
+    pub left: bool,
+    pub right: bool,
 }
 
 impl ChargingStatus {

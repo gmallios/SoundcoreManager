@@ -1,4 +1,13 @@
+use soundcore_lib::api::SoundMode;
+
 fn main() {
+    let a = SoundMode::NormalMode;
+    println!("a: {:?}", a);
+    println!(
+        "a: {:?}",
+        SoundMode::NoiseCancelling(soundcore_lib::api::ANCModes::Indoor)
+    );
+
     let packet = [8, -18, 0, 0, 0, 6, -127];
     let bytes = i8_to_u8vec(&packet);
     println!("bytes: {:X?}", bytes);

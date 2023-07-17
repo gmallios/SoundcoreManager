@@ -1,4 +1,7 @@
+use std::str::FromStr;
+
 use serde::{Deserialize, Serialize};
+use strum::{AsRefStr, Display, EnumIter, EnumString, IntoEnumIterator};
 use typeshare::typeshare;
 
 /// Sound Mode byte alignment
@@ -10,12 +13,34 @@ use typeshare::typeshare;
 /// | 3    | Sub-mode value        | Used only in the Custom mode |
 
 #[typeshare]
-#[derive(Debug, Serialize, Deserialize, Clone, Copy, Eq, PartialEq, PartialOrd, Ord)]
+#[derive(
+    Debug,
+    Default,
+    Serialize,
+    Deserialize,
+    Clone,
+    Copy,
+    Eq,
+    PartialEq,
+    PartialOrd,
+    Ord,
+    AsRefStr,
+    EnumIter,
+)]
 #[serde(tag = "type", content = "mode")]
 pub enum SoundMode {
-    NoiseCancelling(ANCModes),
+    #[default]
     NormalMode,
+    NoiseCancelling(ANCModes),
     TransparencyMode(TransparencyModes),
+}
+
+// Custom Display implementation to print the inner enum value
+// in case of NoiseCancelling and TransparencyMode
+impl std::fmt::Display for SoundMode {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}", self)
+    }
 }
 
 impl SoundMode {
@@ -48,12 +73,50 @@ impl SoundMode {
         };
         bytes.to_vec()
     }
+
+    pub fn from_str(s: &str) -> Option<Self> {
+        match s {
+            "NormalMode" => Some(SoundMode::NormalMode),
+            s if s.starts_with("NoiseCancelling(") && s.ends_with(")") => {
+                let inner_str = &s[16..s.len() - 1]; // Extract the inner string
+                let inner_mode = ANCModes::from_str(inner_str);
+                if inner_mode.is_err() {
+                    return None;
+                }
+                Some(SoundMode::NoiseCancelling(inner_mode.unwrap()))
+            }
+            s if s.starts_with("TransparencyMode(") && s.ends_with(")") => {
+                let inner_str = &s[16..s.len() - 1]; // Extract the inner string
+                let inner_mode = TransparencyModes::from_str(inner_str);
+                if inner_mode.is_err() {
+                    return None;
+                }
+                Some(SoundMode::TransparencyMode(inner_mode.unwrap()))
+            }
+            _ => None,
+        }
+    }
 }
 
 #[typeshare]
-#[derive(Debug, Serialize, Deserialize, Clone, Copy, Eq, PartialEq, PartialOrd, Ord)]
+#[derive(
+    Debug,
+    Default,
+    Display,
+    Serialize,
+    Deserialize,
+    Clone,
+    Copy,
+    Eq,
+    PartialEq,
+    PartialOrd,
+    Ord,
+    EnumString,
+    AsRefStr,
+)]
 #[serde(tag = "type", content = "value")]
 pub enum ANCModes {
+    #[default] // TODO: Find the default value which works across most devices
     Outdoor,
     Indoor,
     Custom(u8),
@@ -61,8 +124,22 @@ pub enum ANCModes {
 }
 
 #[typeshare]
-#[derive(Debug, Serialize, Deserialize, Clone, Copy, Eq, PartialEq, PartialOrd, Ord)]
+#[derive(
+    Debug,
+    Default,
+    Display,
+    Serialize,
+    Deserialize,
+    Clone,
+    Copy,
+    Eq,
+    PartialEq,
+    PartialOrd,
+    Ord,
+    EnumString,
+)]
 pub enum TransparencyModes {
+    #[default]
     Vocal,
     FullyTransparent,
 }

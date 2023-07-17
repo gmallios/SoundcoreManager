@@ -1,5 +1,7 @@
+use std::collections::HashMap;
+
 use serde::{Deserialize, Serialize};
-use strum::{Display, EnumIter, EnumString, IntoEnumIterator};
+use strum::{Display, EnumIter, EnumString, IntoEnumIterator, IntoStaticStr};
 use uuid::Uuid;
 
 use crate::bt::ble::BLEConnectionUuidSet;
@@ -12,6 +14,7 @@ pub mod a3951;
     Serialize,
     Deserialize,
     EnumString,
+    IntoStaticStr,
     Clone,
     Copy,
     PartialEq,
@@ -20,6 +23,7 @@ pub mod a3951;
     Ord,
     Display,
     EnumIter,
+    Hash,
 )]
 pub enum SupportedModelIDs {
     A3951,
@@ -57,11 +61,11 @@ pub fn match_model_id_to_uuid_set(model_id: &SupportedModelIDs) -> Option<BLECon
     }
 }
 
-pub fn get_all_uuid_sets() -> Vec<BLEConnectionUuidSet> {
-    let mut uuid_sets = Vec::new();
+pub fn get_all_uuid_sets() -> HashMap<SupportedModelIDs, BLEConnectionUuidSet> {
+    let mut uuid_sets = HashMap::new();
     for model_id in SupportedModelIDs::iter() {
         if let Some(uuid_set) = match_model_id_to_uuid_set(&model_id) {
-            uuid_sets.push(uuid_set);
+            uuid_sets.insert(model_id, uuid_set);
         }
     }
     uuid_sets

@@ -21,7 +21,7 @@ pub enum SoundcoreError {
     InvalidMACAddress { addr: String },
     #[error("No response from device")]
     NoResponse,
-    #[cfg(target_os = "windows")]
+    #[cfg(all(target_os = "windows", feature = "bluetooth"))]
     #[error("Unknown Windows Error")]
     UnknownWindowsError {
         #[from]

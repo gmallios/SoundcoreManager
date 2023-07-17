@@ -8,19 +8,22 @@ import {
 } from "../../wasm/pkg/soundcore_lib_wasm";
 
 export class SoundcoreBLEConnection {
-  private readonly incomingPacketQueue: Observable<Uint8Array>;
+  public readonly incomingPacketQueue: Observable<Uint8Array>;
   private gattServer: BluetoothRemoteGATTServer;
   private readCharacteristic: BluetoothRemoteGATTCharacteristic;
   private writeCharacteristic: BluetoothRemoteGATTCharacteristic;
+  private _modelId: string;
 
   constructor(
     gatt: BluetoothRemoteGATTServer,
     readCharacteristic: BluetoothRemoteGATTCharacteristic,
-    writeCharacteristic: BluetoothRemoteGATTCharacteristic
+    writeCharacteristic: BluetoothRemoteGATTCharacteristic,
+    modelId: string
   ) {
     this.gattServer = gatt;
     this.readCharacteristic = readCharacteristic;
     this.writeCharacteristic = writeCharacteristic;
+    this._modelId = modelId;
 
     this.incomingPacketQueue = new Observable((subscriber) => {
       // Handler for incoming packets
@@ -65,50 +68,77 @@ export class SoundcoreBLEConnection {
     }
     await this.writeCharacteristic.writeValue(value);
   }
+
+  public get name(): string {
+    return this.gattServer.device.name || "";
+  }
+
+  public get modelId(): string {
+    return this._modelId;
+  }
 }
 
-export const connectToSoundcoreDevice =
-  async (): Promise<SoundcoreBLEConnection> => {
-    const allSupportedServices = getAllUUIDSets().map(
-      (uuidSet: BLEConnectionUuidSet) => uuidSet.service_uuid
+export const connectToSoundcoreDevice = async (
+  modelid: string | undefined = undefined
+): Promise<SoundcoreBLEConnection> => {
+  const uuidSetsForScan = [];
+  getAllUUIDSets().forEach((set: BLEConnectionUuidSet) => {
+    uuidSetsForScan.push(set.service_uuid);
+  });
+  uuidSetsForScan.push(
+    ...[
+      "00001800-0000-1000-8000-00805f9b34fb",
+      "00001801-0000-1000-8000-00805f9b34fb",
+      "011af5da-0000-1000-8000-00805f9b34fb",
+      "66666666-6666-6666-6666-666666666666",
+      "86868686-8686-8686-8686-868686868686",
+    ]
+  );
+  const macAddrPrefixes = getSoundcoreMacPrefixes();
+  const device = await navigator.bluetooth.requestDevice({
+    filters: macAddrPrefixes.map((prefix) => ({
+      manufacturerData: [
+        {
+          companyIdentifier: (prefix[1] << 8) | prefix[0],
+          dataPrefix: Uint8Array.of(prefix[2]),
+        },
+      ],
+    })),
+    optionalServices: uuidSetsForScan,
+  });
+
+  if (device.gatt === undefined) {
+    throw new Error("Device does not support GATT");
+  }
+
+  const gatt = await device.gatt.connect();
+
+  if (
+    (modelid === undefined && gatt.device.name === null) ||
+    gatt.device.name === undefined
+  ) {
+    device.gatt?.disconnect();
+    // TODO: Determine model from other means such as MAC or service UUID
+    throw new Error(
+      "Device name is null and model is unspecified, can't determine the model"
     );
-    const macAddrPrefixes = getSoundcoreMacPrefixes();
-    const device = await navigator.bluetooth.requestDevice({
-      filters: macAddrPrefixes.map((prefix) => ({
-        manufacturerData: [
-          {
-            companyIdentifier: (prefix[1] << 8) | prefix[0],
-            dataPrefix: Uint8Array.of(prefix[2]),
-          },
-        ],
-      })),
-      optionalServices: allSupportedServices,
-    });
+  }
 
-    if (device.gatt === undefined) {
-      throw new Error("Device does not support GATT");
-    }
+  const finalModelId = modelid ? modelid : matchNameToModelID(gatt.device.name);
 
-    const gatt = await device.gatt.connect();
+  const uuidSet: BLEConnectionUuidSet = getUUIDSet(finalModelId);
+  const bleService = await gatt.getPrimaryService(uuidSet.service_uuid);
+  const [readCharacteristic, writeCharacteristic] = await Promise.all([
+    bleService.getCharacteristic(uuidSet.read_uuid),
+    bleService.getCharacteristic(uuidSet.write_uuid),
+  ]);
 
-    if (gatt.device.name === null || gatt.device.name === undefined) {
-      // TODO: Determine model from other means such as MAC or service UUID
-      throw new Error("Device name is null, can't determine the model");
-    }
+  await readCharacteristic.startNotifications();
 
-    const modelid = matchNameToModelID(gatt.device.name);
-    const uuidSet: BLEConnectionUuidSet = getUUIDSet(modelid);
-    const bleService = await gatt.getPrimaryService(uuidSet.service_uuid);
-    const [readCharacteristic, writeCharacteristic] = await Promise.all([
-      bleService.getCharacteristic(uuidSet.read_uuid),
-      bleService.getCharacteristic(uuidSet.write_uuid),
-    ]);
-
-    await readCharacteristic.startNotifications();
-
-    return new SoundcoreBLEConnection(
-      gatt,
-      readCharacteristic,
-      writeCharacteristic
-    );
-  };
+  return new SoundcoreBLEConnection(
+    gatt,
+    readCharacteristic,
+    writeCharacteristic,
+    finalModelId
+  );
+};

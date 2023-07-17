@@ -2,12 +2,21 @@ import { useState } from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
-import { getUUIDSet } from "../wasm/pkg/soundcore_lib_wasm";
+import { SoundcoreDeviceState, getUUIDSet, get_state_update_packet } from "../wasm/pkg/soundcore_lib_wasm";
 import { connectToSoundcoreDevice } from './bluetooth/SoundcoreBLEConnection';
+import { createSoundcoreDevice, selectDevice } from './bluetooth/SoundcoreDevice';
 
 function App() {
   const [count, setCount] = useState(0)
-  
+
+
+
+  const a = () => {
+    selectDevice("A3951").then((device) => {
+      console.log(device.state);
+      device.requestNewState();
+    });
+  }
   return (
     <>
       <div>
@@ -20,7 +29,7 @@ function App() {
       </div>
       <h1>Vite + React</h1>
       <div className="card">
-        <button onClick={() => connectToSoundcoreDevice()}>
+        <button onClick={() => a()}>
           count is {count}
         </button>
         <p>

@@ -14,7 +14,7 @@ use crate::{
 };
 
 pub async fn create_soundcore_device_registry() -> impl BLEConnectionRegistry {
-    #[cfg(target_os = "windows")]
+    #[cfg(all(target_os = "windows", feature = "bluetooth"))]
     {
         WindowsBLEConnectionRegistry::new()
     }

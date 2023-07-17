@@ -2,6 +2,9 @@ use std::str::FromStr;
 use wasm_bindgen::{prelude::wasm_bindgen, JsValue};
 
 mod ble_uuid;
+mod request_packet;
+mod response_packets;
+mod state;
 
 #[wasm_bindgen(typescript_custom_section)]
 const MAC_ADDRESS_PREFIXES: &'static str = r#"
@@ -44,6 +47,7 @@ pub fn match_name_to_model_id(name: &str) -> Result<String, JsValue> {
     }
 }
 
+/// Returns a map of all supported model IDs to their respective UUID sets.
 #[wasm_bindgen(js_name = "getAllUUIDSets")]
 pub fn get_all_uuid_sets() -> Result<JsValue, JsValue> {
     let uuid_sets = soundcore_lib::devices::get_all_uuid_sets();
