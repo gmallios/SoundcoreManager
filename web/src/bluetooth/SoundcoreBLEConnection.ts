@@ -5,7 +5,7 @@ import {
   getUUIDSet,
   BLEConnectionUuidSet,
   getAllUUIDSets,
-} from "../../wasm/pkg/soundcore_lib_wasm";
+} from "@soundcore-lib";
 
 export class SoundcoreBLEConnection {
   public readonly incomingPacketQueue: Observable<Uint8Array>;
@@ -79,7 +79,7 @@ export class SoundcoreBLEConnection {
 }
 
 export const connectToSoundcoreDevice = async (
-  modelid: string | undefined = undefined
+  forcedModelId: string | undefined = undefined
 ): Promise<SoundcoreBLEConnection> => {
   const uuidSetsForScan = [];
   getAllUUIDSets().forEach((set: BLEConnectionUuidSet) => {
@@ -112,19 +112,62 @@ export const connectToSoundcoreDevice = async (
   }
 
   const gatt = await device.gatt.connect();
+  const modelIdFromServices =
+    await searchForModelIdBasedOnServicesAndCharacteristics(gatt);
 
   if (
-    (modelid === undefined && gatt.device.name === null) ||
-    gatt.device.name === undefined
+    modelIdFromServices !== undefined &&
+    forcedModelId !== undefined &&
+    modelIdFromServices !== forcedModelId
   ) {
-    device.gatt?.disconnect();
-    // TODO: Determine model from other means such as MAC or service UUID
-    throw new Error(
-      "Device name is null and model is unspecified, can't determine the model"
+    console.warn(
+      `Model ID from services and characteristics (${modelIdFromServices}) does not match the supplied model ID (${forcedModelId})`
     );
   }
 
-  const finalModelId = modelid ? modelid : matchNameToModelID(gatt.device.name);
+  if (
+    (forcedModelId === undefined && gatt.device.name === null) ||
+    gatt.device.name === undefined
+  ) {
+    console.warn(
+      `Device name is null or undefined and a model ID has not been specified, cannot match model ID using name. Trying to match using services and characteristics.`
+    );
+  }
+
+  const nameMatchedModelId =
+    gatt.device.name !== undefined && gatt.device.name !== null
+      ? // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        matchNameToModelID(gatt.device.name!)
+      : undefined;
+
+  if (
+    nameMatchedModelId === undefined &&
+    modelIdFromServices === undefined &&
+    nameMatchedModelId !== forcedModelId
+  ) {
+    console.warn(
+      `Name-matched model ID (${nameMatchedModelId}) does not match the Gatt matched model ID (${forcedModelId})`
+    );
+  }
+
+  // Logic breakdown: If forcedModelId is undefined, use the model ID from name if it exists, otherwise use the model ID from services and characteristics if it exists.
+  // If forcedModelId is defined, use it.
+  const finalModelId =
+    forcedModelId !== undefined
+      ? forcedModelId
+      : nameMatchedModelId !== undefined
+      ? nameMatchedModelId
+      : modelIdFromServices !== undefined
+      ? modelIdFromServices
+      : undefined;
+
+  if (finalModelId === undefined) {
+    gatt.disconnect();
+    throw new Error(
+      "Could not determine a model ID for the device, using name or services and characteristics and none was supplied"
+    );
+  }
+  console.log(`Using model ID ${finalModelId}...`);
 
   const uuidSet: BLEConnectionUuidSet = getUUIDSet(finalModelId);
   const bleService = await gatt.getPrimaryService(uuidSet.service_uuid);
@@ -141,4 +184,39 @@ export const connectToSoundcoreDevice = async (
     writeCharacteristic,
     finalModelId
   );
+};
+
+// Experimental at best :)
+const searchForModelIdBasedOnServicesAndCharacteristics = async (
+  gatt: BluetoothRemoteGATTServer
+): Promise<string | undefined> => {
+  const allServices = await gatt.getPrimaryServices();
+  const allCharacteristic = await Promise.all(
+    allServices.map((svc) => svc.getCharacteristics())
+  );
+
+  const deviceServiceUUIDs = allServices.map((svc) => svc.uuid);
+  const deviceCharacteristicUUIDs = allCharacteristic
+    .flat()
+    .map((char) => char.uuid);
+
+  const uuidMap = getAllUUIDSets() as Map<string, BLEConnectionUuidSet>;
+
+  for (const [modelId, uuidSet] of uuidMap) {
+    console.log(`Checking services and characteristics of model ${modelId}`);
+    const servicesToCheck = [uuidSet.service_uuid];
+    const characteristicsToCheck = [uuidSet.read_uuid, uuidSet.write_uuid];
+    if (
+      servicesToCheck.every((uuid) => deviceServiceUUIDs.includes(uuid)) &&
+      characteristicsToCheck.every((uuid) =>
+        deviceCharacteristicUUIDs.includes(uuid)
+      )
+    ) {
+      console.log(
+        `Found model ${modelId} using GATT services and characteristics`
+      );
+      return modelId.slice(); // Copy the string
+    }
+  }
+  return undefined;
 };

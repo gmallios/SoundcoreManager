@@ -124,11 +124,7 @@ impl SoundMode {
 
     #[wasm_bindgen(getter = value)]
     pub fn value(&self) -> String {
-        match &self.inner {
-            soundcore_lib::api::SoundMode::NoiseCancelling(mode) => self.inner.to_string(),
-            soundcore_lib::api::SoundMode::TransparencyMode(mode) => mode.to_string(),
-            _ => self.inner.to_string(),
-        }
+        self.inner.to_string()
     }
 }
 
@@ -147,5 +143,17 @@ impl From<soundcore_lib::api::SoundMode> for SoundMode {
 impl From<SoundMode> for soundcore_lib::api::SoundMode {
     fn from(value: SoundMode) -> Self {
         value.inner
+    }
+}
+
+#[cfg(test)]
+mod state_tests {
+
+    #[test]
+    fn creates_sound_mode() {
+        let mode = super::SoundMode::new("NormalMode");
+        assert_eq!(mode.value(), "NormalMode");
+        let mode = super::SoundMode::new("NoiseCancelling(Outdoor)");
+        assert_eq!(mode.value(), "NoiseCancelling(Outdoor)");
     }
 }

@@ -20,13 +20,12 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     /* Paths */
-    "baseUrl": ".",
     "paths": {
-      "/@wasm/soundcore-lib-wasm": ["wasm/pkg/soundcore_lib_wasm"],
-      "@bluetooth": ["./src/bluetooth"],
-      "@hooks": ["./src/hooks"],
-      "@components": ["./src/components"],
-      "@assets": ["./src/assets"],
+      "@soundcore-lib": ["./wasm/pkg/soundcore_lib_wasm"],
+      "@bluetooth/*": ["./src/bluetooth/*"],
+      "@hooks/*": ["./src/hooks/*"],
+      "@components/*": ["./src/components/*"],
+      "@assets/*": ["./src/assets/*"],
     }
   },
   "include": ["./src", "./wasm/pkg"],

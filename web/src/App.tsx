@@ -1,21 +1,24 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
-import { SoundcoreDeviceState, getUUIDSet, get_state_update_packet } from "../wasm/pkg/soundcore_lib_wasm";
-import { connectToSoundcoreDevice } from './bluetooth/SoundcoreBLEConnection';
-import { createSoundcoreDevice, selectDevice } from './bluetooth/SoundcoreDevice';
+import { ISoundcoreDevice, selectDevice } from '@bluetooth/SoundcoreDevice';
+import { useSoundcoreDeviceState } from '@hooks/useSoundcoreDeviceState';
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [device, setDevice] = useState<ISoundcoreDevice>();
 
-
-
-  const a = () => {
-    selectDevice("A3951").then((device) => {
-      console.log(device.state);
-      device.requestNewState();
+  const connect = () => {
+    selectDevice().then((device) => {
+      setDevice(device);
     });
+  }
+
+  const disconnect = () => {
+    if (device) {
+      device.disconnect();
+      setDevice(undefined);
+    }
   }
   return (
     <>
@@ -29,18 +32,39 @@ function App() {
       </div>
       <h1>Vite + React</h1>
       <div className="card">
-        <button onClick={() => a()}>
-          count is {count}
+        <button onClick={() => connect()}>
+          Connect
+        </button>
+        <button onClick={() => disconnect()}>
+          Disconnect
         </button>
         <p>
           Edit <code>src/App.tsx</code> and save to test HMR
         </p>
       </div>
+      {device && <StateComponent device={device} />}
       <p className="read-the-docs">
         Click on the Vite and React logos to learn more
       </p>
     </>
   )
 }
+
+function StateComponent({ device }: { device: ISoundcoreDevice }) {
+  const actualState = useSoundcoreDeviceState(device);
+
+  useEffect(() => {
+    console.log("New state: ", actualState);
+  }, [actualState]);
+
+  return (
+    <div className="card">
+      <button onClick={() => device.requestNewState()}>Request New State</button>
+      <p>{actualState.battery_level.left}</p>
+    </div>
+  );
+}
+
+
 
 export default App
