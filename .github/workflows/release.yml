@@ -1,54 +1,91 @@
-name: Release
+name: "Build release"
+
 on:
   push:
-    tags:
-      - 'v*'
+    branches:
+      - release
   workflow_dispatch:
 
 jobs:
-  release:
+  build-tauri-and-release:
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         platform: [windows-latest]
+
     runs-on: ${{ matrix.platform }}
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-      - name: Install dependencies (ubuntu only)
-        if: matrix.platform == 'ubuntu-20.04'
-        # You can remove libayatana-appindicator3-dev if you don't use the system tray feature.
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev libayatana-appindicator3-dev librsvg2-dev
+      - name: ⚡ Set short SHA ENV
+        run: echo "SHORT_SHA=$("${{ github.sha }}".SubString(0, 8))" >> $env:GITHUB_ENV
 
-      - name: Rust setup
+      - name: ⏬ Install Rust stable
         uses: dtolnay/rust-toolchain@stable
-
-      - name: Rust cache
-        uses: swatinem/rust-cache@v2
         with:
-          workspaces: './src-tauri -> target'
+          profile: minimal
+          toolchain: stable
 
-      - name: Sync node version and setup cache
+      - name: ⚡ Set up cargo cache
+        uses: actions/cache@v3
+        continue-on-error: false
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            src-tauri/target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: ${{ runner.os }}-cargo
+
+      - name: 🔄 Sync node version
         uses: actions/setup-node@v3
         with:
-          node-version: 'lts/*'
-          cache: 'yarn' # Set this to npm, yarn or pnpm.
+          node-version: "lts/*"
+          cache: "yarn"
 
-      - name: Install app dependencies and build web
-        # Remove `&& yarn build` if you build your frontend in `beforeBuildCommand`
-        run: yarn && yarn build # Change this to npm, yarn or pnpm.
+      - name: ⏬ Install Ubuntu dependencies
+        if: matrix.platform == 'ubuntu-20.04'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev libappindicator3-dev librsvg2-dev patchelf
 
-      - name: Build the app
+      - name: 📥 Install Node Dependencies
+        run: yarn && yarn build
+
+      - name: 🔨 Build
         uses: tauri-apps/tauri-action@v0
-
+        id: tauri-build
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tagName: ${{ github.ref_name }} # This only works if your workflow triggers on new tags.
-          releaseName: 'App Name v__VERSION__' # tauri-action replaces \_\_VERSION\_\_ with the app version.
-          releaseBody: 'See the assets to download and install this version.'
+          tagName: soundcoremanager-v__VERSION__
+          releaseName: 'Soundcore Manager v__VERSION__'
+          releaseBody: 'See the assets to download this version and install.'
           releaseDraft: true
           prerelease: false
+
+      - name: ⏫ Upload Release Asset
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1.0.2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.tauri-build.outputs.releaseUploadUrl }}
+          asset_path: src-tauri\target\release\deps\soundcoremanager.exe
+          asset_name: SoundcoreManager-${{ matrix.platform }}-${{ env.SHORT_SHA }}.exe
+          asset_content_type: application/vnd.microsoft.portable-executable.
+
+      - name: Rename soundcoremanager.exe
+        if: matrix.platform == 'windows-latest'
+        run: ren src-tauri\target\release\deps\soundcoremanager.exe SoundcoreManager-${{ matrix.platform }}-${{ env.SHORT_SHA }}.exe
+
+      - name: ⏫ Upload Build Artifact
+        if: matrix.platform == 'windows-latest'
+        uses: actions/upload-artifact@v3
+        with:
+          name: SoundcoreManager-${{ matrix.platform }}.exe
+          path: src-tauri\target\release\deps\SoundcoreManager-${{ matrix.platform }}-${{ env.SHORT_SHA }}.exe
+
+        
