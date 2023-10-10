@@ -1,17 +1,23 @@
+#[cfg(target_os = "macos")]
 use rfcomm::{
     rfcomm_client::RfcommClient, OpenRfcommChannelRequest, OpenRfcommChannelResponse,
     RecvRfcommDataRequest, RecvRfcommDataResponse, SendRfcommDataRequest, SendRfcommDataResponse,
 };
+#[cfg(target_os = "macos")]
 use searcher::{bt_searcher_client::BtSearcherClient, SearchItem, SearchRequest};
+#[cfg(target_os = "macos")]
 use tokio::runtime::{Handle, Runtime};
 
+#[cfg(target_os = "macos")]
 pub mod searcher {
     tonic::include_proto!("Searcher");
 }
 
+#[cfg(target_os = "macos")]
 pub mod rfcomm {
     tonic::include_proto!("RFCOMM");
 }
+#[cfg(target_os = "macos")]
 fn main() {
     // let scan_res = scan();
     // println!("scan_res: {:?}", scan_res);
@@ -41,6 +47,7 @@ fn main() {
 }
 
 #[tokio::main]
+#[cfg(target_os = "macos")]
 async fn send_rfcomm_data(data: Vec<u8>) {
     let rf_send_req = tonic::Request::new(rfcomm::SendRfcommDataRequest { data: data });
     let mut rf_client = RfcommClient::connect("http://[::1]:8080").await.unwrap();
@@ -48,6 +55,7 @@ async fn send_rfcomm_data(data: Vec<u8>) {
 }
 
 #[tokio::main]
+#[cfg(target_os = "macos")]
 async fn recv_rfcomm_data() -> Vec<u8> {
     let rf_recv_req = tonic::Request::new(rfcomm::RecvRfcommDataRequest {});
     let mut rf_client = RfcommClient::connect("http://[::1]:8080").await.unwrap();
@@ -55,8 +63,8 @@ async fn recv_rfcomm_data() -> Vec<u8> {
     rf_recv_resp.into_inner().data
 }
 
-
 #[tokio::main]
+#[cfg(target_os = "macos")]
 async fn open_rfcomm(uuid: String, addr: String) {
     let rf_req = tonic::Request::new(rfcomm::OpenRfcommChannelRequest {
         addr: addr,
@@ -67,6 +75,7 @@ async fn open_rfcomm(uuid: String, addr: String) {
 }
 
 #[tokio::main]
+#[cfg(target_os = "macos")]
 async fn scan() -> Vec<SearchItem> {
     let mut client =
         futures::executor::block_on(BtSearcherClient::connect("http://[::1]:8080")).unwrap();
@@ -77,3 +86,6 @@ async fn scan() -> Vec<SearchItem> {
     let scan_res: Vec<SearchItem> = resp.into_inner().result;
     scan_res
 }
+
+#[cfg(not(target_os = "macos"))]
+fn main() {}

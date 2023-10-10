@@ -1,48 +1,67 @@
+#[cfg(target_os = "macos")]
 use core_foundation::runloop::CFRunLoopRun;
+#[cfg(target_os = "macos")]
 use iobluetoothdevice::IOBTDevice;
+#[cfg(target_os = "macos")]
 use objc::runtime::Object;
+#[cfg(target_os = "macos")]
 use std::{
+    collections::VecDeque,
     sync::{Arc, Mutex},
-    time::Duration, collections::VecDeque,
+    time::Duration,
 };
+
+#[cfg(target_os = "macos")]
+use tokio::time::sleep;
+
+#[cfg(target_os = "macos")]
 use tonic::{transport::Server, Code, Request, Response, Status};
+#[cfg(target_os = "macos")]
+use util::{IOBluetoothRFCOMMChannel, IOBluetoothSDPServiceRecord};
+#[cfg(target_os = "macos")]
 use Searcher::{
     bt_searcher_server::{BtSearcher, BtSearcherServer},
     SearchItem, SearchRequest, SearchResponse,
 };
-
-use tokio::time::sleep;
-
-use util::{IOBluetoothRFCOMMChannel, IOBluetoothSDPServiceRecord};
+#[cfg(target_os = "macos")]
 use RFCOMM::{
     rfcomm_server::{Rfcomm, RfcommServer},
-    OpenRfcommChannelRequest, OpenRfcommChannelResponse,
-    CloseRfcommChannelRequest, CloseRfcommChannelResponse, 
-    RecvRfcommDataRequest, RecvRfcommDataResponse, 
+    CloseRfcommChannelRequest, CloseRfcommChannelResponse, OpenRfcommChannelRequest,
+    OpenRfcommChannelResponse, RecvRfcommDataRequest, RecvRfcommDataResponse,
     SendRfcommDataRequest, SendRfcommDataResponse,
 };
-
+#[cfg(target_os = "macos")]
 extern crate lazy_static;
+#[cfg(target_os = "macos")]
 use lazy_static::lazy_static;
 
+#[cfg(target_os = "macos")]
 mod inquiry_adapter;
+#[cfg(target_os = "macos")]
 mod inquiry_delegate;
+#[cfg(target_os = "macos")]
 mod iobluetoothdevice;
+#[cfg(target_os = "macos")]
 mod iobluetoothdeviceinquiry;
+#[cfg(target_os = "macos")]
 mod rfcomm_delegate;
+#[cfg(target_os = "macos")]
 mod util;
+
+#[cfg(target_os = "macos")]
 
 pub mod Searcher {
     tonic::include_proto!("Searcher");
 }
 
+#[cfg(target_os = "macos")]
 pub mod RFCOMM {
     tonic::include_proto!("RFCOMM");
 }
 
 #[derive(Debug, Default)]
 struct SearchService {}
-
+#[cfg(target_os = "macos")]
 #[tonic::async_trait]
 impl BtSearcher for SearchService {
     async fn scan(
@@ -63,30 +82,30 @@ impl BtSearcher for SearchService {
         Ok(Response::new(reply))
     }
 }
+
+#[cfg(target_os = "macos")]
 #[derive(Default, Debug)]
 struct RfcommService {}
+#[cfg(target_os = "macos")]
 
 lazy_static! {
     static ref DEVICE: Arc<Mutex<IOBTDevice>> = Arc::new(Mutex::new(IOBTDevice::default()));
     static ref RFCOMM_CHANNEL: Arc<Mutex<IOBluetoothRFCOMMChannel>> =
         Arc::new(Mutex::new(IOBluetoothRFCOMMChannel::default()));
     static ref DATA_STACK: Arc<Mutex<VecDeque<Vec<u8>>>> = Arc::new(Mutex::new(VecDeque::new()));
-    static ref LAST_MSG_SEND: Arc<Mutex<bool>> = Arc::new(Mutex::new(false)); 
+    static ref LAST_MSG_SEND: Arc<Mutex<bool>> = Arc::new(Mutex::new(false));
 }
+#[cfg(target_os = "macos")]
 
 fn on_data_cb(data: &[u8]) {
-    let mut last_msg_send = LAST_MSG_SEND
-        .lock()
-        .unwrap();
+    let mut last_msg_send = LAST_MSG_SEND.lock().unwrap();
     if *last_msg_send {
-        let mut stack = DATA_STACK
-            .lock()
-            .unwrap();
+        let mut stack = DATA_STACK.lock().unwrap();
         stack.push_front(data.to_vec());
         *last_msg_send = false;
     }
 }
-
+#[cfg(target_os = "macos")]
 #[tonic::async_trait]
 impl Rfcomm for RfcommService {
     async fn open_rfcomm_channel(
@@ -137,7 +156,6 @@ impl Rfcomm for RfcommService {
         }
         let reply = CloseRfcommChannelResponse {};
         Ok(Response::new(reply))
-        
     }
 
     async fn send_rfcomm_data(
@@ -180,7 +198,7 @@ impl Rfcomm for RfcommService {
         }
     }
 }
-
+#[cfg(target_os = "macos")]
 /* We should use 1 thread for tokio */
 #[tokio::main(flavor = "current_thread")]
 async fn launch_rpc_server() {
@@ -195,6 +213,7 @@ async fn launch_rpc_server() {
         .await
         .unwrap();
 }
+#[cfg(target_os = "macos")]
 
 fn main() {
     std::thread::spawn(|| launch_rpc_server());
@@ -202,3 +221,5 @@ fn main() {
         CFRunLoopRun();
     }
 }
+#[cfg(not(target_os = "macos"))]
+fn main() {}

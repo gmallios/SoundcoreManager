@@ -1,3 +1,4 @@
+#![cfg(target_os = "macos")]
 pub mod searcher {
     tonic::include_proto!("Searcher");
 }

@@ -13,7 +13,8 @@ name = "soundcoremanager-iobtserver"
 path = "src/server.rs"
 
 
-[dependencies]
+
+[target.'cfg(target_os = "macos")'.dependencies]
 itertools = "0.10.5"
 # Required for tonic
 async-stream = "0.3"

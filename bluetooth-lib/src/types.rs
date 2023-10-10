@@ -91,10 +91,10 @@ impl From<u64> for BluetoothAdrr {
 }
 
 #[cfg(target_os = "windows")]
-impl Into<u64> for BluetoothAdrr {
-    fn into(self) -> u64 {
+impl From<BluetoothAdrr> for u64 {
+    fn from(val: BluetoothAdrr) -> Self {
         let mut bytes = [0u8; 8];
-        bytes[2..8].copy_from_slice(&self.address);
+        bytes[2..8].copy_from_slice(&val.address);
         u64::from_be_bytes(bytes)
     }
 }

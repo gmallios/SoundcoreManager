@@ -1,3 +1,4 @@
+#[cfg(target_os = "macos")]
 use std::{
     ffi::CStr,
     io::{BufRead, BufReader, Read, Write},
@@ -6,43 +7,65 @@ use std::{
     thread::{self, sleep},
     time::Duration,
 };
+#[cfg(target_os = "macos")]
 extern crate cocoa;
+#[cfg(target_os = "macos")]
 extern crate lazy_static;
+#[cfg(target_os = "macos")]
 extern crate objc;
 
+#[cfg(target_os = "macos")]
 use cocoa::{
     base::{id, nil},
     foundation::{NSDate, NSDefaultRunLoopMode, NSRunLoop},
 };
+#[cfg(target_os = "macos")]
 use core_foundation::{
     mach_port::{CFMachPort, CFMachPortCreateRunLoopSource},
     runloop::{
         kCFRunLoopDefaultMode, CFRunLoopAddSource, CFRunLoopGetCurrent, CFRunLoopRun, CFRunLoopStop,
     },
 };
+#[cfg(target_os = "macos")]
 use iobluetoothdevice::IOBTDevice;
+#[cfg(target_os = "macos")]
 use libc::uint8_t;
+#[cfg(target_os = "macos")]
 use log::{trace, warn};
+#[cfg(target_os = "macos")]
 use objc::{
     class,
     declare::ClassDecl,
     msg_send,
     runtime::{Class, Object, Protocol, Sel, BOOL},
 };
+#[cfg(target_os = "macos")]
 use objc::{sel, sel_impl};
+#[cfg(target_os = "macos")]
 use util::IOBluetoothSDPServiceRecord;
 
+#[cfg(target_os = "macos")]
 use crate::util::IOBluetoothRFCOMMChannel;
 
+#[cfg(target_os = "macos")]
 mod inquiry_adapter;
+#[cfg(target_os = "macos")]
 mod inquiry_delegate;
+#[cfg(target_os = "macos")]
 mod iobluetoothdevice;
+#[cfg(target_os = "macos")]
 mod iobluetoothdeviceinquiry;
+#[cfg(target_os = "macos")]
 mod rfcomm_delegate;
+#[cfg(target_os = "macos")]
 mod util;
 
+#[cfg(target_os = "macos")]
 fn handle_client(mut stream: TcpStream) {
-    let channel = open_rfcomm("00001101-0000-1000-8000-00805F9B34FB".to_string(), "AC-12-2F-6A-D2-07".to_string());
+    let channel = open_rfcomm(
+        "00001101-0000-1000-8000-00805F9B34FB".to_string(),
+        "AC-12-2F-6A-D2-07".to_string(),
+    );
     // read 20 bytes at a time from stream echoing back to stream
     loop {
         let mut read = [0; 1028];
@@ -75,11 +98,13 @@ fn handle_client(mut stream: TcpStream) {
     }
 }
 
+#[cfg(target_os = "macos")]
 fn on_data_cb(data: &[u8]) {
     println!("data: {:?}", data);
 }
 
-fn open_rfcomm(uuid: String, mac_addr: String) -> IOBluetoothRFCOMMChannel{
+#[cfg(target_os = "macos")]
+fn open_rfcomm(uuid: String, mac_addr: String) -> IOBluetoothRFCOMMChannel {
     let channel_obj;
     unsafe {
         let device = Arc::new(IOBTDevice::new(&mac_addr)); /* "AC-12-2F-6A-D2-07" */
@@ -94,9 +119,10 @@ fn open_rfcomm(uuid: String, mac_addr: String) -> IOBluetoothRFCOMMChannel{
         channel_obj = device.open_rfcomm_channel_sync(channel_id, delegate);
     }
 
-     IOBluetoothRFCOMMChannel::new_id(channel_obj)
+    IOBluetoothRFCOMMChannel::new_id(channel_obj)
 }
 
+#[cfg(target_os = "macos")]
 fn search() -> String {
     let result = inquiry_adapter::search(Some(Duration::from_secs(3)));
     // for device in result {
@@ -111,6 +137,7 @@ fn search() -> String {
 /* This is a cli which runs in the background if --rfcomm is passed and opens a gRPC/socket server to accept write/read commands */
 /* We can open channels and search on background thread a long the main RunLoop is running */
 /* We must also warn the user that in order to open a rfcomm connection the MUST be disconnected from the device */
+#[cfg(target_os = "macos")]
 fn main() {
     /* We create a process which uses gRPC  */
     // let channel_obj;
@@ -130,8 +157,6 @@ fn main() {
     // println!("channel: {}", channel.is_open());
 
     // let clon = channel.clone();
-
-    
 
     std::thread::spawn(move || {
         // let id = clon.as_id();
@@ -184,9 +209,12 @@ fn main() {
         sleep(std::time::Duration::from_secs(5));
     }
 
-    
     // loop {
     //     println!("done after cf");
     //     sleep(std::time::Duration::from_secs(5));
     // }
 }
+
+#[cfg(not(target_os = "macos"))]
+
+fn main() {}
