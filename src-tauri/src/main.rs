@@ -8,7 +8,7 @@ use bluetooth_lib::Scanner;
 use frontend_types::BthScanResult;
 use soundcore_lib::base::SoundcoreDevice;
 use soundcore_lib::types::{SupportedModels, SOUNDCORE_NAME_MODEL_MAP};
-use std::io::Stdout;
+
 use std::sync::Arc;
 use tauri::async_runtime::{Mutex, RwLock};
 use tauri::Manager;
@@ -39,7 +39,6 @@ async fn scan_for_devices() -> Vec<BthScanResult> {
         if !btdevice.connected
             || !SOUNDCORE_NAME_MODEL_MAP
                 .keys()
-                .into_iter()
                 .any(|name| btdevice.name.contains(name))
         {
             return;

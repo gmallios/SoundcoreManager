@@ -8,9 +8,12 @@ name = "soundcore-lib-cli-tool"
 path = "src/cli.rs"
 
 [dependencies]
-serde = { version = "1.0", features = ["derive"] }
-tokio = { version = "1.26.0", features = ["time", "macros", "rt-multi-thread"] }
-async-trait = "0.1.68"
+serde = { version = "1", features = ["derive", "rc"] }
+tokio = { version = "1", features = ["time", "macros", "rt-multi-thread"] }
+strum = { version = "0.25", features = ["derive"] }
+nom = "7"
+enumflags2 = { version = "0.7.7", features = ["serde"] }
+async-trait = "0.1"
 thiserror = "1.0.40"
 bluetooth-lib = { path = "../bluetooth-lib/" }
 log = "0.4.17"

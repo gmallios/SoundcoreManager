@@ -1,0 +1,9 @@
+[workspace]
+resolver = "2"
+members = [
+    "src-tauri/",
+    "soundcore-lib"
+]
+
+[profile.release]
+lto = true

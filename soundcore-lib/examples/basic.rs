@@ -8,7 +8,7 @@ async fn main() {
     let addr = BluetoothAdrr::from(BT_ADDR);
     let dev = A3951::default().init(addr).await.unwrap();
     let info = dev.get_status().await.unwrap();
-    println!("Device info: {:?}", info);
+    println!("Device status: {:?}", info);
     // let charging = dev.get_battery_charging().await.unwrap();
     // println!("Charging: {:?}", charging);
 }

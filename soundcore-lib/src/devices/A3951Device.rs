@@ -255,7 +255,6 @@ impl ResponseDecoder<DeviceStatus> for A3951 {
         if arr.len() < 93 {
             return Err(SoundcoreError::RecvError);
         }
-
         Ok(DeviceStatus {
             host_device: arr[9],
             tws_status: arr[10] == 1,
@@ -394,5 +393,20 @@ impl ANCProfile {
             self.transparency_option,
             anc_custom,
         ]
+    }
+}
+
+#[cfg(test)]
+impl A3951 {
+    /* Used for comparing in testing */
+    pub fn device_status(bytes: &[u8]) -> DeviceStatus {
+        Self::decode(
+            &A3951 {
+                _btaddr: None,
+                rfcomm: None,
+            },
+            bytes,
+        )
+        .unwrap()
     }
 }
