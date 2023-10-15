@@ -66,6 +66,8 @@ impl From<A3951StateResponse> for DeviceStateResponse {
             wear_detection: Some(value.wear_detection),
             hear_id: Some(value.hear_id),
             age_range: Some(value.age_range),
+            touch_tone: Some(value.touch_tone),
+            eq: crate::models::EQConfiguration::Stereo(value.eq),
         }
     }
 }

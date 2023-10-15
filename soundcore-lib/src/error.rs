@@ -45,7 +45,23 @@ pub enum SoundcoreError {
     #[error("Invalid response")]
     InvalidResponse,
     #[error("Invalid response length (expected {expected}, got {got}, data: {data:?})")]
-    InvalidResponseLength { expected: usize, got: usize, data: Vec<u8> },
+    InvalidResponseLength {
+        expected: usize,
+        got: usize,
+        data: Vec<u8>,
+    },
+    #[error("Nom Parsing error")]
+    NomParseError { error: String },
+    #[error("Incompatible response")]
+    IncompatibleResponse,
+}
+
+impl From<nom::Err<nom::error::VerboseError<&[u8]>>> for SoundcoreError {
+    fn from<'a>(error: nom::Err<nom::error::VerboseError<&'a [u8]>>) -> Self {
+        SoundcoreError::NomParseError {
+            error: format!("{:?}", error),
+        }
+    }
 }
 
 // impl std::fmt::Display for SoundcoreError {

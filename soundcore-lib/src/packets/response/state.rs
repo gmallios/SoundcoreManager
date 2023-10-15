@@ -4,8 +4,8 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     models::{
-        AgeRange, Battery, ButtonModel, CustomHearID, SideTone,
-        SoundMode, SoundcoreFeatureFlags, TwsStatus, WearDetection,
+        AgeRange, Battery, ButtonModel, CustomHearID, EQConfiguration, SideTone, SoundMode,
+        SoundcoreFeatureFlags, TouchTone, TwsStatus, WearDetection,
     },
     parsers::{SoundcoreParseError, SoundcoreParseResult},
 };
@@ -13,11 +13,12 @@ use crate::{
 /// This is a generalized version of the state responses for all devices
 /// All device-specific state responses should be able to be converted to this type
 /// Also, this must be impl Into<SoundcoreDeviceState>
-#[derive(Debug, Serialize, Deserialize, Eq, PartialEq, Clone, Hash, Default)]
+#[derive(Debug, Serialize, Deserialize, Eq, PartialEq, Clone, Hash)]
 pub struct DeviceStateResponse {
     pub feature_flags: BitFlags<SoundcoreFeatureFlags>,
     pub battery: Battery,
     pub sound_mode: SoundMode,
+    pub eq: EQConfiguration,
     pub host_device: Option<u8>,
     pub tws_status: Option<TwsStatus>,
     pub button_model: Option<ButtonModel>,
@@ -26,6 +27,7 @@ pub struct DeviceStateResponse {
     pub wear_detection: Option<WearDetection>,
     pub hear_id: Option<CustomHearID>,
     pub age_range: Option<AgeRange>,
+    pub touch_tone: Option<TouchTone>,
 }
 
 // TODO

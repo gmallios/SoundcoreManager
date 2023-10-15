@@ -43,3 +43,6 @@ pub type SoundcoreParseResult<'a, T, E> = IResult<&'a [u8], T, E>;
 pub trait SoundcoreParseError<'a>: ParseError<&'a [u8]> + ContextError<&'a [u8]> {}
 
 impl<'a> SoundcoreParseError<'a> for nom::error::VerboseError<&'a [u8]> {}
+
+#[cfg(test)]
+pub type TestParserError<'a> = nom::error::VerboseError<&'a [u8]>;

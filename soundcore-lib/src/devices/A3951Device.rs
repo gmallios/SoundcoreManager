@@ -1,8 +1,4 @@
-use async_trait::async_trait;
-use bluetooth_lib::{platform::RFCOMM, BluetoothAdrr, RFCOMMClient};
-use log::debug;
-use tokio::time::sleep;
-
+use crate::packets::ResponsePacket;
 use crate::{
     base::{SoundcoreANC, SoundcoreDevice, SoundcoreEQ, SoundcoreHearID, SoundcoreLDAC},
     error::SoundcoreError,
@@ -16,7 +12,11 @@ use crate::{
         Clamp,
     },
 };
+use async_trait::async_trait;
+use bluetooth_lib::{platform::RFCOMM, BluetoothAdrr, RFCOMMClient};
+use log::debug;
 use std::time::Duration;
+use tokio::time::sleep;
 
 static SLEEP_DURATION: Duration = std::time::Duration::from_millis(30);
 
@@ -87,10 +87,7 @@ impl SoundcoreDevice for A3951 {
         self.build_and_send_cmd(A3951_CMD_DEVICE_STATUS, None)
             .await?;
         let resp = self.recv().await?;
-        if A3951_RESPONSE_VERIFICATION {
-            verify_resp(&resp)?;
-        }
-        Ok(Self::decode(self, &resp)?)
+        Ok(ResponsePacket::from_bytes(&resp)?.try_into()?)
     }
 
     async fn get_info(&self) -> Result<DeviceInfo, SoundcoreError> {

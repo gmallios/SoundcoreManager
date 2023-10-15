@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 #[derive(
     Debug, Serialize, Deserialize, Eq, PartialEq, Ord, PartialOrd, Clone, Copy, Default, Hash,
 )]
-pub struct CustomANC(u8);
+pub struct CustomANC(pub u8);
 
 impl CustomANC {
     pub fn from_u8(value: u8) -> Self {

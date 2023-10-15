@@ -3,8 +3,9 @@ use crate::{
     parsers::{parse_and_check_checksum, parse_packet_header},
 };
 
-use nom::error::{VerboseError};
+use nom::error::VerboseError;
 
+#[derive(Debug)]
 pub enum ResponsePacket {
     DeviceState(DeviceStateResponse),
     DeviceInfo, // TODO
