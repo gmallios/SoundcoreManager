@@ -6,26 +6,9 @@ use nom::{
     sequence::tuple,
 };
 
-use crate::models::{ResponsePacketHeader, ResponsePacketKind};
+use crate::models::{ResponsePacketHeader, ResponsePacketKind, PACKET_KIND_MAP};
 
 use super::{SoundcoreParseError, SoundcoreParseResult};
-
-/* We can use Generic Arg Infer "#![feature(generic_arg_infer)]" once https://github.com/rust-lang/rust/issues/85077 is stabilized */
-/* This also could be dynamically be created, since the bytes match the command id bytes */
-const PACKET_MAP: [(&[u8; 2], ResponsePacketKind); 10] = [
-    (&[0xFF, 0xFF], ResponsePacketKind::Unknown),
-    /* Updates */
-    (&[0x01, 0x01], ResponsePacketKind::StateUpdate),
-    (&[0x01, 0x03], ResponsePacketKind::BattLevelUpdate),
-    (&[0x01, 0x04], ResponsePacketKind::BattChargingUpdate),
-    (&[0x01, 0x05], ResponsePacketKind::InfoUpdate),
-    (&[0x01, 0x7F], ResponsePacketKind::LDACUpdate),
-    (&[0x06, 0x01], ResponsePacketKind::SoundModeUpdate),
-    /* Acks */
-    (&[0x06, 0x81], ResponsePacketKind::SetSoundModeAck),
-    (&[0x02, 0x81], ResponsePacketKind::SetEqAck),
-    (&[0x02, 0x83], ResponsePacketKind::SetEqDrcAck),
-];
 
 pub fn parse_packet_header<'a, E: SoundcoreParseError<'a>>(
     bytes: &'a [u8],
@@ -52,7 +35,7 @@ fn parse_packet_kind<'a, E: SoundcoreParseError<'a>>(
     context(
         "parse_packet_header",
         map_opt(take(2usize), |bytes: &[u8]| {
-            PACKET_MAP
+            PACKET_KIND_MAP
                 .iter()
                 .find(|(map_bytes, _)| map_bytes == &bytes)
                 .map(|(_, packet_kind)| *packet_kind)
