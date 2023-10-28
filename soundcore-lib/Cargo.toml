@@ -21,3 +21,5 @@ typeshare = "1.0.1"
 phf = { version = "0.11", default-features = false, features = ["macros"] }
 dialoguer = { version = "0.10.4", features = ["fuzzy-select"] }
 
+[dev-dependencies]
+test_data = { path = "../test_data/" }

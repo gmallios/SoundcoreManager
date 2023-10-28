@@ -11,6 +11,7 @@ pub use battery::*;
 pub use checksum::*;
 pub use eq::*;
 pub use eq_configuration::*;
+pub use fw::*;
 pub use game_mode::*;
 pub use gender::*;
 pub use hearid::*;
@@ -28,6 +29,7 @@ mod battery;
 mod checksum;
 mod eq;
 mod eq_configuration;
+mod fw;
 mod game_mode;
 mod gender;
 mod hearid;
@@ -45,4 +47,5 @@ pub trait SoundcoreParseError<'a>: ParseError<&'a [u8]> + ContextError<&'a [u8]>
 impl<'a> SoundcoreParseError<'a> for nom::error::VerboseError<&'a [u8]> {}
 
 #[cfg(test)]
+#[allow(dead_code)]
 pub type TestParserError<'a> = nom::error::VerboseError<&'a [u8]>;

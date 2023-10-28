@@ -57,7 +57,7 @@ pub enum SoundcoreError {
 }
 
 impl From<nom::Err<nom::error::VerboseError<&[u8]>>> for SoundcoreError {
-    fn from<'a>(error: nom::Err<nom::error::VerboseError<&'a [u8]>>) -> Self {
+    fn from(error: nom::Err<nom::error::VerboseError<&[u8]>>) -> Self {
         SoundcoreError::NomParseError {
             error: format!("{:?}", error),
         }

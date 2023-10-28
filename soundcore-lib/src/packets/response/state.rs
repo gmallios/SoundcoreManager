@@ -30,7 +30,7 @@ pub struct DeviceStateResponse {
     pub touch_tone: Option<TouchTone>,
 }
 
-// TODO
+// TODO: Add more parsers
 pub fn parse_state_update_packet<'a, E: SoundcoreParseError<'a>>(
     bytes: &'a [u8],
 ) -> SoundcoreParseResult<DeviceStateResponse, E> {

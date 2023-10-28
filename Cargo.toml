@@ -2,7 +2,8 @@
 resolver = "2"
 members = [
     "src-tauri/",
-    "soundcore-lib"
+    "soundcore-lib/",
+    "test_data/"
 ]
 
 [profile.release]

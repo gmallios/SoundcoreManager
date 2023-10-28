@@ -9,7 +9,7 @@ use nom::error::VerboseError;
 pub enum ResponsePacket {
     DeviceState(DeviceStateResponse),
     SoundModeUpdate(SoundModeUpdateResponse),
-    DeviceInfo, // TODO
+    DeviceInfo(DeviceInfoResponse),
 }
 
 impl ResponsePacket {
@@ -24,15 +24,18 @@ impl ResponsePacket {
             ResponsePacketKind::SoundModeUpdate => {
                 Self::SoundModeUpdate(parse_sound_mode_update_packet(bytes)?.1)
             }
+            ResponsePacketKind::InfoUpdate => Self::DeviceInfo(parse_device_info_packet(bytes)?.1),
             _ => unimplemented!(),
         })
     }
 }
 
+mod battery;
 mod info;
 mod sound_mode;
 mod state;
 
+pub use battery::*;
 pub use info::*;
 pub use sound_mode::*;
 pub use state::*;
@@ -40,22 +43,11 @@ pub use state::*;
 #[cfg(test)]
 mod response_test {
     use super::ResponsePacket;
-
-    const A3951_STATE_UPDATE_BYTES: [u8; 97] = [
-        9, 255, 0, 0, 1, 1, 1, 97, 0, 1, 1, 5, 5, 1, 0, 254, 254, 160, 150, 130, 120, 120, 120,
-        120, 120, 160, 150, 130, 120, 120, 120, 120, 120, 255, 255, 0, 255, 255, 255, 255, 255,
-        255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 0, 0, 0, 0, 0, 0, 255, 255, 255,
-        255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 1, 99, 1, 84, 1, 102, 1,
-        84, 0, 1, 0, 0, 0, 1, 1, 6, 0, 1, 0, 0, 0, 0, 242,
-    ];
+    use test_data::a3951::*;
 
     #[test]
     fn sound_mode_update() {
-        let bytes = [
-            0x09, 0xFF, 0x00, 0x00, 0x01, 0x06, 0x01, 0x0E, 0x00, 0x00, 0x01, 0x01, 0x06, 0x26,
-        ];
-
-        let packet = ResponsePacket::from_bytes(&bytes).unwrap();
+        let packet = ResponsePacket::from_bytes(&A3951_SOUND_MODE_UPDATE_BYTES).unwrap();
         assert!(matches!(packet, ResponsePacket::SoundModeUpdate(_)));
     }
 
@@ -63,5 +55,11 @@ mod response_test {
     fn a3951_state_update() {
         let packet = ResponsePacket::from_bytes(&A3951_STATE_UPDATE_BYTES).unwrap();
         assert!(matches!(packet, ResponsePacket::DeviceState(_)));
+    }
+
+    #[test]
+    fn a3951_info_update() {
+        let packet = ResponsePacket::from_bytes(&A3951_INFO_UPDATE_BYTES).unwrap();
+        assert!(matches!(packet, ResponsePacket::DeviceInfo(_)));
     }
 }

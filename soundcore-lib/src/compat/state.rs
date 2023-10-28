@@ -1,6 +1,6 @@
 use crate::error::SoundcoreError;
 use crate::models::{
-    Battery, DualBattery, EQConfiguration, MonoEQ, SideTone, SoundMode, StereoEQConfiguration,
+    Battery, EQConfiguration, MonoEQ, SideTone, SoundMode,
     TouchTone, TwsStatus, WearDetection,
 };
 use crate::packets::ResponsePacket;
@@ -50,9 +50,9 @@ impl From<SoundMode> for ANCProfile {
     }
 }
 
-impl Into<(BatteryLevel, BatteryCharging)> for Battery {
-    fn into(self) -> (BatteryLevel, BatteryCharging) {
-        match self {
+impl From<Battery> for (BatteryLevel, BatteryCharging) {
+    fn from(val: Battery) -> Self {
+        match val {
             Battery::Single(batt) => {
                 let left = BatteryLevel {
                     left: batt.level,
@@ -79,15 +79,15 @@ impl Into<(BatteryLevel, BatteryCharging)> for Battery {
     }
 }
 // Maybe figure out how to do this better and test it
-impl Into<EQWave> for MonoEQ {
-    fn into(self) -> EQWave {
-        EQWave::decode(&self.to_bytes()).unwrap()
+impl From<MonoEQ> for EQWave {
+    fn from(val: MonoEQ) -> Self {
+        EQWave::decode(&val.to_bytes()).unwrap()
     }
 }
 
-impl Into<(EQWave, EQWave)> for EQConfiguration {
-    fn into(self) -> (EQWave, EQWave) {
-        match self {
+impl From<EQConfiguration> for (EQWave, EQWave) {
+    fn from(val: EQConfiguration) -> Self {
+        match val {
             EQConfiguration::Stereo(stereo) => {
                 let left = stereo.eq.left.into();
                 let right = stereo.eq.right.into();
