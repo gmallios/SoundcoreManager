@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     models::{
-        AgeRange, Battery, ButtonModel, CustomHearID, EQConfiguration, SideTone, SoundMode,
+        AgeRange, Battery, ButtonModel, CustomHearID, EQConfiguration, HearID, SideTone, SoundMode,
         SoundcoreFeatureFlags, TouchTone, TwsStatus, WearDetection,
     },
     parsers::{SoundcoreParseError, SoundcoreParseResult},
@@ -25,7 +25,7 @@ pub struct DeviceStateResponse {
     pub side_tone: Option<SideTone>,
     pub hearid_eq_preset: Option<u16>,
     pub wear_detection: Option<WearDetection>,
-    pub hear_id: Option<CustomHearID>,
+    pub hear_id: Option<HearID>,
     pub age_range: Option<AgeRange>,
     pub touch_tone: Option<TouchTone>,
 }
@@ -42,5 +42,8 @@ pub fn parse_state_update_packet<'a, E: SoundcoreParseError<'a>>(
     })(bytes)
 }
 
+mod a3027;
 mod a3951;
-pub use a3951::*;
+
+use a3027::*;
+use a3951::*;

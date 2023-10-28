@@ -1,7 +1,6 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize, Eq, PartialEq, Ord, PartialOrd, Clone, Copy, Hash)]
-// TODO: Create parser
 pub enum DeviceFirmware {
     DUAL(FirmwareVer, FirmwareVer),
     SINGLE(FirmwareVer),

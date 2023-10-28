@@ -8,8 +8,9 @@ use nom::{
 use serde::{Deserialize, Serialize};
 
 use crate::models::{
-    A3909ButtonModel, AgeRange, Battery, ButtonModel, CustomHearID, DualBattery, Gender, SideTone,
-    SoundMode, SoundcoreFeatureFlags, StereoEQConfiguration, TouchTone, TwsStatus, WearDetection,
+    self, A3909ButtonModel, AgeRange, Battery, ButtonModel, CustomHearID, DualBattery,
+    EQConfiguration, Gender, HearID, SideTone, SoundMode, SoundcoreFeatureFlags,
+    StereoEQConfiguration, TouchTone, TwsStatus, WearDetection,
 };
 
 use crate::parsers::{
@@ -64,10 +65,10 @@ impl From<A3951StateResponse> for DeviceStateResponse {
             side_tone: Some(value.side_tone),
             hearid_eq_preset: value.hearid_eq_preset,
             wear_detection: Some(value.wear_detection),
-            hear_id: Some(value.hear_id),
+            hear_id: Some(HearID::Custom(value.hear_id)),
             age_range: Some(value.age_range),
             touch_tone: Some(value.touch_tone),
-            eq: crate::models::EQConfiguration::Stereo(value.eq),
+            eq: EQConfiguration::Stereo(value.eq),
         }
     }
 }
