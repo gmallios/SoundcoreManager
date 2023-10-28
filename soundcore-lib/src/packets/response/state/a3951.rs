@@ -112,7 +112,7 @@ pub fn parse_a3951_state_response<'a, E: SoundcoreParseError<'a>>(
             // Optional Fields
             let (bytes, hearid_eq_preset) = opt(le_u16)(bytes)?;
             let (bytes, new_battery) = opt(tuple((le_u8, le_u8)))(bytes)?;
-            let (bytes, unknown) = opt(le_u8)(bytes)?; // TODO: Unknown field
+            let (bytes, _unknown) = opt(le_u8)(bytes)?; // TODO: Unknown field
 
             Ok((
                 bytes,
