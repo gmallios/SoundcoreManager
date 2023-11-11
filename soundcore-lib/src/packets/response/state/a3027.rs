@@ -61,15 +61,11 @@ impl From<A3027StateResponse> for DeviceStateResponse {
             battery: value.battery.into(),
             sound_mode: value.sound_mode,
             eq: EQConfiguration::Stereo(value.eq).into(),
-            host_device: None,
             tws_status: value.tws_status.into(),
-            button_model: None,
-            side_tone: None,
-            hearid_eq_preset: None,
             wear_detection: value.wear_detection.into(),
             hear_id: Some(HearID::Base(value.hear_id)),
             age_range: value.age_range.into(),
-            touch_tone: None,
+            ..Default::default()
         }
     }
 }

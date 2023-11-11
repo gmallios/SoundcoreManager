@@ -1,5 +1,5 @@
 use enumflags2::BitFlags;
-use nom::{combinator::map, error::context};
+use nom::{branch::alt, combinator::map, error::context};
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -13,21 +13,23 @@ use crate::{
 /// This is a generalized version of the state responses for all devices
 /// All device-specific state responses should be able to be converted to this type
 /// Also, this must be impl Into<SoundcoreDeviceState>
-#[derive(Debug, Serialize, Deserialize, Eq, PartialEq, Clone, Hash)]
+#[derive(Debug, Serialize, Deserialize, Eq, PartialEq, Clone, Hash, Default)]
 pub struct DeviceStateResponse {
     pub feature_flags: BitFlags<SoundcoreFeatureFlags>,
     pub battery: Battery,
     pub sound_mode: SoundMode,
     pub eq: EQConfiguration,
+    pub button_model: Option<ButtonModel>,
     pub host_device: Option<u8>,
     pub tws_status: Option<TwsStatus>,
-    pub button_model: Option<ButtonModel>,
     pub side_tone: Option<SideTone>,
-    pub hearid_eq_preset: Option<u16>,
     pub wear_detection: Option<WearDetection>,
-    pub hear_id: Option<HearID>,
     pub age_range: Option<AgeRange>,
     pub touch_tone: Option<TouchTone>,
+    /// HearID
+    pub hearid_eq_preset: Option<u16>,
+    pub hear_id: Option<HearID>,
+    pub hear_id_has_data: Option<bool>,
 }
 
 // TODO: Add more parsers
@@ -35,15 +37,27 @@ pub fn parse_state_update_packet<'a, E: SoundcoreParseError<'a>>(
     bytes: &'a [u8],
 ) -> SoundcoreParseResult<DeviceStateResponse, E> {
     context("parse_state_update", |bytes| {
-        map(
-            parse_a3951_state_response::<'a, E>,
-            DeviceStateResponse::from,
-        )(bytes)
+        alt((
+            map(
+                parse_a3951_state_response::<'a, E>,
+                DeviceStateResponse::from,
+            ),
+            map(
+                parse_a3027_state_response::<'a, E>,
+                DeviceStateResponse::from,
+            ),
+        ))(bytes)
     })(bytes)
 }
 
 mod a3027;
+mod a3028;
+mod a3029;
+mod a3930;
 mod a3951;
 
 use a3027::*;
+use a3028::*;
+use a3029::*;
+use a3930::*;
 use a3951::*;

@@ -1,3 +1,5 @@
+use std::default;
+
 use super::{EQProfile, MonoEQ, StereoEQ};
 use serde::{Deserialize, Serialize};
 
@@ -7,14 +9,20 @@ pub enum EQConfiguration {
     Mono(MonoEQConfiguration),
 }
 
-#[derive(Debug, Serialize, Deserialize, Eq, PartialEq, Ord, PartialOrd, Clone, Hash)]
+#[derive(Debug, Serialize, Deserialize, Eq, PartialEq, Ord, PartialOrd, Clone, Hash, Default)]
 pub struct StereoEQConfiguration {
     pub eq: StereoEQ,
     pub profile: EQProfile,
 }
 
-#[derive(Debug, Serialize, Deserialize, Eq, PartialEq, Ord, PartialOrd, Clone, Hash)]
+#[derive(Debug, Serialize, Deserialize, Eq, PartialEq, Ord, PartialOrd, Clone, Hash, Default)]
 pub struct MonoEQConfiguration {
     pub eq: MonoEQ,
     pub profile: EQProfile,
+}
+
+impl Default for EQConfiguration {
+    fn default() -> Self {
+        EQConfiguration::Stereo(StereoEQConfiguration::default())
+    }
 }
