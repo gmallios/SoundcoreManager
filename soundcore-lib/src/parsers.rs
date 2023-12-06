@@ -1,5 +1,5 @@
 use nom::{
-    error::{ContextError, ParseError},
+    error::{ContextError, ParseError as NomParseError},
     IResult,
 };
 
@@ -21,6 +21,8 @@ pub use sound_mode::*;
 pub use touch_tone::*;
 pub use wear_detection::*;
 
+use crate::types::SupportedModels;
+
 mod a3909_button_model;
 mod age;
 mod auto_power;
@@ -40,11 +42,18 @@ mod sound_mode;
 mod touch_tone;
 mod wear_detection;
 
-pub type SoundcoreParseResult<'a, T, E> = IResult<&'a [u8], T, E>;
+pub type ParseResult<'a, T, E> = IResult<&'a [u8], T, E>;
+pub type TaggedParseResult<'a, T, E> = IResult<&'a [u8], TaggedData<T>, E>;
 
-pub trait SoundcoreParseError<'a>: ParseError<&'a [u8]> + ContextError<&'a [u8]> {}
+pub trait ParseError<'a>: NomParseError<&'a [u8]> + ContextError<&'a [u8]> {}
 
-impl<'a> SoundcoreParseError<'a> for nom::error::VerboseError<&'a [u8]> {}
+impl<'a> ParseError<'a> for nom::error::VerboseError<&'a [u8]> {}
+
+/// Used when we need to know the successful parser's device model
+pub struct TaggedData<T> {
+    pub data: T,
+    pub tag: SupportedModels,
+}
 
 #[cfg(test)]
 #[allow(dead_code)]

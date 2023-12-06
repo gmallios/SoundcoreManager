@@ -2,11 +2,11 @@ use nom::{combinator::map, error::context, number::complete::le_u8, sequence::tu
 
 use crate::models::AutoPowerOffOn;
 
-use super::{parse_bool, SoundcoreParseError, SoundcoreParseResult};
+use super::{parse_bool, ParseError, ParseResult};
 
-pub fn parse_auto_power_off_on<'a, E: SoundcoreParseError<'a>>(
+pub fn parse_auto_power_off_on<'a, E: ParseError<'a>>(
     bytes: &'a [u8],
-) -> SoundcoreParseResult<AutoPowerOffOn, E> {
+) -> ParseResult<AutoPowerOffOn, E> {
     context(
         "parse_auto_power_off_on",
         map(tuple((parse_bool, le_u8)), |(enabled, index)| {

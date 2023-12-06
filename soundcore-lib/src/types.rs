@@ -17,7 +17,7 @@ pub trait CommandEncoder<T> {
 }
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Debug, Serialize, Deserialize, Clone, Copy, Eq, PartialEq, Ord, PartialOrd, Hash)]
 pub enum SupportedModels {
     A3027,
     A3028,

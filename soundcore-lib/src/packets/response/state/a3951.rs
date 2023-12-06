@@ -15,8 +15,8 @@ use crate::models::{
 
 use crate::parsers::{
     bool_parser, parse_a3909_button_model, parse_age_range, parse_custom_hear_id,
-    parse_dual_battery, parse_gender, parse_sound_mode, parse_stereo_eq_configuration,
-    SoundcoreParseError, SoundcoreParseResult,
+    parse_dual_battery, parse_gender, parse_sound_mode, parse_stereo_eq_configuration, ParseError,
+    ParseResult,
 };
 
 use super::DeviceStateResponse;
@@ -69,13 +69,14 @@ impl From<A3951StateResponse> for DeviceStateResponse {
             age_range: Some(value.age_range),
             touch_tone: Some(value.touch_tone),
             eq: EQConfiguration::Stereo(value.eq),
+            ..Default::default()
         }
     }
 }
 
-pub fn parse_a3951_state_response<'a, E: SoundcoreParseError<'a>>(
+pub fn parse_a3951_state_response<'a, E: ParseError<'a>>(
     bytes: &'a [u8],
-) -> SoundcoreParseResult<A3951StateResponse, E> {
+) -> ParseResult<A3951StateResponse, E> {
     context(
         "a3951_state_response",
         all_consuming(|bytes| {

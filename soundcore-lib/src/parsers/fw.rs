@@ -2,11 +2,9 @@ use nom::{combinator::map, error::context, sequence::pair};
 
 use crate::models::FirmwareVer;
 
-use super::{parse_str, SoundcoreParseError, SoundcoreParseResult};
+use super::{parse_str, ParseError, ParseResult};
 
-pub fn parse_fw<'a, E: SoundcoreParseError<'a>>(
-    bytes: &'a [u8],
-) -> SoundcoreParseResult<FirmwareVer, E> {
+pub fn parse_fw<'a, E: ParseError<'a>>(bytes: &'a [u8]) -> ParseResult<FirmwareVer, E> {
     context(
         "parse_fw",
         map(parse_str(5usize), |ver| {
@@ -22,9 +20,9 @@ pub fn parse_fw<'a, E: SoundcoreParseError<'a>>(
     )(bytes)
 }
 
-pub fn parse_dual_fw<'a, E: SoundcoreParseError<'a>>(
+pub fn parse_dual_fw<'a, E: ParseError<'a>>(
     bytes: &'a [u8],
-) -> SoundcoreParseResult<(FirmwareVer, FirmwareVer), E> {
+) -> ParseResult<(FirmwareVer, FirmwareVer), E> {
     context("map_dual_fw", pair(parse_fw, parse_fw))(bytes)
 }
 

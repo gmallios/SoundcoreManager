@@ -2,11 +2,9 @@ use nom::{combinator::map, error::context};
 
 use crate::models::SerialNumber;
 
-use super::{base::parse_str, SoundcoreParseError, SoundcoreParseResult};
+use super::{base::parse_str, ParseError, ParseResult};
 
-pub fn parse_serial_number<'a, E: SoundcoreParseError<'a>>(
-    bytes: &'a [u8],
-) -> SoundcoreParseResult<SerialNumber, E> {
+pub fn parse_serial_number<'a, E: ParseError<'a>>(bytes: &'a [u8]) -> ParseResult<SerialNumber, E> {
     context("parse_serial", map(parse_str(16usize), SerialNumber::from))(bytes)
 }
 

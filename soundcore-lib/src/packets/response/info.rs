@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     models::{DeviceFirmware, SerialNumber},
-    parsers::{SoundcoreParseError, SoundcoreParseResult},
+    parsers::{ParseError, ParseResult},
 };
 
 #[derive(Debug, Serialize, Deserialize, Eq, PartialEq, Clone, Hash)]
@@ -16,9 +16,9 @@ pub struct DeviceInfoResponse {
 }
 
 // TODO: Add more parsers
-pub fn parse_device_info_packet<'a, E: SoundcoreParseError<'a>>(
+pub fn parse_device_info_packet<'a, E: ParseError<'a>>(
     bytes: &'a [u8],
-) -> SoundcoreParseResult<DeviceInfoResponse, E> {
+) -> ParseResult<DeviceInfoResponse, E> {
     context("parse_device_info", |bytes| {
         map(
             parse_a3951_device_info_packet::<'a, E>,

@@ -1,20 +1,13 @@
-use nom::{
-    bytes::complete::take,
-    combinator::{map},
-    error::context,
-    sequence::tuple,
-};
+use nom::{bytes::complete::take, combinator::map, error::context, sequence::tuple};
 
 use crate::models::{MonoEQ, StereoEQ};
 
-use super::{SoundcoreParseError, SoundcoreParseResult};
+use super::{ParseError, ParseResult};
 
 // The official app supports up to 10-Band EQs,
 // since we currently support up to 8,
 // we should use all consuming
-pub fn parse_mono_eq<'a, E: SoundcoreParseError<'a>>(
-    bytes: &'a [u8],
-) -> SoundcoreParseResult<MonoEQ, E> {
+pub fn parse_mono_eq<'a, E: ParseError<'a>>(bytes: &'a [u8]) -> ParseResult<MonoEQ, E> {
     context(
         "parse_mono_eq",
         map(take(8usize), |bytes: &[u8]| {
@@ -23,9 +16,7 @@ pub fn parse_mono_eq<'a, E: SoundcoreParseError<'a>>(
     )(bytes)
 }
 
-pub fn parse_stereo_eq<'a, E: SoundcoreParseError<'a>>(
-    bytes: &'a [u8],
-) -> SoundcoreParseResult<StereoEQ, E> {
+pub fn parse_stereo_eq<'a, E: ParseError<'a>>(bytes: &'a [u8]) -> ParseResult<StereoEQ, E> {
     context(
         "parse_stereo_eq",
         map(tuple((parse_mono_eq, parse_mono_eq)), |(left, right)| {

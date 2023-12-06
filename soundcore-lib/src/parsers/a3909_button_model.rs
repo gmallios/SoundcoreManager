@@ -7,11 +7,11 @@ use nom::{
 
 use crate::models::{A3909ButtonModel, Action, ButtonSide, NonTwsButtonAction, TwsButtonAction};
 
-use super::{base::parse_bool, SoundcoreParseError, SoundcoreParseResult};
+use super::{base::parse_bool, ParseError, ParseResult};
 
-pub fn parse_a3909_button_model<'a, E: SoundcoreParseError<'a>>(
+pub fn parse_a3909_button_model<'a, E: ParseError<'a>>(
     bytes: &'a [u8],
-) -> SoundcoreParseResult<A3909ButtonModel, E> {
+) -> ParseResult<A3909ButtonModel, E> {
     context(
         "parse_a3909_button_model",
         map(
@@ -48,9 +48,7 @@ pub fn parse_a3909_button_model<'a, E: SoundcoreParseError<'a>>(
     )(bytes)
 }
 
-fn parse_tws_button<'a, E: SoundcoreParseError<'a>>(
-    bytes: &'a [u8],
-) -> SoundcoreParseResult<TwsButtonAction, E> {
+fn parse_tws_button<'a, E: ParseError<'a>>(bytes: &'a [u8]) -> ParseResult<TwsButtonAction, E> {
     context(
         "parse_a3909_tws_button",
         map_opt(pair(parse_bool, le_u8), |(is_enabled, action)| {
@@ -63,9 +61,9 @@ fn parse_tws_button<'a, E: SoundcoreParseError<'a>>(
     )(bytes)
 }
 
-fn parse_non_tws_button<'a, E: SoundcoreParseError<'a>>(
+fn parse_non_tws_button<'a, E: ParseError<'a>>(
     bytes: &'a [u8],
-) -> SoundcoreParseResult<NonTwsButtonAction, E> {
+) -> ParseResult<NonTwsButtonAction, E> {
     context(
         "parse_a3909_non_tws_button",
         map_opt(pair(parse_bool, le_u8), |(is_enabled, action)| {

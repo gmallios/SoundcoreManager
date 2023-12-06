@@ -8,11 +8,11 @@ use nom::{
 
 use crate::models::{ResponsePacketHeader, ResponsePacketKind, PACKET_KIND_MAP};
 
-use super::{SoundcoreParseError, SoundcoreParseResult};
+use super::{ParseError, ParseResult};
 
-pub fn parse_packet_header<'a, E: SoundcoreParseError<'a>>(
+pub fn parse_packet_header<'a, E: ParseError<'a>>(
     bytes: &'a [u8],
-) -> SoundcoreParseResult<ResponsePacketHeader, E> {
+) -> ParseResult<ResponsePacketHeader, E> {
     context(
         "parse_packet_header",
         map(
@@ -29,9 +29,7 @@ pub fn parse_packet_header<'a, E: SoundcoreParseError<'a>>(
     )(bytes)
 }
 
-fn parse_packet_kind<'a, E: SoundcoreParseError<'a>>(
-    bytes: &'a [u8],
-) -> SoundcoreParseResult<ResponsePacketKind, E> {
+fn parse_packet_kind<'a, E: ParseError<'a>>(bytes: &'a [u8]) -> ParseResult<ResponsePacketKind, E> {
     context(
         "parse_packet_header",
         map_opt(take(2usize), |bytes: &[u8]| {
@@ -43,9 +41,7 @@ fn parse_packet_kind<'a, E: SoundcoreParseError<'a>>(
     )(bytes)
 }
 
-fn parse_packet_prefix<'a, E: SoundcoreParseError<'a>>(
-    bytes: &'a [u8],
-) -> SoundcoreParseResult<Result<(), ()>, E> {
+fn parse_packet_prefix<'a, E: ParseError<'a>>(bytes: &'a [u8]) -> ParseResult<Result<(), ()>, E> {
     /* If any other prefixes are found, they can be added here */
     context(
         "parse_packet_header",

@@ -1,11 +1,9 @@
 use log::warn;
 use nom::{combinator::map_opt, error::context};
 
-use super::{take_bytes_from_end, SoundcoreParseError, SoundcoreParseResult};
+use super::{take_bytes_from_end, ParseError, ParseResult};
 
-pub fn parse_and_check_checksum<'a, E: SoundcoreParseError<'a>>(
-    bytes: &'a [u8],
-) -> SoundcoreParseResult<(), E> {
+pub fn parse_and_check_checksum<'a, E: ParseError<'a>>(bytes: &'a [u8]) -> ParseResult<(), E> {
     context(
         "parse_and_check_checksum",
         map_opt(take_bytes_from_end(1usize), |last_bytes| {

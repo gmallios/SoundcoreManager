@@ -2,11 +2,9 @@ use nom::{combinator::map, error::context, number::complete::le_u8, sequence::tu
 
 use crate::models::{DualBattery, SingleBattery};
 
-use super::{base::parse_bool, SoundcoreParseError, SoundcoreParseResult};
+use super::{base::parse_bool, ParseError, ParseResult};
 
-pub fn parse_dual_battery<'a, E: SoundcoreParseError<'a>>(
-    bytes: &'a [u8],
-) -> SoundcoreParseResult<DualBattery, E> {
+pub fn parse_dual_battery<'a, E: ParseError<'a>>(bytes: &'a [u8]) -> ParseResult<DualBattery, E> {
     context(
         "parse_dual_batt",
         map(
@@ -27,9 +25,9 @@ pub fn parse_dual_battery<'a, E: SoundcoreParseError<'a>>(
     )(bytes)
 }
 
-pub fn parse_single_battery<'a, E: SoundcoreParseError<'a>>(
+pub fn parse_single_battery<'a, E: ParseError<'a>>(
     bytes: &'a [u8],
-) -> SoundcoreParseResult<SingleBattery, E> {
+) -> ParseResult<SingleBattery, E> {
     context(
         "parse_single_batt",
         map(tuple((le_u8, parse_bool)), |(level, charging)| {

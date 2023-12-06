@@ -1,13 +1,13 @@
 use nom::{
     combinator::{all_consuming, map},
     error::context,
-    sequence::{pair},
+    sequence::pair,
 };
 use serde::{Deserialize, Serialize};
 
 use crate::{
     models::{DeviceFirmware, SerialNumber},
-    parsers::{parse_dual_fw, parse_serial_number, SoundcoreParseError, SoundcoreParseResult},
+    parsers::{parse_dual_fw, parse_serial_number, ParseError, ParseResult},
 };
 
 use super::DeviceInfoResponse;
@@ -18,9 +18,9 @@ pub struct A3951DeviceInfoResponse {
     pub fw: DeviceFirmware,
 }
 
-pub fn parse_a3951_device_info_packet<'a, E: SoundcoreParseError<'a>>(
+pub fn parse_a3951_device_info_packet<'a, E: ParseError<'a>>(
     bytes: &'a [u8],
-) -> SoundcoreParseResult<A3951DeviceInfoResponse, E> {
+) -> ParseResult<A3951DeviceInfoResponse, E> {
     context(
         "parse_a3951_device_info",
         all_consuming(map(pair(parse_dual_fw, parse_serial_number), |(fw, sn)| {

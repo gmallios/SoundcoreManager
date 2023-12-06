@@ -90,6 +90,7 @@ pub(crate) fn remove_padding(arr: &[u8]) -> Vec<u8> {
     //     .collect::<Vec<u8>>();
     // out.reverse();
     // out
+    println!("Received: {:X?}", arr);
     arr.into()
 }
 

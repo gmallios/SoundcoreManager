@@ -1,50 +1,47 @@
 use nom::{
     bytes::complete::take,
     combinator::{map, map_opt},
-    error::{ParseError},
     multi::count,
     number::complete::le_u8,
 };
 
-use super::{SoundcoreParseError, SoundcoreParseResult};
+use super::{ParseError, ParseResult};
 
-pub fn parse_bool<'a, E: ParseError<&'a [u8]>>(input: &'a [u8]) -> SoundcoreParseResult<bool, E> {
+pub fn parse_bool<'a, E: ParseError<'a>>(input: &'a [u8]) -> ParseResult<bool, E> {
     map(le_u8, |value| value == 1)(input)
 }
 
-pub fn parse_str<'a, E>(len: usize) -> impl Fn(&'a [u8]) -> SoundcoreParseResult<&'a str, E>
+pub fn parse_str<'a, E>(len: usize) -> impl Fn(&'a [u8]) -> ParseResult<&'a str, E>
 where
-    E: SoundcoreParseError<'a>,
+    E: ParseError<'a>,
 {
     move |input| map_opt(take(len), |bytes| std::str::from_utf8(bytes).ok())(input)
 }
 
-pub fn bool_parser<'a, T, E>(bytes: &'a [u8]) -> SoundcoreParseResult<T, E>
+pub fn bool_parser<'a, T, E>(bytes: &'a [u8]) -> ParseResult<T, E>
 where
     T: From<bool>,
-    E: SoundcoreParseError<'a>,
+    E: ParseError<'a>,
 {
     map(parse_bool, T::from)(bytes)
 }
 
-pub fn u8_parser<'a, T, E>(bytes: &'a [u8]) -> SoundcoreParseResult<T, E>
+pub fn u8_parser<'a, T, E>(bytes: &'a [u8]) -> ParseResult<T, E>
 where
     T: From<u8>,
-    E: SoundcoreParseError<'a>,
+    E: ParseError<'a>,
 {
     map(le_u8, T::from)(bytes)
 }
 
-pub fn take_last_byte<'a, E: SoundcoreParseError<'a>>(
-    bytes: &'a [u8],
-) -> SoundcoreParseResult<u8, E> {
+pub fn take_last_byte<'a, E: ParseError<'a>>(bytes: &'a [u8]) -> ParseResult<u8, E> {
     let (_arr, last_byte) = le_u8(&bytes[bytes.len() - 1..])?;
     Ok((&bytes[..bytes.len() - 1], last_byte))
 }
 
-pub fn take_bytes_from_end<'a, E: SoundcoreParseError<'a>>(
+pub fn take_bytes_from_end<'a, E: ParseError<'a>>(
     size: usize,
-) -> impl Fn(&'a [u8]) -> SoundcoreParseResult<Vec<u8>, E> {
+) -> impl Fn(&'a [u8]) -> ParseResult<Vec<u8>, E> {
     move |bytes| {
         let (_, mut end_bytes) = count(take_last_byte, size)(bytes)?;
         end_bytes.reverse();

@@ -7,11 +7,11 @@ use nom::{
 
 use crate::models::{EQProfile, MonoEQConfiguration, StereoEQ, StereoEQConfiguration};
 
-use super::{parse_mono_eq, parse_stereo_eq, SoundcoreParseError, SoundcoreParseResult};
+use super::{parse_mono_eq, parse_stereo_eq, ParseError, ParseResult};
 
-pub fn parse_stereo_eq_configuration<'a, E: SoundcoreParseError<'a>>(
+pub fn parse_stereo_eq_configuration<'a, E: ParseError<'a>>(
     bytes: &'a [u8],
-) -> SoundcoreParseResult<StereoEQConfiguration, E> {
+) -> ParseResult<StereoEQConfiguration, E> {
     context(
         "parse_stereo_eq_config",
         map(
@@ -30,9 +30,9 @@ pub fn parse_stereo_eq_configuration<'a, E: SoundcoreParseError<'a>>(
     )(bytes)
 }
 
-pub fn parse_mono_eq_configuration<'a, E: SoundcoreParseError<'a>>(
+pub fn parse_mono_eq_configuration<'a, E: ParseError<'a>>(
     bytes: &'a [u8],
-) -> SoundcoreParseResult<MonoEQConfiguration, E> {
+) -> ParseResult<MonoEQConfiguration, E> {
     context(
         "parse_mono_eq_config",
         map(
@@ -48,8 +48,6 @@ pub fn parse_mono_eq_configuration<'a, E: SoundcoreParseError<'a>>(
     )(bytes)
 }
 
-fn parse_eq_profile<'a, E: SoundcoreParseError<'a>>(
-    bytes: &'a [u8],
-) -> SoundcoreParseResult<EQProfile, E> {
+fn parse_eq_profile<'a, E: ParseError<'a>>(bytes: &'a [u8]) -> ParseResult<EQProfile, E> {
     context("parse_mono_eq_config", map_opt(le_u16, EQProfile::from_id))(bytes)
 }

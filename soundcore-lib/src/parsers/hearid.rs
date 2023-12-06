@@ -8,13 +8,9 @@ use nom::{
 
 use crate::models::{BaseHearID, CustomHearID, HearIDMusicType, HearIDType, MonoEQ, StereoEQ};
 
-use super::{
-    parse_bool, parse_mono_eq, parse_stereo_eq, SoundcoreParseError, SoundcoreParseResult,
-};
+use super::{parse_bool, parse_mono_eq, parse_stereo_eq, ParseError, ParseResult};
 
-pub fn parse_base_hear_id<'a, E: SoundcoreParseError<'a>>(
-    bytes: &'a [u8],
-) -> SoundcoreParseResult<BaseHearID, E> {
+pub fn parse_base_hear_id<'a, E: ParseError<'a>>(bytes: &'a [u8]) -> ParseResult<BaseHearID, E> {
     context(
         "parse_base_hear_id",
         map(
@@ -27,9 +23,9 @@ pub fn parse_base_hear_id<'a, E: SoundcoreParseError<'a>>(
         ),
     )(bytes)
 }
-pub fn parse_custom_hear_id<'a, E: SoundcoreParseError<'a>>(
+pub fn parse_custom_hear_id<'a, E: ParseError<'a>>(
     bytes: &'a [u8],
-) -> SoundcoreParseResult<CustomHearID, E> {
+) -> ParseResult<CustomHearID, E> {
     context(
         "parse_custom_hear_id",
         map(
@@ -59,14 +55,10 @@ pub fn parse_custom_hear_id<'a, E: SoundcoreParseError<'a>>(
     )(bytes)
 }
 
-fn parse_type<'a, E: SoundcoreParseError<'a>>(
-    bytes: &'a [u8],
-) -> SoundcoreParseResult<HearIDType, E> {
+fn parse_type<'a, E: ParseError<'a>>(bytes: &'a [u8]) -> ParseResult<HearIDType, E> {
     context("parse_hear_id_type", map(le_u8, HearIDType))(bytes)
 }
 
-fn parse_music_type<'a, E: SoundcoreParseError<'a>>(
-    bytes: &'a [u8],
-) -> SoundcoreParseResult<HearIDMusicType, E> {
+fn parse_music_type<'a, E: ParseError<'a>>(bytes: &'a [u8]) -> ParseResult<HearIDMusicType, E> {
     context("parse_hear_id_music_type", map(le_u8, HearIDMusicType))(bytes)
 }

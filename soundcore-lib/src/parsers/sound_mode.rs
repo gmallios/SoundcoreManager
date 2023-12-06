@@ -7,11 +7,9 @@ use nom::{
 
 use crate::models::{ANCMode, CurrentSoundMode, CustomANC, SoundMode, TransparencyMode};
 
-use super::{SoundcoreParseError, SoundcoreParseResult};
+use super::{ParseError, ParseResult};
 
-pub fn parse_sound_mode<'a, E: SoundcoreParseError<'a>>(
-    bytes: &'a [u8],
-) -> SoundcoreParseResult<SoundMode, E> {
+pub fn parse_sound_mode<'a, E: ParseError<'a>>(bytes: &'a [u8]) -> ParseResult<SoundMode, E> {
     context(
         "parse_sound_mode",
         map(
@@ -31,33 +29,27 @@ pub fn parse_sound_mode<'a, E: SoundcoreParseError<'a>>(
     )(bytes)
 }
 
-fn parse_curr_sound_mode<'a, E: SoundcoreParseError<'a>>(
+fn parse_curr_sound_mode<'a, E: ParseError<'a>>(
     bytes: &'a [u8],
-) -> SoundcoreParseResult<CurrentSoundMode, E> {
+) -> ParseResult<CurrentSoundMode, E> {
     context(
         "parse_curr_sound_mode",
         map_opt(le_u8, CurrentSoundMode::from_u8),
     )(bytes)
 }
 
-fn parse_anc_mode<'a, E: SoundcoreParseError<'a>>(
-    bytes: &'a [u8],
-) -> SoundcoreParseResult<ANCMode, E> {
+fn parse_anc_mode<'a, E: ParseError<'a>>(bytes: &'a [u8]) -> ParseResult<ANCMode, E> {
     context("parse_anc_mode", map_opt(le_u8, ANCMode::from_u8))(bytes)
 }
 
-fn parse_trans_mode<'a, E: SoundcoreParseError<'a>>(
-    bytes: &'a [u8],
-) -> SoundcoreParseResult<TransparencyMode, E> {
+fn parse_trans_mode<'a, E: ParseError<'a>>(bytes: &'a [u8]) -> ParseResult<TransparencyMode, E> {
     context(
         "parse_trans_mode",
         map_opt(le_u8, TransparencyMode::from_u8),
     )(bytes)
 }
 
-fn parse_custom_anc<'a, E: SoundcoreParseError<'a>>(
-    bytes: &'a [u8],
-) -> SoundcoreParseResult<CustomANC, E> {
+fn parse_custom_anc<'a, E: ParseError<'a>>(bytes: &'a [u8]) -> ParseResult<CustomANC, E> {
     context("parse_custom_anc", map(le_u8, CustomANC::from_u8))(bytes)
 }
 

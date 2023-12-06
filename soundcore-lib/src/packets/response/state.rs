@@ -7,7 +7,7 @@ use crate::{
         AgeRange, Battery, ButtonModel, CustomHearID, EQConfiguration, HearID, SideTone, SoundMode,
         SoundcoreFeatureFlags, TouchTone, TwsStatus, WearDetection,
     },
-    parsers::{SoundcoreParseError, SoundcoreParseResult},
+    parsers::{ParseError, ParseResult},
 };
 
 /// This is a generalized version of the state responses for all devices
@@ -33,9 +33,9 @@ pub struct DeviceStateResponse {
 }
 
 // TODO: Add more parsers
-pub fn parse_state_update_packet<'a, E: SoundcoreParseError<'a>>(
+pub fn parse_state_update_packet<'a, E: ParseError<'a>>(
     bytes: &'a [u8],
-) -> SoundcoreParseResult<DeviceStateResponse, E> {
+) -> ParseResult<DeviceStateResponse, E> {
     context("parse_state_update", |bytes| {
         alt((
             map(
