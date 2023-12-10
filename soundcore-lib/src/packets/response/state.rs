@@ -55,9 +55,11 @@ mod a3028;
 mod a3029;
 mod a3930;
 mod a3951;
+mod a3040;
 
 use a3027::*;
 use a3028::*;
 use a3029::*;
 use a3930::*;
 use a3951::*;
+use a3040::*;

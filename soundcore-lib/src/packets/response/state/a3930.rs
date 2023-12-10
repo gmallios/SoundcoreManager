@@ -7,14 +7,14 @@ use nom::{
 };
 use serde::{Deserialize, Serialize};
 
-use crate::models::{
+use crate::{models::{
     A3909ButtonModel, AgeRange, Battery, ButtonModel, CustomHearID, DualBattery, EQConfiguration,
     Gender, HearID, SideTone, SoundMode, SoundcoreFeatureFlags, StereoEQConfiguration, TouchTone,
     TwsStatus, WearDetection,
-};
+}, parsers::u8_parser};
 
 use crate::parsers::{
-    bool_parser, parse_a3909_button_model, parse_age_range, parse_custom_hear_id,
+    bool_parser, parse_a3909_button_model, parse_custom_hear_id,
     parse_dual_battery, parse_gender, parse_sound_mode, parse_stereo_eq_configuration, ParseError,
     ParseResult,
 };
@@ -96,7 +96,7 @@ pub fn parse_a3930_state_response<'a, E: ParseError<'a>>(
                 parse_stereo_eq_configuration,
                 parse_gender,
                 le_u8,
-                parse_age_range,
+                u8_parser::<AgeRange, E>,
                 parse_custom_hear_id,
                 parse_a3909_button_model,
                 parse_sound_mode,

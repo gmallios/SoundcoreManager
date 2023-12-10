@@ -16,12 +16,12 @@ use crate::{
     },
     parsers::{
         parse_base_hear_id, parse_bool, parse_dual_fw, parse_fw, parse_serial_number,
-        parse_single_battery,
+        parse_single_battery, u8_parser,
     },
 };
 
 use crate::parsers::{
-    bool_parser, parse_a3909_button_model, parse_age_range, parse_custom_hear_id,
+    bool_parser, parse_a3909_button_model, parse_custom_hear_id,
     parse_dual_battery, parse_gender, parse_sound_mode, parse_stereo_eq_configuration, ParseError,
     ParseResult,
 };
@@ -76,7 +76,7 @@ pub fn parse_a3028_state_response<'a, E: ParseError<'a>>(
                     parse_single_battery,
                     parse_stereo_eq_configuration,
                     parse_gender,
-                    parse_age_range,
+                    u8_parser::<AgeRange, E>,
                     parse_base_hear_id,
                     parse_sound_mode,
                     parse_dual_fw,
