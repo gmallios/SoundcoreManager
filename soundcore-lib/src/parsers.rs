@@ -2,6 +2,7 @@ use nom::{
     error::{ContextError, ParseError as NomParseError},
     IResult,
 };
+use crate::types::SupportedModels;
 
 pub use a3909_button_model::*;
 pub use auto_power::*;
@@ -16,8 +17,8 @@ pub use hearid::*;
 pub use packet_header::*;
 pub use serial::*;
 pub use sound_mode::*;
-
-use crate::types::SupportedModels;
+pub use hearing_protect::*;
+pub use prompt_language::*;
 
 mod a3909_button_model;
 mod auto_power;
@@ -32,6 +33,8 @@ mod hearid;
 mod packet_header;
 mod serial;
 mod sound_mode;
+mod hearing_protect;
+mod prompt_language;
 
 pub type ParseResult<'a, T, E> = IResult<&'a [u8], T, E>;
 pub type TaggedParseResult<'a, T, E> = IResult<&'a [u8], TaggedData<T>, E>;

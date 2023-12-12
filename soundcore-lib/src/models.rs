@@ -18,6 +18,9 @@ mod packet_kind;
 mod serial;
 mod sound_mode;
 mod trans_mode;
+mod device_color;
+mod hearing_protect;
+mod prompt_language;
 
 pub use a3909_button_model::*;
 pub use anc_mode::*;
@@ -39,3 +42,6 @@ pub use packet_kind::*;
 pub use serial::*;
 pub use sound_mode::*;
 pub use trans_mode::*;
+pub use device_color::*;
+pub use hearing_protect::*;
+pub use prompt_language::*;

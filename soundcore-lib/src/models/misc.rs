@@ -66,3 +66,8 @@ pub struct TouchTone(pub bool);
     Debug, Serialize, Deserialize, Eq, PartialEq, Ord, PartialOrd, Clone, Copy, Default, Hash, From,
 )]
 pub struct AgeRange(pub u8);
+
+#[derive(
+    Debug, Serialize, Deserialize, Eq, PartialEq, Ord, PartialOrd, Clone, Copy, Default, Hash, From,
+)]
+pub struct AmbientSoundNotice(pub bool);
