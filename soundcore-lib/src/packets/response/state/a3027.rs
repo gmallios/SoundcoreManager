@@ -2,27 +2,24 @@ use enumflags2::{make_bitflags, BitFlags};
 use nom::{
     combinator::{all_consuming, opt},
     error::context,
-    number::complete::{le_u16, le_u8},
     sequence::tuple,
 };
 use serde::{Deserialize, Serialize};
 
 use crate::{
     models::{
-        A3909ButtonModel, AgeRange, BaseHearID, Battery, ButtonModel, CustomHearID, DeviceFirmware,
-        DualBattery, EQConfiguration, FirmwareVer, Gender, HearID, SerialNumber, SideTone,
-        SingleBattery, SoundMode, SoundcoreFeatureFlags, StereoEQConfiguration, TouchTone,
+        AgeRange, BaseHearID, DeviceFirmware, EQConfiguration, Gender, HearID, SerialNumber,
+        SingleBattery, SoundMode, SoundcoreFeatureFlags, StereoEQConfiguration,
         TwsStatus, WearDetection,
     },
     parsers::{
-        parse_base_hear_id, parse_bool, parse_dual_fw, parse_fw, parse_serial_number,
+        parse_base_hear_id, parse_bool, parse_dual_fw, parse_serial_number,
         parse_single_battery, u8_parser,
     },
 };
 
 use crate::parsers::{
-    bool_parser, parse_a3909_button_model, parse_custom_hear_id,
-    parse_dual_battery, parse_gender, parse_sound_mode, parse_stereo_eq_configuration, ParseError,
+    bool_parser, parse_gender, parse_sound_mode, parse_stereo_eq_configuration, ParseError,
     ParseResult,
 };
 
@@ -60,7 +57,7 @@ impl From<A3027StateResponse> for DeviceStateResponse {
             feature_flags: A3027_FEATURE_FLAGS,
             battery: value.battery.into(),
             sound_mode: value.sound_mode,
-            eq: EQConfiguration::Stereo(value.eq).into(),
+            eq: EQConfiguration::Stereo(value.eq),
             tws_status: value.tws_status.into(),
             wear_detection: value.wear_detection.into(),
             hear_id: Some(HearID::Base(value.hear_id)),

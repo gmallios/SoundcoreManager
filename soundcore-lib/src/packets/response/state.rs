@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     models::{
-        AgeRange, Battery, ButtonModel, CustomHearID, EQConfiguration, HearID, SideTone, SoundMode,
+        AgeRange, Battery, ButtonModel, EQConfiguration, HearID, SideTone, SoundMode,
         SoundcoreFeatureFlags, TouchTone, TwsStatus, WearDetection,
     },
     parsers::{ParseError, ParseResult},
@@ -58,8 +58,7 @@ mod a3951;
 mod a3040;
 
 use a3027::*;
-use a3028::*;
-use a3029::*;
-use a3930::*;
+
+
+
 use a3951::*;
-use a3040::*;

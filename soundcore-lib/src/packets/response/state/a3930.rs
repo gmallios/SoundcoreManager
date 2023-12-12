@@ -2,15 +2,15 @@ use enumflags2::{make_bitflags, BitFlags};
 use nom::{
     combinator::{all_consuming, opt},
     error::context,
-    number::complete::{le_u16, le_u8},
+    number::complete::{le_u8},
     sequence::tuple,
 };
 use serde::{Deserialize, Serialize};
 
 use crate::{models::{
     A3909ButtonModel, AgeRange, Battery, ButtonModel, CustomHearID, DualBattery, EQConfiguration,
-    Gender, HearID, SideTone, SoundMode, SoundcoreFeatureFlags, StereoEQConfiguration, TouchTone,
-    TwsStatus, WearDetection,
+    Gender, HearID, SideTone, SoundMode, SoundcoreFeatureFlags, StereoEQConfiguration,
+    TwsStatus,
 }, parsers::u8_parser};
 
 use crate::parsers::{
