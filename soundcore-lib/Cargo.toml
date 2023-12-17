@@ -3,10 +3,6 @@ name = "soundcore-lib"
 version = "0.1.0"
 edition = "2021"
 
-[[bin]]
-name = "soundcore-lib-cli-tool"
-path = "src/cli.rs"
-
 [dependencies]
 serde = { version = "1", features = ["derive", "rc"] }
 tokio = { version = "1", features = ["time", "macros", "rt-multi-thread"] }
@@ -19,7 +15,6 @@ bluetooth-lib = { path = "../bluetooth-lib/" }
 log = "0.4.17"
 typeshare = "1.0.1"
 phf = { version = "0.11", default-features = false, features = ["macros"] }
-dialoguer = { version = "0.10.4", features = ["fuzzy-select"] }
 derive_more = { version = "0.99", features = ["from"] }
 
 [dev-dependencies]
