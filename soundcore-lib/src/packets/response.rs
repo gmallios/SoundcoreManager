@@ -35,7 +35,7 @@ mod info;
 mod sound_mode;
 mod state;
 
-pub use battery::*;
+
 pub use info::*;
 pub use sound_mode::*;
 pub use state::*;

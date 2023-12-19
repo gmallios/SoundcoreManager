@@ -7,7 +7,7 @@ use strum::EnumIter;
     Debug, Serialize, Deserialize, Eq, PartialEq, Ord, PartialOrd, Clone, Copy, Hash, EnumIter,
 )]
 #[bitflags]
-#[repr(u16)]
+#[repr(u32)]
 pub enum SoundcoreFeatureFlags {
     SOUND_MODE,
     ANC_MODE,
@@ -22,4 +22,10 @@ pub enum SoundcoreFeatureFlags {
     TOUCH_TONE,
     GAME_MODE,
     AUTO_POWER_OFF_ON,
+    InEarBeep,
+    PromptLang,
+    HearingProtect,
+    AmbientSoundNotice,
+    PowerOnBatteryNotice,
+    SupportTwoCnn,
 }

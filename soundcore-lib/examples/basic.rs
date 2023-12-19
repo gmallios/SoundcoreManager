@@ -1,7 +1,7 @@
 use bluetooth_lib::BluetoothAdrr;
 use soundcore_lib::{base::SoundcoreDevice, devices::A3951};
 
-const BT_ADDR: &str = "AC:12:2F:6A:D2:07";
+const BT_ADDR: &str = "E8:EE:CC:56:C3:EA";
 
 #[tokio::main]
 async fn main() {

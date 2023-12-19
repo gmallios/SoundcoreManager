@@ -6,6 +6,7 @@ use nom::{
 };
 
 use crate::models::{A3909ButtonModel, Action, ButtonSide, NonTwsButtonAction, TwsButtonAction};
+use crate::parsers::button_model::parse_button_model_action;
 
 use super::{base::parse_bool, ParseError, ParseResult};
 
@@ -66,12 +67,13 @@ fn parse_non_tws_button<'a, E: ParseError<'a>>(
 ) -> ParseResult<NonTwsButtonAction, E> {
     context(
         "parse_a3909_non_tws_button",
-        map_opt(pair(parse_bool, le_u8), |(is_enabled, action)| {
-            Some(NonTwsButtonAction {
-                action: Action::from_repr(action)?,
+        map(
+            pair(parse_bool, parse_button_model_action),
+            |(is_enabled, action)| NonTwsButtonAction {
+                action,
                 enabled: is_enabled,
-            })
-        }),
+            },
+        ),
     )(bytes)
 }
 

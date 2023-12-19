@@ -6,7 +6,7 @@ fn parse_a3951_state_update() {
     let packet = ResponsePacket::from_bytes(&A3951_STATE_UPDATE_BYTES).unwrap();
     match packet {
         ResponsePacket::DeviceState(_state) => {
-            todo!()
+            // TODO
         }
         _ => panic!("Parsed as wrong packet type"),
     }

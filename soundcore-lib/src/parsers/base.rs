@@ -34,6 +34,14 @@ where
     map(le_u8, T::from)(bytes)
 }
 
+pub fn repr_parser<'a, T, E>(bytes: &'a [u8]) -> ParseResult<T, E>
+where
+    T: From<u8>,
+    E: ParseError<'a>,
+{
+    map(le_u8, T::from)(bytes)
+}
+
 pub fn take_last_byte<'a, E: ParseError<'a>>(bytes: &'a [u8]) -> ParseResult<u8, E> {
     let (_arr, last_byte) = le_u8(&bytes[bytes.len() - 1..])?;
     Ok((&bytes[..bytes.len() - 1], last_byte))

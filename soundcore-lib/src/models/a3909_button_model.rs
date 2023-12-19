@@ -1,5 +1,6 @@
+use crate::models::Action;
 use serde::{Deserialize, Serialize};
-use strum::FromRepr;
+
 
 /// This is the A3909 variant of the CustomBtnModel
 /// TODO: Check if there are common models to other button models, if so move them to a common file
@@ -57,27 +58,6 @@ pub struct NonTwsButtonAction {
 impl NonTwsButtonAction {
     pub fn bytes(&self) -> [u8; 2] {
         [self.enabled as u8, self.action.as_u8() & 0x0F]
-    }
-}
-
-#[derive(
-    Debug, Serialize, Deserialize, Clone, Copy, Hash, PartialEq, Eq, PartialOrd, Ord, FromRepr,
-)]
-#[repr(u8)]
-#[serde(rename_all = "camelCase")]
-pub enum Action {
-    VolumeUp = 0,
-    VolumeDown = 1,
-    PreviousSong = 2,
-    NextSong = 3,
-    Trans = 4, /* TODO: Refered to as "custom_trans" in the source, unknown action */
-    VoiceAssistant = 5,
-    PlayPause = 6,
-}
-
-impl Action {
-    fn as_u8(&self) -> u8 {
-        *self as u8
     }
 }
 
