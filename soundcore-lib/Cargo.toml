@@ -1,11 +1,11 @@
 [package]
 name = "soundcore-lib"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 
 [dependencies]
 serde = { version = "1", features = ["derive", "rc"] }
-tokio = { version = "1", features = ["time", "macros", "rt-multi-thread"] }
+tokio = { version = "1", features = ["time", "macros", "rt-multi-thread", "sync"] }
 strum = { version = "0.25", features = ["derive"] }
 nom = "7"
 enumflags2 = { version = "0.7.7", features = ["serde"] }
@@ -16,6 +16,20 @@ log = "0.4.20"
 typeshare = "1.0.1"
 phf = { version = "0.11", default-features = false, features = ["macros"] }
 derive_more = { version = "0.99", features = ["from"] }
+uuid = { version = "1.6.1", features = ["v4", "serde"] }
 
 [dev-dependencies]
 test_data = { path = "../test_data" }
+
+
+[target.'cfg(target_os = "windows")'.dependencies]
+windows = { version = "0.52", features = [
+    "Storage_Streams",
+    "Foundation",
+    "implement",
+    "Foundation_Collections",
+    "Devices_Enumeration",
+    "Devices_Bluetooth",
+    "Devices_Bluetooth_GenericAttributeProfile",
+    "Devices_Bluetooth_Advertisement"
+] }
