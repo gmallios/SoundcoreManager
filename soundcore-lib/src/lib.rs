@@ -2,6 +2,8 @@ pub use bluetooth_lib::BluetoothAdrr;
 
 pub mod api;
 pub mod base;
+mod ble;
+mod btaddr;
 pub mod compat;
 pub mod devices;
 pub mod error;

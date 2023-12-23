@@ -1,16 +1,16 @@
-use crate::error::SoundcoreError;
+use crate::error::SoundcoreLibError;
 use crate::models::{
-    Battery, EQConfiguration, MonoEQ, SideTone, SoundMode,
-    TouchTone, TwsStatus, WearDetection,
+    Battery, EQConfiguration, MonoEQ, SideTone, SoundMode, TouchTone, TwsStatus, WearDetection,
 };
 use crate::packets::ResponsePacket;
 use crate::types::{ANCProfile, BatteryCharging, BatteryLevel, DeviceStatus, EQWave};
 
 impl TryInto<DeviceStatus> for ResponsePacket {
-    type Error = SoundcoreError;
+    type Error = SoundcoreLibError;
     fn try_into(self) -> Result<DeviceStatus, Self::Error> {
         match self {
             ResponsePacket::DeviceState(state) => {
+                let state = state.data;
                 let (battery_level, battery_charging) = state.battery.into();
                 let (left_eq, right_eq) = state.eq.into();
                 Ok(DeviceStatus {
@@ -32,7 +32,7 @@ impl TryInto<DeviceStatus> for ResponsePacket {
                     right_hearid_customdata: EQWave::default(),
                 })
             }
-            _ => Err(SoundcoreError::IncompatibleResponse),
+            _ => Err(SoundcoreLibError::IncompatibleResponse),
         }
     }
 }

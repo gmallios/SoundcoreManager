@@ -7,17 +7,21 @@ use nom::{
 };
 use serde::{Deserialize, Serialize};
 
-use crate::{models::{
-    A3909ButtonModel, AgeRange, Battery, ButtonModel, CustomHearID, DualBattery,
-    EQConfiguration, Gender, HearID, SideTone, SoundMode, SoundcoreFeatureFlags,
-    StereoEQConfiguration, TouchTone, TwsStatus, WearDetection,
-}, parsers::u8_parser};
+use crate::{
+    models::{
+        A3909ButtonModel, AgeRange, Battery, ButtonModel, CustomHearID, DualBattery,
+        EQConfiguration, Gender, HearID, SideTone, SoundMode, SoundcoreFeatureFlags,
+        StereoEQConfiguration, TouchTone, TwsStatus, WearDetection,
+    },
+    parsers::u8_parser,
+};
 
 use crate::parsers::{
-    bool_parser, parse_a3909_button_model, parse_custom_hear_id,
-    parse_dual_battery, parse_gender, parse_sound_mode, parse_stereo_eq_configuration, ParseError,
-    ParseResult,
+    bool_parser, parse_a3909_button_model, parse_custom_hear_id, parse_dual_battery, parse_gender,
+    parse_sound_mode, parse_stereo_eq_configuration, ParseError, ParseResult, TaggedData,
+    TaggedParseResult,
 };
+use crate::types::SupportedModels;
 
 use super::DeviceStateResponse;
 
@@ -76,7 +80,7 @@ impl From<A3951StateResponse> for DeviceStateResponse {
 
 pub fn parse_a3951_state_response<'a, E: ParseError<'a>>(
     bytes: &'a [u8],
-) -> ParseResult<A3951StateResponse, E> {
+) -> TaggedParseResult<A3951StateResponse, E> {
     context(
         "a3951_state_response",
         all_consuming(|bytes| {
@@ -118,21 +122,24 @@ pub fn parse_a3951_state_response<'a, E: ParseError<'a>>(
 
             Ok((
                 bytes,
-                A3951StateResponse {
-                    host_device,
-                    tws_status,
-                    battery,
-                    eq,
-                    gender,
-                    age_range,
-                    hear_id,
-                    button_model,
-                    sound_mode,
-                    side_tone,
-                    wear_detection,
-                    touch_tone,
-                    hearid_eq_preset,
-                    new_battery,
+                TaggedData {
+                    tag: SupportedModels::A3951,
+                    data: A3951StateResponse {
+                        host_device,
+                        tws_status,
+                        battery,
+                        eq,
+                        gender,
+                        age_range,
+                        hear_id,
+                        button_model,
+                        sound_mode,
+                        side_tone,
+                        wear_detection,
+                        touch_tone,
+                        hearid_eq_preset,
+                        new_battery,
+                    },
                 },
             ))
         }),
@@ -141,7 +148,6 @@ pub fn parse_a3951_state_response<'a, E: ParseError<'a>>(
 
 #[cfg(test)]
 mod a3951_state {
-
     use super::*;
 
     const RESP_BYTES: [u8; 86] = [
@@ -167,29 +173,35 @@ mod a3951_state {
 
         assert!(remaining.is_empty());
 
-        assert_eq!(state.host_device, old_state.host_device);
-        assert_eq!(state.tws_status.0, old_state.tws_status);
-        assert_eq!(state.battery.left.charging, old_state.battery_charging.left);
-        assert_eq!(state.battery.left.level, old_state.battery_level.left);
+        assert_eq!(state.data.host_device, old_state.host_device);
+        assert_eq!(state.data.tws_status.0, old_state.tws_status);
         assert_eq!(
-            state.battery.right.charging,
+            state.data.battery.left.charging,
+            old_state.battery_charging.left
+        );
+        assert_eq!(state.data.battery.left.level, old_state.battery_level.left);
+        assert_eq!(
+            state.data.battery.right.charging,
             old_state.battery_charging.right
         );
-        assert_eq!(state.battery.right.level, old_state.battery_level.right);
         assert_eq!(
-            state.sound_mode.anc_mode.as_u8(),
+            state.data.battery.right.level,
+            old_state.battery_level.right
+        );
+        assert_eq!(
+            state.data.sound_mode.anc_mode.as_u8(),
             old_state.anc_status.anc_option
         );
         assert_eq!(
-            state.sound_mode.custom_anc.as_u8(),
+            state.data.sound_mode.custom_anc.as_u8(),
             old_state.anc_status.anc_custom
         );
         assert_eq!(
-            state.sound_mode.anc_mode.as_u8(),
+            state.data.sound_mode.anc_mode.as_u8(),
             old_state.anc_status.anc_option
         );
         assert_eq!(
-            state.sound_mode.trans_mode.as_u8(),
+            state.data.sound_mode.trans_mode.as_u8(),
             old_state.anc_status.transparency_option
         );
     }

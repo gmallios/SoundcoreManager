@@ -1,7 +1,10 @@
 use thiserror::Error;
 
+pub type SoundcoreLibResult<E> = std::result::Result<E, SoundcoreLibError>;
+type ErrorWrapper = Box<dyn std::error::Error + Send + Sync>;
+
 #[derive(Error, Debug)]
-pub enum SoundcoreError {
+pub enum SoundcoreLibError {
     #[error("Unknown error")]
     Unknown,
     #[error("Connection error")]
@@ -54,11 +57,19 @@ pub enum SoundcoreError {
     NomParseError { error: String },
     #[error("Incompatible response")]
     IncompatibleResponse,
+    #[error("Invalid MAC address: {addr}")]
+    InvalidMACAddress { addr: String },
+    #[cfg(target_os = "windows")]
+    #[error("Unknown Windows Error")]
+    UnknownWindowsError {
+        #[from]
+        source: windows::core::Error,
+    },
 }
 
-impl From<nom::Err<nom::error::VerboseError<&[u8]>>> for SoundcoreError {
+impl From<nom::Err<nom::error::VerboseError<&[u8]>>> for SoundcoreLibError {
     fn from(error: nom::Err<nom::error::VerboseError<&[u8]>>) -> Self {
-        SoundcoreError::NomParseError {
+        SoundcoreLibError::NomParseError {
             error: format!("{:?}", error),
         }
     }

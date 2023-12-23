@@ -18,10 +18,8 @@ use crate::{
     },
 };
 
-use crate::parsers::{
-    bool_parser, parse_gender, parse_sound_mode, parse_stereo_eq_configuration, ParseError,
-    ParseResult,
-};
+use crate::parsers::{bool_parser, parse_gender, parse_sound_mode, parse_stereo_eq_configuration, ParseError, ParseResult, TaggedData, TaggedParseResult};
+use crate::types::SupportedModels;
 
 use super::DeviceStateResponse;
 
@@ -69,7 +67,7 @@ impl From<A3027StateResponse> for DeviceStateResponse {
 
 pub fn parse_a3027_state_response<'a, E: ParseError<'a>>(
     bytes: &'a [u8],
-) -> ParseResult<A3027StateResponse, E> {
+) -> TaggedParseResult<A3027StateResponse, E> {
     context(
         "a3027_state_response",
         all_consuming(|bytes| {
@@ -93,19 +91,22 @@ pub fn parse_a3027_state_response<'a, E: ParseError<'a>>(
 
             Ok((
                 bytes,
-                A3027StateResponse {
-                    tws_status: TwsStatus(true),
-                    battery,
-                    eq,
-                    gender,
-                    age_range,
-                    hear_id,
-                    sound_mode,
-                    wear_detection,
-                    fw: DeviceFirmware::DUAL(fw.0, fw.1),
-                    sn,
-                    touch_func: touch_func.unwrap_or(false),
-                },
+                TaggedData {
+                    tag: SupportedModels::A3027,
+                    data: A3027StateResponse {
+                        tws_status: TwsStatus(true),
+                        battery,
+                        eq,
+                        gender,
+                        age_range,
+                        hear_id,
+                        sound_mode,
+                        wear_detection,
+                        fw: DeviceFirmware::DUAL(fw.0, fw.1),
+                        sn,
+                        touch_func: touch_func.unwrap_or(false),
+                    },
+                }
             ))
         }),
     )(bytes)

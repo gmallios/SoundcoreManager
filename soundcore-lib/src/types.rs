@@ -2,18 +2,18 @@ use phf::phf_map;
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
-use crate::error::SoundcoreError;
+use crate::error::SoundcoreLibError;
 
-pub type SendFnType<'a> = &'a (dyn Fn(&[u8]) -> Result<(), SoundcoreError> + Send + Sync);
-pub type RecvFnType<'a> = &'a (dyn Fn(usize) -> Result<Vec<u8>, SoundcoreError> + Send + Sync);
+pub type SendFnType<'a> = &'a (dyn Fn(&[u8]) -> Result<(), SoundcoreLibError> + Send + Sync);
+pub type RecvFnType<'a> = &'a (dyn Fn(usize) -> Result<Vec<u8>, SoundcoreLibError> + Send + Sync);
 pub type CloseSockFnType<'a> = &'a (dyn Fn() + Send + Sync);
 
 pub trait ResponseDecoder<T> {
-    fn decode(&self, arr: &[u8]) -> Result<T, SoundcoreError>;
+    fn decode(&self, arr: &[u8]) -> Result<T, SoundcoreLibError>;
 }
 
 pub trait CommandEncoder<T> {
-    fn encode(&self) -> Result<Vec<u8>, SoundcoreError>;
+    fn encode(&self) -> Result<Vec<u8>, SoundcoreLibError>;
 }
 
 #[typeshare]
@@ -23,6 +23,8 @@ pub enum SupportedModels {
     A3028,
     A3029,
     A3040,
+    A3930,
+    A3931,
     A3935,
     A3951,
 }
@@ -121,9 +123,9 @@ impl EQWave {
         pos9: 25.5,
     };
 
-    pub fn decode(arr: &[u8]) -> Result<EQWave, SoundcoreError> {
+    pub fn decode(arr: &[u8]) -> Result<EQWave, SoundcoreLibError> {
         if arr.len() < 8 {
-            return Err(SoundcoreError::Unknown);
+            return Err(SoundcoreLibError::Unknown);
         }
 
         let results = Self::eq_int_to_float(arr);

@@ -2,22 +2,25 @@ use enumflags2::{make_bitflags, BitFlags};
 use nom::{
     combinator::{all_consuming, opt},
     error::context,
-    number::complete::{le_u8},
+    number::complete::le_u8,
     sequence::tuple,
 };
 use serde::{Deserialize, Serialize};
 
-use crate::{models::{
-    A3909ButtonModel, AgeRange, Battery, ButtonModel, CustomHearID, DualBattery, EQConfiguration,
-    Gender, HearID, SideTone, SoundMode, SoundcoreFeatureFlags, StereoEQConfiguration,
-    TwsStatus,
-}, parsers::u8_parser};
+use crate::{
+    models::{
+        A3909ButtonModel, AgeRange, Battery, ButtonModel, CustomHearID, DualBattery,
+        EQConfiguration, Gender, HearID, SideTone, SoundMode, SoundcoreFeatureFlags,
+        StereoEQConfiguration, TwsStatus,
+    },
+    parsers::u8_parser,
+};
 
 use crate::parsers::{
-    bool_parser, parse_a3909_button_model, parse_custom_hear_id,
-    parse_dual_battery, parse_gender, parse_sound_mode, parse_stereo_eq_configuration, ParseError,
-    ParseResult,
+    bool_parser, parse_a3909_button_model, parse_custom_hear_id, parse_dual_battery, parse_gender,
+    parse_sound_mode, parse_stereo_eq_configuration, ParseError, TaggedData, TaggedParseResult,
 };
+use crate::types::SupportedModels;
 
 use super::DeviceStateResponse;
 
@@ -70,7 +73,7 @@ impl From<A3930StateResponse> for DeviceStateResponse {
 
 pub fn parse_a3930_state_response<'a, E: ParseError<'a>>(
     bytes: &'a [u8],
-) -> ParseResult<A3930StateResponse, E> {
+) -> TaggedParseResult<A3930StateResponse, E> {
     context(
         "a3930_state_response",
         all_consuming(|bytes| {
@@ -109,19 +112,22 @@ pub fn parse_a3930_state_response<'a, E: ParseError<'a>>(
 
             Ok((
                 bytes,
-                A3930StateResponse {
-                    host_device,
-                    tws_status,
-                    battery,
-                    eq,
-                    gender,
-                    age_range,
-                    hear_id,
-                    button_model,
-                    sound_mode,
-                    side_tone,
-                    hear_id_has_custom_data,
-                    hear_id_eq_index,
+                TaggedData {
+                    tag: SupportedModels::A3930,
+                    data: A3930StateResponse {
+                        host_device,
+                        tws_status,
+                        battery,
+                        eq,
+                        gender,
+                        age_range,
+                        hear_id,
+                        button_model,
+                        sound_mode,
+                        side_tone,
+                        hear_id_has_custom_data,
+                        hear_id_eq_index,
+                    },
                 },
             ))
         }),

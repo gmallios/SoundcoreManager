@@ -1,13 +1,18 @@
+use nom::error::VerboseError;
+
+pub use info::*;
+pub use sound_mode::*;
+pub use state::*;
+
 use crate::{
     models::ResponsePacketKind,
     parsers::{parse_and_check_checksum, parse_packet_header},
 };
-
-use nom::error::VerboseError;
+use crate::parsers::TaggedData;
 
 #[derive(Debug)]
 pub enum ResponsePacket {
-    DeviceState(DeviceStateResponse),
+    DeviceState(TaggedData<DeviceStateResponse>),
     SoundModeUpdate(SoundModeUpdateResponse),
     DeviceInfo(DeviceInfoResponse),
 }
@@ -35,15 +40,11 @@ mod info;
 mod sound_mode;
 mod state;
 
-
-pub use info::*;
-pub use sound_mode::*;
-pub use state::*;
-
 #[cfg(test)]
 mod response_test {
-    use super::ResponsePacket;
     use test_data::a3951::*;
+
+    use super::ResponsePacket;
 
     #[test]
     fn sound_mode_update() {

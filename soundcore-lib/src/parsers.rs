@@ -2,6 +2,7 @@ use nom::{
     error::{ContextError, ParseError as NomParseError},
     IResult,
 };
+use serde::{Deserialize, Serialize};
 
 pub use a3040_button_model::*;
 pub use a3909_button_model::*;
@@ -48,6 +49,7 @@ pub trait ParseError<'a>: NomParseError<&'a [u8]> + ContextError<&'a [u8]> {}
 impl<'a> ParseError<'a> for nom::error::VerboseError<&'a [u8]> {}
 
 /// Used when we need to know the successful parser's device model
+#[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq, Hash)]
 pub struct TaggedData<T> {
     pub data: T,
     pub tag: SupportedModels,

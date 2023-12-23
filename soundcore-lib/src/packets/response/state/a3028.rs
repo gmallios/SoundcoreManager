@@ -1,27 +1,22 @@
 use enumflags2::{make_bitflags, BitFlags};
-use nom::{
-    combinator::{all_consuming},
-    error::context,
-    sequence::tuple,
-};
+use nom::{combinator::all_consuming, error::context, sequence::tuple};
 use serde::{Deserialize, Serialize};
 
 use crate::{
     models::{
         AgeRange, BaseHearID, DeviceFirmware, EQConfiguration, Gender, HearID, SerialNumber,
-        SingleBattery, SoundMode, SoundcoreFeatureFlags, StereoEQConfiguration,
-        TwsStatus,
+        SingleBattery, SoundMode, SoundcoreFeatureFlags, StereoEQConfiguration, TwsStatus,
     },
     parsers::{
-        parse_base_hear_id, parse_dual_fw, parse_serial_number,
-        parse_single_battery, u8_parser,
+        parse_base_hear_id, parse_dual_fw, parse_serial_number, parse_single_battery, u8_parser,
     },
 };
 
 use crate::parsers::{
-    parse_gender, parse_sound_mode, parse_stereo_eq_configuration, ParseError,
-    ParseResult,
+    parse_gender, parse_sound_mode, parse_stereo_eq_configuration, ParseError, ParseResult,
+    TaggedData, TaggedParseResult,
 };
+use crate::types::SupportedModels;
 
 use super::DeviceStateResponse;
 
@@ -64,7 +59,7 @@ impl From<A3028StateResponse> for DeviceStateResponse {
 
 pub fn parse_a3028_state_response<'a, E: ParseError<'a>>(
     bytes: &'a [u8],
-) -> ParseResult<A3028StateResponse, E> {
+) -> TaggedParseResult<A3028StateResponse, E> {
     context(
         "a3028_state_response",
         all_consuming(|bytes| {
@@ -82,16 +77,19 @@ pub fn parse_a3028_state_response<'a, E: ParseError<'a>>(
 
             Ok((
                 bytes,
-                A3028StateResponse {
-                    tws_status: TwsStatus(true),
-                    battery,
-                    eq,
-                    gender,
-                    age_range,
-                    hear_id,
-                    sound_mode,
-                    fw: DeviceFirmware::DUAL(fw.0, fw.1),
-                    sn,
+                TaggedData {
+                    tag: SupportedModels::A3028,
+                    data: A3028StateResponse {
+                        tws_status: TwsStatus(true),
+                        battery,
+                        eq,
+                        gender,
+                        age_range,
+                        hear_id,
+                        sound_mode,
+                        fw: DeviceFirmware::DUAL(fw.0, fw.1),
+                        sn,
+                    },
                 },
             ))
         }),

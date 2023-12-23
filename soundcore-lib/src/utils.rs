@@ -1,4 +1,4 @@
-use crate::error::SoundcoreError;
+use crate::error::SoundcoreLibError;
 
 pub(crate) fn i8vec_to_u8vec(arr: Vec<i8>) -> Vec<u8> {
     let mut vec = Vec::new();
@@ -25,9 +25,9 @@ pub(crate) fn mac_str_to_u64(addr: &str) -> Result<u64, std::num::ParseIntError>
     Ok(a)
 }
 
-pub(crate) fn verify_resp(resp: &[u8]) -> Result<(), SoundcoreError> {
+pub(crate) fn verify_resp(resp: &[u8]) -> Result<(), SoundcoreLibError> {
     if resp.is_empty() {
-        return Err(SoundcoreError::ResponseChecksumError);
+        return Err(SoundcoreLibError::ResponseChecksumError);
     }
 
     let len = resp.len() - 1;
@@ -36,7 +36,7 @@ pub(crate) fn verify_resp(resp: &[u8]) -> Result<(), SoundcoreError> {
 
     match calculate_checksum_byte(&b_arr2) == resp[len] {
         true => Ok(()),
-        false => Err(SoundcoreError::ResponseChecksumError),
+        false => Err(SoundcoreLibError::ResponseChecksumError),
     }
 }
 

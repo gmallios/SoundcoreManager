@@ -4,11 +4,13 @@ use nom::{combinator::all_consuming, error::context, sequence::tuple};
 use serde::{Deserialize, Serialize};
 
 use crate::models::PromptLanguage;
+use crate::packets::DeviceStateResponse;
 use crate::parsers::{
     bool_parser, parse_a3040_button_model, parse_auto_power_off_on, parse_fw,
     parse_hearing_protect, parse_prompt_language, parse_single_battery, parse_sound_mode,
-    parse_stereo_eq, u8_parser,
+    parse_stereo_eq, u8_parser, TaggedData, TaggedParseResult,
 };
+use crate::types::SupportedModels;
 use crate::{
     models::{
         AmbientSoundNotice, AutoPowerOff, BassUp, DeviceColor, FirmwareVer, HearingProtect,
@@ -63,7 +65,7 @@ const A3040_FEATURE_FLAGS: BitFlags<SoundcoreFeatureFlags> = make_bitflags!(Soun
 
 pub fn parse_a3040_state_response<'a, E: ParseError<'a>>(
     bytes: &'a [u8],
-) -> ParseResult<A3040StateResponse, E> {
+) -> TaggedParseResult<A3040StateResponse, E> {
     context(
         "a3040_state_response",
         all_consuming(|bytes| {
@@ -124,26 +126,54 @@ pub fn parse_a3040_state_response<'a, E: ParseError<'a>>(
 
             Ok((
                 bytes,
-                A3040StateResponse {
-                    battery,
-                    fw,
-                    sn,
-                    touch_tone,
-                    wear_detection,
-                    three_dimensional_effect,
-                    charging_case_battery,
-                    bass_up,
-                    device_color,
-                    ldac,
-                    support_two_cnn,
-                    in_ear_beep,
-                    prompt_language,
-                    auto_power_off,
-                    hearing_protect,
-                    ambient_sound_notice,
-                    power_on_battery_notice,
+                TaggedData {
+                    tag: SupportedModels::A3040,
+                    data: A3040StateResponse {
+                        battery,
+                        fw,
+                        sn,
+                        touch_tone,
+                        wear_detection,
+                        three_dimensional_effect,
+                        charging_case_battery,
+                        bass_up,
+                        device_color,
+                        ldac,
+                        support_two_cnn,
+                        in_ear_beep,
+                        prompt_language,
+                        auto_power_off,
+                        hearing_protect,
+                        ambient_sound_notice,
+                        power_on_battery_notice,
+                    },
                 },
             ))
         }),
     )(bytes)
+}
+
+// TODO:
+impl From<A3040StateResponse> for DeviceStateResponse {
+    fn from(value: A3040StateResponse) -> Self {
+        Self {
+            battery: value.battery.into(),
+            fw: value.fw.into(),
+            sn: Some(value.sn),
+            touch_tone: Some(value.touch_tone),
+            wear_detection: Some(value.wear_detection),
+            three_dimensional_effect: Some(value.three_dimensional_effect),
+            bass_up: Some(value.bass_up),
+            device_color: Some(value.device_color),
+            ldac: Some(value.ldac),
+            support_two_cnn: Some(value.support_two_cnn),
+            in_ear_beep: Some(value.in_ear_beep),
+            prompt_language: Some(value.prompt_language),
+            auto_power_off: Some(value.auto_power_off),
+            hearing_protect: Some(value.hearing_protect),
+            ambient_sound_notice: Some(value.ambient_sound_notice),
+            power_on_battery_notice: Some(value.power_on_battery_notice),
+            ..Default::default()
+        }
+    }
 }
