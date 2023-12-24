@@ -1,10 +1,18 @@
-use std::fmt::Display;
+use std::fmt::{Debug, Display};
+
+use serde::{Deserialize, Serialize};
 
 use crate::error::{SoundcoreLibError, SoundcoreLibResult};
 
-#[derive(Debug, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
+#[derive(Serialize, Deserialize, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
 pub struct BluetoothAdrr {
     pub address: [u8; 6],
+}
+
+impl Debug for BluetoothAdrr {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.to_string())
+    }
 }
 
 impl BluetoothAdrr {

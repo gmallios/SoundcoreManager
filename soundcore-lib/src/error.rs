@@ -65,6 +65,11 @@ pub enum SoundcoreLibError {
         #[from]
         source: windows::core::Error,
     },
+    #[error("Tokio Error")]
+    TokioError {
+        #[from]
+        source: tokio::task::JoinError,
+    },
 }
 
 impl From<nom::Err<nom::error::VerboseError<&[u8]>>> for SoundcoreLibError {

@@ -1,24 +1,26 @@
-use crate::ble::{BLEDeviceDescriptor, DeviceDescriptor};
 use serde::{Deserialize, Serialize};
+
+use crate::ble::DeviceDescriptor;
+use crate::btaddr::BluetoothAdrr;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct WindowsBLEDescriptor {
     name: String,
-    mac_addr: String,
+    addr: BluetoothAdrr,
 }
 
 impl WindowsBLEDescriptor {
-    pub fn new(name: impl Into<String>, mac_addr: impl Into<String>) -> Self {
+    pub fn new(name: impl Into<String>, mac_addr: impl Into<BluetoothAdrr>) -> Self {
         Self {
             name: name.into(),
-            mac_addr: mac_addr.into(),
+            addr: mac_addr.into(),
         }
     }
 }
 
 impl DeviceDescriptor for WindowsBLEDescriptor {
-    fn mac_addr(&self) -> &str {
-        &self.mac_addr
+    fn mac_addr(&self) -> BluetoothAdrr {
+        self.addr.clone()
     }
 
     fn name(&self) -> &str {

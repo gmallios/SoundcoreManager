@@ -37,11 +37,12 @@ impl BLEDeviceScanner for WindowsBLEDeviceScanner {
                 Arc::new(Mutex::new(HashMap::<BluetoothAdrr, BluetoothAdrr>::new()));
 
             let device_watcher = BluetoothLEAdvertisementWatcher::new()?;
+            let cloned_map = Arc::clone(&addr_swap_map);
             let handler = TypedEventHandler::new(
                 move |_sender: &Option<BluetoothLEAdvertisementWatcher>,
                       args: &Option<BluetoothLEAdvertisementReceivedEventArgs>|
                       -> Result<(), windows::core::Error> {
-                    event_handler(addr_swap_map.clone(), _sender, args)
+                    event_handler(cloned_map.clone(), _sender, args)
                 },
             );
 
@@ -60,26 +61,24 @@ impl BLEDeviceScanner for WindowsBLEDeviceScanner {
             Ok(scan_result
                 .into_iter()
                 .map(|info| BluetoothDevice::FromIdAsync(&info.Id()?)?.get())
-                .filter_map(|device| device.ok())
+                .filter_map(|res| res.ok())
                 .map(|device| {
                     let mut addr = BluetoothAdrr::from(device.BluetoothAddress()?);
-                    match addr_swap_map.lock().unwrap().get(&addr) {
+                    let name = device.Name()?;
+                    match addr_swap_map.clone().lock().unwrap().get(&addr) {
                         Some(new_addr) => {
                             trace!("Swapping MAC address {:?} with {:?}", addr, new_addr);
                             addr = new_addr.clone();
                         }
                         None => {}
                     }
-                    Ok(BLEDeviceDescriptor::new(
-                        device.Name()?.to_string(),
-                        addr.to_string(),
-                    )) as SoundcoreLibResult<BLEDeviceDescriptor>
+                    Ok(BLEDeviceDescriptor::new(addr, name.to_string()))
+                        as SoundcoreLibResult<BLEDeviceDescriptor>
                 })
                 .filter_map(|descriptor_result| descriptor_result.ok())
                 .collect::<Vec<BLEDeviceDescriptor>>())
         })
-        .await
-        .map_err(|_e| SoundcoreLibError::Unknown)?
+        .await?
     }
 }
 

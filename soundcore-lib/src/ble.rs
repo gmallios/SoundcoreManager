@@ -1,10 +1,12 @@
+use ::windows::Devices::Bluetooth::GenericAttributeProfile::GattWriteOption;
 use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
 
+use crate::btaddr::BluetoothAdrr;
 use crate::error::SoundcoreLibResult;
 
 mod ble;
-mod windows;
+pub mod windows;
 
 /// The general flow should be:
 /// BLEDeviceScanner -> BLEDeviceDescriptor -> BLEConnectionFactory -> BLEConnection -> SoundcoreDevice
@@ -19,7 +21,7 @@ pub trait BLEConnectionFactory {
     type Connection: BLEConnection + Send + Sync;
     async fn connect(
         &self,
-        mac_addr: &str,
+        addr: BluetoothAdrr,
         uuid_set: BLEConnectionUuidSet,
     ) -> SoundcoreLibResult<Self::Connection>;
 }
@@ -32,27 +34,28 @@ pub trait BLEDeviceScanner {
 }
 
 pub trait DeviceDescriptor {
-    fn mac_addr(&self) -> &str;
+    fn mac_addr(&self) -> BluetoothAdrr;
     fn name(&self) -> &str;
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct BLEDeviceDescriptor {
-    pub mac_addr: String,
+    pub addr: BluetoothAdrr,
     pub name: String,
 }
 
 impl BLEDeviceDescriptor {
-    pub fn new(mac_addr: impl Into<String>, name: impl Into<String>) -> Self {
+    pub fn new(mac_addr: impl Into<BluetoothAdrr>, name: impl Into<String>) -> Self {
         Self {
-            mac_addr: mac_addr.into(),
+            addr: mac_addr.into(),
             name: name.into(),
         }
     }
 }
 
 impl DeviceDescriptor for BLEDeviceDescriptor {
-    fn mac_addr(&self) -> &str {
-        &self.mac_addr
+    fn mac_addr(&self) -> BluetoothAdrr {
+        self.addr.clone()
     }
 
     fn name(&self) -> &str {
@@ -63,6 +66,16 @@ impl DeviceDescriptor for BLEDeviceDescriptor {
 pub enum WriteType {
     WithResponse,
     WithoutResponse,
+}
+
+#[cfg(target_os = "windows")]
+impl Into<GattWriteOption> for WriteType {
+    fn into(self) -> GattWriteOption {
+        match self {
+            WriteType::WithResponse => GattWriteOption::WriteWithResponse,
+            WriteType::WithoutResponse => GattWriteOption::WriteWithoutResponse,
+        }
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize)]
