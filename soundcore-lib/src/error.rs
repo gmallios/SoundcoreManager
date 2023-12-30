@@ -11,6 +11,8 @@ pub enum SoundcoreLibError {
     ConnectionError,
     #[error("Not connected")]
     NotConnected,
+    #[error("Device Not Found")]
+    DeviceNotFound,
     #[error("Parse error")]
     ParseError,
     #[error("Response checksum error")]
@@ -21,6 +23,12 @@ pub enum SoundcoreLibError {
     RecvError,
     #[error("Feature not supported/implemented: {0}")]
     FeatureNotSupported(String),
+    #[error("Missing service: {0}")]
+    MissingService(String),
+    #[error("Cannot find UUID set for device: {0}")]
+    MissingUUIDSet(String),
+    #[error("Missing characteristic: {0}")]
+    MissingCharacteristic(String),
     #[error("Win32 error: {0}")]
     WinError(String),
     #[error("IO error")]
@@ -69,6 +77,11 @@ pub enum SoundcoreLibError {
     TokioError {
         #[from]
         source: tokio::task::JoinError,
+    },
+    #[error("Btleplug Error")]
+    BtleplugError {
+        #[from]
+        source: btleplug::Error,
     },
 }
 
