@@ -6,7 +6,8 @@ use async_trait::async_trait;
 use log::trace;
 use tokio::task::spawn_blocking;
 use windows::Devices::Bluetooth::Advertisement::{
-    BluetoothLEAdvertisementReceivedEventArgs, BluetoothLEAdvertisementWatcher,
+    BluetoothLEAdvertisementFilter, BluetoothLEAdvertisementReceivedEventArgs,
+    BluetoothLEAdvertisementWatcher,
 };
 use windows::Devices::Bluetooth::BluetoothDevice;
 use windows::Devices::Enumeration::DeviceInformation;
@@ -15,15 +16,47 @@ use windows::Storage::Streams::DataReader;
 
 use crate::ble::{BLEDeviceDescriptor, BLEDeviceScanner};
 use crate::btaddr::BluetoothAdrr;
-use crate::error::{SoundcoreLibError, SoundcoreLibResult};
+use crate::error::SoundcoreLibResult;
 
-const WATCH_DURATION: u64 = 10;
+const WATCH_DURATION: u64 = 5;
 
 pub struct WindowsBLEDeviceScanner {}
+
+impl Default for WindowsBLEDeviceScanner {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 
 impl WindowsBLEDeviceScanner {
     pub fn new() -> Self {
         Self {}
+    }
+
+    pub async fn s(&self) {
+        let filter = BluetoothLEAdvertisementFilter::new().unwrap();
+        let w = BluetoothLEAdvertisementWatcher::Create(&filter).unwrap();
+        let handler: TypedEventHandler<
+            BluetoothLEAdvertisementWatcher,
+            BluetoothLEAdvertisementReceivedEventArgs,
+        > = TypedEventHandler::new(
+            move |_sender, args: &Option<BluetoothLEAdvertisementReceivedEventArgs>| {
+                if let Some(args) = args {
+                    println!(
+                        "Found device: {:?} {:?}",
+                        BluetoothAdrr::from(args.BluetoothAddress().unwrap()),
+                        args.Advertisement().unwrap().LocalName().unwrap()
+                    );
+                }
+                // println!("Found device: {:?}", args);
+                Ok(())
+            },
+        );
+
+        w.Received(&handler).unwrap();
+        w.Start().unwrap();
+        tokio::time::sleep(std::time::Duration::from_secs(5)).await;
+        w.Stop().unwrap();
     }
 }
 
@@ -65,6 +98,7 @@ impl BLEDeviceScanner for WindowsBLEDeviceScanner {
                 .map(|device| {
                     let mut addr = BluetoothAdrr::from(device.BluetoothAddress()?);
                     let name = device.Name()?;
+                    println!("ID: {:?}", device.BluetoothDeviceId()?.IsLowEnergyDevice()?);
                     match addr_swap_map.clone().lock().unwrap().get(&addr) {
                         Some(new_addr) => {
                             trace!("Swapping MAC address {:?} with {:?}", addr, new_addr);

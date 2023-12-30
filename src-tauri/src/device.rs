@@ -95,6 +95,12 @@ pub(crate) async fn connect(
                 .await
                 .map_err(|e| e.to_string())?;
             *device_state = Some(device);
+        },
+        _ => {
+            return Err(format!(
+                "Device model {:?} is not supported yet",
+                device_model
+            ))
         }
     };
 

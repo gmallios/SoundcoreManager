@@ -13,7 +13,7 @@ use crate::{
 };
 
 use crate::parsers::{
-    parse_gender, parse_sound_mode, parse_stereo_eq_configuration, ParseError, ParseResult,
+    parse_gender, parse_sound_mode, parse_stereo_eq_configuration, ParseError,
     TaggedData, TaggedParseResult,
 };
 use crate::types::SupportedModels;

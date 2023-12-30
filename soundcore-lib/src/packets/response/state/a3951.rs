@@ -18,7 +18,7 @@ use crate::{
 
 use crate::parsers::{
     bool_parser, parse_a3909_button_model, parse_custom_hear_id, parse_dual_battery, parse_gender,
-    parse_sound_mode, parse_stereo_eq_configuration, ParseError, ParseResult, TaggedData,
+    parse_sound_mode, parse_stereo_eq_configuration, ParseError, TaggedData,
     TaggedParseResult,
 };
 use crate::types::SupportedModels;

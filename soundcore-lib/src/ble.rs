@@ -5,14 +5,16 @@ use serde::{Deserialize, Serialize};
 use crate::btaddr::BluetoothAdrr;
 use crate::error::SoundcoreLibResult;
 
-mod ble;
-pub mod windows;
+
+pub mod btleplug;
+// pub mod windows;
 
 /// The general flow should be:
 /// BLEDeviceScanner -> BLEDeviceDescriptor -> BLEConnectionFactory -> BLEConnection -> SoundcoreDevice
 #[async_trait]
 pub trait BLEConnection {
-    async fn read_channel(&self) -> SoundcoreLibResult<tokio::sync::mpsc::Receiver<Vec<u8>>>;
+    fn descriptor(&self) -> BLEDeviceDescriptor;
+    async fn byte_channel(&self) -> SoundcoreLibResult<tokio::sync::mpsc::Receiver<Vec<u8>>>;
     async fn write(&self, bytes: &[u8], write_type: WriteType) -> SoundcoreLibResult<()>;
 }
 
@@ -21,8 +23,8 @@ pub trait BLEConnectionFactory {
     type Connection: BLEConnection + Send + Sync;
     async fn connect(
         &self,
-        addr: BluetoothAdrr,
-        uuid_set: BLEConnectionUuidSet,
+        descriptor: BLEDeviceDescriptor,
+        uuid_set: Option<BLEConnectionUuidSet>,
     ) -> SoundcoreLibResult<Self::Connection>;
 }
 
@@ -69,9 +71,9 @@ pub enum WriteType {
 }
 
 #[cfg(target_os = "windows")]
-impl Into<GattWriteOption> for WriteType {
-    fn into(self) -> GattWriteOption {
-        match self {
+impl From<WriteType> for GattWriteOption {
+    fn from(val: WriteType) -> Self {
+        match val {
             WriteType::WithResponse => GattWriteOption::WriteWithResponse,
             WriteType::WithoutResponse => GattWriteOption::WriteWithoutResponse,
         }
@@ -83,4 +85,11 @@ pub struct BLEConnectionUuidSet {
     pub service_uuid: uuid::Uuid,
     pub read_uuid: uuid::Uuid,
     pub write_uuid: uuid::Uuid,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub enum ConnectionEvent {
+    Connected(String),
+    Disconnected(String),
+    DataReceived(Vec<u8>),
 }

@@ -18,7 +18,7 @@ use crate::{
     },
 };
 
-use crate::parsers::{bool_parser, parse_gender, parse_sound_mode, parse_stereo_eq_configuration, ParseError, ParseResult, TaggedData, TaggedParseResult};
+use crate::parsers::{bool_parser, parse_gender, parse_sound_mode, parse_stereo_eq_configuration, ParseError, TaggedData, TaggedParseResult};
 use crate::types::SupportedModels;
 
 use super::DeviceStateResponse;

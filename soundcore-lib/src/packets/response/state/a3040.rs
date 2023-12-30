@@ -17,7 +17,7 @@ use crate::{
         InEarBeep, PowerOnBatteryNotice, SerialNumber, SingleBattery, SoundcoreFeatureFlags,
         SupportTwoCnn, ThreeDimensionalEffect, TouchTone, WearDetection, LDAC,
     },
-    parsers::{parse_serial_number, ParseError, ParseResult},
+    parsers::{parse_serial_number, ParseError},
 };
 
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq, Hash)]
