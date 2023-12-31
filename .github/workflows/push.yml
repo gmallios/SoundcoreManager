@@ -1,12 +1,13 @@
-name: "Build latest release"
+name: "Build latest"
 
 on:
   push:
     branches:
       - master
+  workflow_dispatch:
 
 jobs:
-  build-tauri-and-release:
+  build-tauri:
     strategy:
       fail-fast: true
       matrix:
@@ -58,12 +59,6 @@ jobs:
         id: tauri-build
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tagName: soundcoremanager-v__VERSION__
-          releaseName: 'Soundcore Manager v__VERSION__'
-          releaseBody: 'See the assets to download this version and install.'
-          releaseDraft: true
-          prerelease: false
 
       # - name: ⏫ Upload Release Asset
       #   id: upload-release-asset
