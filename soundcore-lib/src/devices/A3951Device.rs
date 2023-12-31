@@ -87,7 +87,7 @@ impl SoundcoreDevice for A3951 {
         self.build_and_send_cmd(A3951_CMD_DEVICE_STATUS, None)
             .await?;
         let resp = self.recv().await?;
-        Ok(ResponsePacket::from_bytes(&resp)?.try_into()?)
+        Ok(Self::decode(self, &resp)?)
     }
 
     async fn get_info(&self) -> Result<DeviceInfo, SoundcoreLibError> {
