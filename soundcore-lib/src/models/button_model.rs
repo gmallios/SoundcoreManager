@@ -18,10 +18,12 @@ pub enum Action {
     VolumeDown = 1,
     PreviousSong = 2,
     NextSong = 3,
-    Trans = 4,
-    /* TODO: Refered to as "custom_trans" in the source, unknown action */
+    AmbientSound = 4,
     VoiceAssistant = 5,
     PlayPause = 6,
+    BassUpToggle = 7,
+    Null = 8,
+    ControlThreeDimensionalEffect = 9, /* Assumption, most likely incorrect  */
 }
 
 impl Action {
