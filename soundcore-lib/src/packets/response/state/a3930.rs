@@ -65,7 +65,7 @@ impl From<A3930StateResponse> for DeviceStateResponse {
             side_tone: Some(value.side_tone),
             hear_id: Some(HearID::Custom(value.hear_id)),
             age_range: Some(value.age_range),
-            eq: EQConfiguration::Stereo(value.eq),
+            eq: value.eq.into(),
             ..Default::default()
         }
     }
@@ -96,11 +96,11 @@ pub fn parse_a3930_state_response<'a, E: ParseError<'a>>(
                 le_u8,
                 bool_parser::<TwsStatus, E>,
                 parse_dual_battery,
-                parse_stereo_eq_configuration,
+                parse_stereo_eq_configuration(8),
                 parse_gender,
                 le_u8,
                 u8_parser::<AgeRange, E>,
-                parse_custom_hear_id,
+                parse_custom_hear_id(8),
                 parse_a3909_button_model,
                 parse_sound_mode,
                 bool_parser::<SideTone, E>,

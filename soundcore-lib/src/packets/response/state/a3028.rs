@@ -48,7 +48,7 @@ impl From<A3028StateResponse> for DeviceStateResponse {
             feature_flags: A3028_FEATURE_FLAGS,
             battery: value.battery.into(),
             sound_mode: value.sound_mode,
-            eq: EQConfiguration::Stereo(value.eq),
+            eq: value.eq.into(),
             tws_status: value.tws_status.into(),
             hear_id: Some(HearID::Base(value.hear_id)),
             age_range: value.age_range.into(),
@@ -66,10 +66,10 @@ pub fn parse_a3028_state_response<'a, E: ParseError<'a>>(
             let (bytes, (battery, eq, gender, age_range, hear_id, sound_mode, fw, sn)) =
                 tuple((
                     parse_single_battery,
-                    parse_stereo_eq_configuration,
+                    parse_stereo_eq_configuration(8),
                     parse_gender,
                     u8_parser::<AgeRange, E>,
-                    parse_base_hear_id,
+                    parse_base_hear_id(8),
                     parse_sound_mode,
                     parse_dual_fw,
                     parse_serial_number,

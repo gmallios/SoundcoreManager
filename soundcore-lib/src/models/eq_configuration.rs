@@ -26,3 +26,15 @@ impl Default for EQConfiguration {
         EQConfiguration::Stereo(StereoEQConfiguration::default())
     }
 }
+
+impl Into<EQConfiguration> for StereoEQConfiguration {
+    fn into(self) -> EQConfiguration {
+        EQConfiguration::Stereo(self)
+    }
+}
+
+impl Into<EQConfiguration> for MonoEQConfiguration {
+    fn into(self) -> EQConfiguration {
+        EQConfiguration::Mono(self)
+    }
+}
