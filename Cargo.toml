@@ -1,10 +1,22 @@
 [workspace]
 resolver = "2"
 members = [
-    "src-tauri/",
-    "soundcore-lib/",
-    "test_data/"
+    "src-tauri",
+    "soundcore-lib",
+    "test_data"
 ]
+
+[workspace.package]
+license = "GPL-3.0-or-later"
+edition = "2021"
+
+
+[workspace.dependencies]
+weak-table = { version = "0.3.2" }
+typeshare = { version = "1.0.1" }
+log = { version = "0.4.20" }
+env_logger = { version = "0.10.1" }
+thiserror = { version = "1.0.40" }
 
 [profile.release]
 lto = true

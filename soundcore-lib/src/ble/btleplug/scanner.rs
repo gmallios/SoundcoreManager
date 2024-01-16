@@ -1,22 +1,26 @@
-use btleplug::api::{Central, ScanFilter, Peripheral as _};
+use async_trait::async_trait;
+use btleplug::api::{Central, Peripheral as _, ScanFilter};
 use btleplug::platform::{Adapter, Peripheral};
 use futures::{stream, StreamExt};
 use log::warn;
 
 use std::time::Duration;
 
+use crate::ble::BLEDeviceScanner;
 use crate::btaddr::BluetoothAdrr;
-use crate::{
-    ble::BLEDeviceDescriptor,
-    error::SoundcoreLibResult,
-};
-
+use crate::{ble::BLEDeviceDescriptor, error::SoundcoreLibResult};
 
 static DEFAULT_SCAN_DURATION: Duration = Duration::from_secs(5);
 
-pub struct BtlePlugScanner {}
+pub struct BtlePlugScanner {
+    adapters: Vec<Adapter>,
+}
 
 impl BtlePlugScanner {
+    pub fn new(adapters: Vec<Adapter>) -> Self {
+        Self { adapters }
+    }
+
     pub async fn scan(
         adapters: Vec<Adapter>,
         duration: Option<Duration>,
@@ -98,7 +102,7 @@ impl BtlePlugScanner {
             }
             _ => "".to_string(),
         };
-    
+
         Some(BLEDeviceDescriptor::new(
             BluetoothAdrr::from(peripheral.address()),
             name,
@@ -109,7 +113,9 @@ impl BtlePlugScanner {
         adapter: Adapter,
     ) -> Option<impl stream::Stream<Item = (Adapter, Peripheral)>> {
         match adapter.peripherals().await {
-            Ok(peripherals) => Some(stream::iter(peripherals).map(move |p| (adapter.to_owned(), p))),
+            Ok(peripherals) => {
+                Some(stream::iter(peripherals).map(move |p| (adapter.to_owned(), p)))
+            }
             Err(err) => {
                 warn!(
                     "Error getting peripherals for adapter: {:?} err: {err}",
@@ -118,5 +124,15 @@ impl BtlePlugScanner {
                 None
             }
         }
+    }
+}
+
+#[async_trait]
+impl BLEDeviceScanner for BtlePlugScanner {
+    async fn scan(
+        &self,
+        duration: Option<Duration>,
+    ) -> SoundcoreLibResult<Vec<BLEDeviceDescriptor>> {
+        Self::scan(self.adapters.to_owned(), duration).await
     }
 }

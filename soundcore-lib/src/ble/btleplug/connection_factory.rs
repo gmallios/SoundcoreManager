@@ -1,7 +1,8 @@
-use btleplug::api::{Central, Peripheral as _};
-use btleplug::platform::{Adapter, Peripheral};
+use async_trait::async_trait;
+use btleplug::api::{Central, Manager as _, Peripheral as _};
+use btleplug::platform::{Adapter, Manager, Peripheral};
 
-use crate::ble::BLEDeviceDescriptor;
+use crate::ble::{BLEConnectionFactory, BLEDeviceDescriptor};
 use crate::btaddr::BluetoothAdrr;
 use crate::error::SoundcoreLibError;
 use crate::{
@@ -9,9 +10,16 @@ use crate::{
     error::SoundcoreLibResult,
 };
 
-pub struct BtlePlugConnectionFactory {}
+pub struct BtlePlugConnectionFactory {
+    manager: Manager,
+    adapters: Vec<Adapter>,
+}
 
 impl BtlePlugConnectionFactory {
+    pub fn new(manager: Manager, adapters: Vec<Adapter>) -> SoundcoreLibResult<Self> {
+        Ok(Self { manager, adapters })
+    }
+
     async fn find_peripheral(
         adapter: &Adapter,
         addr: &BluetoothAdrr,
@@ -23,16 +31,22 @@ impl BtlePlugConnectionFactory {
         }
         Ok(None)
     }
+}
 
-    pub async fn connect(
-        adapters: Vec<Adapter>,
+#[async_trait]
+impl BLEConnectionFactory for BtlePlugConnectionFactory {
+    type Connection = BtlePlugConnection;
+    async fn connect(
+        &self,
         descriptor: BLEDeviceDescriptor,
         uuid_set: Option<BLEConnectionUuidSet>,
-    ) -> SoundcoreLibResult<BtlePlugConnection> {
+    ) -> SoundcoreLibResult<Self::Connection> {
         let mut adapter_and_peripheral = None;
+        let adapters = self.adapters.to_owned();
         for ad in adapters {
-            let _peripherals = ad.peripherals().await?;
-            let peripheral = Self::find_peripheral(&ad, &descriptor.addr).await?;
+            let _peripherals: Vec<Peripheral> = ad.peripherals().await?;
+            let peripheral: Option<Peripheral> =
+                Self::find_peripheral(&ad, &descriptor.addr).await?;
             if peripheral.is_some() {
                 adapter_and_peripheral = Some((ad, peripheral.unwrap()));
                 break;

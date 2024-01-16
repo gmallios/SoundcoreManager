@@ -1,3 +1,4 @@
+use crate::ble::WriteType;
 use btleplug::{api::BDAddr, platform::PeripheralId};
 
 use crate::btaddr::BluetoothAdrr;
@@ -20,5 +21,14 @@ impl From<BluetoothAdrr> for PeripheralId {
     fn from(val: BluetoothAdrr) -> Self {
         let bdaddr: BDAddr = val.into();
         bdaddr.into()
+    }
+}
+
+impl From<WriteType> for btleplug::api::WriteType {
+    fn from(value: WriteType) -> Self {
+        match value {
+            WriteType::WithoutResponse => btleplug::api::WriteType::WithoutResponse,
+            WriteType::WithResponse => btleplug::api::WriteType::WithResponse,
+        }
     }
 }

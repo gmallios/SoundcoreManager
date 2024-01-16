@@ -7,13 +7,14 @@
 <h5 align="center">
 
 ![Github Actions](https://github.com/gmallios/SoundcoreManager/actions/workflows/push.yml/badge.svg)
- [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/donate/?hosted_button_id=58VZ5TZFZXACJ)
+[![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/donate/?hosted_button_id=58VZ5TZFZXACJ)
 
 <h5>
 
 # Downloads
 
-- [Windows Latest](https://nightly.link/gmallios/SoundcoreManager/workflows/push/master/SoundcoreManager-windows-latest.exe.zip) standalone binary
+- [Windows Latest](https://nightly.link/gmallios/SoundcoreManager/workflows/push/master/SoundcoreManager-windows-latest.exe.zip)
+  standalone binary
 
 # Features
 
@@ -24,7 +25,7 @@
 # Supported Devices - Mostly Tested
 
 | Model ID | Name              |
-| -------- | ----------------- |
+|----------|-------------------|
 | A3951    | Liberty Air 2 Pro |
 | A3027    | Life Q35          |
 | A3028    | Life Q30          |
@@ -34,7 +35,7 @@
 # Planned Support - Need testers
 
 | Model ID | Name          |
-| -------- | ------------- |
+|----------|---------------|
 | A3040    | Space Q45     |
 | A3025    | Life Q20      |
 | A3033    | Live 2 Neo    |
@@ -66,7 +67,3 @@ yarn tauri dev
 ```
 yarn tauri build
 ```
-
-# License
-
-[MIT](https://choosealicense.com/licenses/mit/)

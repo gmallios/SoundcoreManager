@@ -1,7 +1,10 @@
 use async_trait::async_trait;
 use btleplug::api::{CharPropFlags, Characteristic, Peripheral as _, Service};
-use btleplug::platform::{Peripheral};
-
+use btleplug::platform::Peripheral;
+use futures::StreamExt;
+use log::{error, trace, warn};
+use tokio::sync::mpsc;
+use tokio::sync::mpsc::error::TrySendError;
 use tokio::sync::mpsc::Receiver;
 use tokio::task;
 use uuid::{uuid, Uuid};
@@ -20,6 +23,8 @@ pub struct BtlePlugConnection {
     peripheral: Peripheral,
     uuid_set: BLEConnectionUuidSet,
     descriptor: BLEDeviceDescriptor,
+    read_characteristic: Characteristic,
+    write_characteristic: Characteristic,
 }
 
 impl BtlePlugConnection {
@@ -46,7 +51,7 @@ impl BtlePlugConnection {
                 Self::find_characteristic_by_uuid(&service, uuid_set.read_uuid).ok_or(
                     SoundcoreLibError::MissingCharacteristic(uuid_set.read_uuid.to_string()),
                 )?;
-            let _write_characteristic =
+            let write_characteristic =
                 Self::find_characteristic_by_uuid(&service, uuid_set.write_uuid).ok_or(
                     SoundcoreLibError::MissingCharacteristic(uuid_set.write_uuid.to_string()),
                 )?;
@@ -55,6 +60,8 @@ impl BtlePlugConnection {
                 peripheral,
                 uuid_set,
                 descriptor,
+                read_characteristic,
+                write_characteristic,
             })
         })
         .await?
@@ -116,16 +123,64 @@ impl BtlePlugConnection {
 
 #[async_trait]
 impl BLEConnection for BtlePlugConnection {
-    async fn write(&self, _bytes: &[u8], _write_type: WriteType) -> SoundcoreLibResult<()> {
-        todo!()
+    fn descriptor(&self) -> BLEDeviceDescriptor {
+        self.descriptor.to_owned()
     }
 
     async fn byte_channel(&self) -> SoundcoreLibResult<Receiver<Vec<u8>>> {
-        todo!()
+        let (tx, rx) = mpsc::channel(255);
+        let (peripheral, read_characteristic_uuid) = (
+            self.peripheral.clone(),
+            self.read_characteristic.clone().uuid,
+        );
+        let mut notifications = tokio::spawn(async move { peripheral.notifications().await })
+            .await?
+            .unwrap();
+
+        tokio::spawn(async move {
+            while let Some(notification) = notifications.next().await {
+                match notification.uuid == read_characteristic_uuid {
+                    true => match tx.try_send(notification.value.to_vec()) {
+                        Ok(_) => {
+                            trace!(
+                                "Sent notification to channel, data: {:#X?}",
+                                notification.value
+                            );
+                        }
+                        Err(TrySendError::Closed(_)) => {
+                            warn!("Channel closed");
+                            break;
+                        }
+                        Err(e) => {
+                            error!(
+                                "Failed to send notification to byte_channel, error: {:?}",
+                                e
+                            );
+                        }
+                    },
+                    false => {
+                        warn!("Got unrelated notification: {:?}", notification);
+                    }
+                }
+            }
+        });
+        Ok(rx)
     }
 
-    fn descriptor(&self) -> BLEDeviceDescriptor {
-        self.descriptor.to_owned()
+    async fn write(&self, bytes: &[u8], write_type: WriteType) -> SoundcoreLibResult<()> {
+        let (peripheral, writer_characteristic, bytes) = (
+            self.peripheral.clone(),
+            self.write_characteristic.clone(),
+            bytes.to_owned(),
+        );
+        tokio::spawn(async move {
+            peripheral
+                .write(&writer_characteristic, &bytes, write_type.into())
+                .await
+        })
+        .await
+        .unwrap()?;
+        Ok(())
     }
 }
 

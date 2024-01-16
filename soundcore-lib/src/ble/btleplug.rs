@@ -1,5 +1,5 @@
+mod btaddr;
 pub mod connection;
 pub mod connection_factory;
-pub mod registry;
+pub mod manager;
 mod scanner;
-mod btaddr;

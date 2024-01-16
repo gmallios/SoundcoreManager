@@ -1,16 +1,37 @@
-use ::windows::Devices::Bluetooth::GenericAttributeProfile::GattWriteOption;
+use std::sync::Arc;
+use std::time::Duration;
+
 use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
 
 use crate::btaddr::BluetoothAdrr;
 use crate::error::SoundcoreLibResult;
 
-
+#[cfg(feature = "btleplug-backend")]
 pub mod btleplug;
-// pub mod windows;
+#[cfg(feature = "winrt-backend")]
+pub mod windows;
 
-/// The general flow should be:
-/// BLEDeviceScanner -> BLEDeviceDescriptor -> BLEConnectionFactory -> BLEConnection -> SoundcoreDevice
+#[async_trait]
+pub trait BLEConnectionManager {
+    type Scanner: BLEDeviceScanner + Send + Sync;
+    type ConnectionFactory: BLEConnectionFactory + Send + Sync;
+    type Connection: BLEConnection + Send + Sync;
+
+    fn scanner(&self) -> Self::Scanner;
+    fn connection_factory(&self) -> Self::ConnectionFactory;
+    async fn scan(
+        &self,
+        duration: Option<Duration>,
+    ) -> SoundcoreLibResult<Vec<BLEDeviceDescriptor>>;
+
+    async fn connect(
+        &self,
+        descriptor: BLEDeviceDescriptor,
+        uuid_set: Option<BLEConnectionUuidSet>,
+    ) -> SoundcoreLibResult<Arc<Self::Connection>>;
+}
+
 #[async_trait]
 pub trait BLEConnection {
     fn descriptor(&self) -> BLEDeviceDescriptor;
@@ -30,9 +51,10 @@ pub trait BLEConnectionFactory {
 
 #[async_trait]
 pub trait BLEDeviceScanner {
-    // type Descriptor: DeviceDescriptor + Clone + Send + Sync;
-
-    async fn scan(&self) -> SoundcoreLibResult<Vec<BLEDeviceDescriptor>>;
+    async fn scan(
+        &self,
+        duration: Option<Duration>,
+    ) -> SoundcoreLibResult<Vec<BLEDeviceDescriptor>>;
 }
 
 pub trait DeviceDescriptor {
@@ -40,7 +62,7 @@ pub trait DeviceDescriptor {
     fn name(&self) -> &str;
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq, Ord, PartialOrd, Hash)]
 pub struct BLEDeviceDescriptor {
     pub addr: BluetoothAdrr,
     pub name: String,
@@ -70,12 +92,12 @@ pub enum WriteType {
     WithoutResponse,
 }
 
-#[cfg(target_os = "windows")]
-impl From<WriteType> for GattWriteOption {
+#[cfg(all(target_os = "windows", feature = "winrt-backend"))]
+impl From<WriteType> for ::windows::Devices::Bluetooth::GenericAttributeProfile::GattWriteOption {
     fn from(val: WriteType) -> Self {
         match val {
-            WriteType::WithResponse => GattWriteOption::WriteWithResponse,
-            WriteType::WithoutResponse => GattWriteOption::WriteWithoutResponse,
+            WriteType::WithResponse =>  ::windows::Devices::Bluetooth::GenericAttributeProfile::GattWriteOption::WriteWithResponse,
+            WriteType::WithoutResponse =>  ::windows::Devices::Bluetooth::GenericAttributeProfile::GattWriteOption::WriteWithoutResponse,
         }
     }
 }
