@@ -3,19 +3,19 @@ use strum::{Display, FromRepr};
 
 #[repr(u8)]
 #[derive(
-    Debug,
-    Serialize,
-    Deserialize,
-    Eq,
-    PartialEq,
-    Ord,
-    PartialOrd,
-    Clone,
-    Copy,
-    Default,
-    FromRepr,
-    Display,
-    Hash,
+Debug,
+Serialize,
+Deserialize,
+Eq,
+PartialEq,
+Ord,
+PartialOrd,
+Clone,
+Copy,
+Default,
+FromRepr,
+Display,
+Hash,
 )]
 #[serde(rename_all = "camelCase")]
 pub enum CurrentSoundMode {
