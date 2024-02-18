@@ -19,7 +19,7 @@ pub fn parse_and_check_checksum<'a, E: ParseError<'a>>(bytes: &'a [u8]) -> Parse
     )(bytes)
 }
 
-fn generate_checksum<'a, I>(bytes: I) -> u8
+pub fn generate_checksum<'a, I>(bytes: I) -> u8
 where
     I: IntoIterator<Item = &'a u8>,
 {

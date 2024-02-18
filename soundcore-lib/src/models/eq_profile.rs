@@ -1,5 +1,3 @@
-
-
 use serde::{Deserialize, Serialize};
 use strum::{Display, EnumIter, EnumString, FromRepr};
 
@@ -7,21 +5,21 @@ use super::MonoEQ;
 
 #[repr(u16)]
 #[derive(
-    FromRepr,
-    Debug,
-    Clone,
-    Copy,
-    Ord,
-    PartialOrd,
-    Eq,
-    PartialEq,
-    Hash,
-    Display,
-    EnumIter,
-    Serialize,
-    Deserialize,
-    EnumString,
-    Default,
+FromRepr,
+Debug,
+Clone,
+Copy,
+Ord,
+PartialOrd,
+Eq,
+PartialEq,
+Hash,
+Display,
+EnumIter,
+Serialize,
+Deserialize,
+EnumString,
+Default,
 )]
 pub enum EQProfile {
     #[default]
@@ -85,6 +83,6 @@ impl EQProfile {
             Self::TrebleReducer => [0, 0, 0, -20, -30, -40, -40, -60],
             _ => [0, 0, 0, 0, 0, 0, 0, 0],
         };
-        MonoEQ::new(eq)
+        MonoEQ::from_signed_bytes(eq.into())
     }
 }

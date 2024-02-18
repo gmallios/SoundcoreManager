@@ -78,10 +78,11 @@ impl From<Battery> for (BatteryLevel, BatteryCharging) {
         }
     }
 }
+
 // Maybe figure out how to do this better and test it
 impl From<MonoEQ> for EQWave {
     fn from(val: MonoEQ) -> Self {
-        EQWave::decode(&val.to_bytes()).unwrap()
+        EQWave::decode(&val.to_bytes(8usize)).unwrap()
     }
 }
 
