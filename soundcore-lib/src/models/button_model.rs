@@ -1,11 +1,12 @@
 use serde::{Deserialize, Serialize};
 use strum::FromRepr;
 
-use super::A3909ButtonModel;
+use super::{A3909ButtonModel, A3040ButtonModel};
 
 #[derive(Debug, Serialize, Deserialize, Clone, Copy, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub enum ButtonModel {
     A3909(A3909ButtonModel),
+    A3040(A3040ButtonModel),
 }
 
 #[derive(
