@@ -98,7 +98,7 @@ mod a3909_button_model {
         assert_eq!(model.left.single_press.action, Action::VolumeDown);
         assert!(!model.left.single_press.enabled);
 
-        assert_eq!(model.left.long_press.non_tws_action, Action::Trans);
+        assert_eq!(model.left.long_press.non_tws_action, Action::AmbientSound);
         assert_eq!(model.left.long_press.tws_action, Action::VoiceAssistant);
         assert!(model.left.long_press.enabled);
 
@@ -109,7 +109,7 @@ mod a3909_button_model {
         assert_eq!(model.right.single_press.action, Action::VolumeUp);
         assert!(!model.right.single_press.enabled);
 
-        assert_eq!(model.right.long_press.non_tws_action, Action::Trans);
+        assert_eq!(model.right.long_press.non_tws_action, Action::AmbientSound);
         assert_eq!(model.right.long_press.tws_action, Action::VoiceAssistant);
         assert!(model.right.long_press.enabled);
     }
