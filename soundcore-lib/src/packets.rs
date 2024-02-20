@@ -1,33 +1,25 @@
+pub use request::*;
+pub use response::*;
+
+use crate::parsers::generate_checksum;
+
 mod command;
 mod request;
 mod response;
 
+const PACKET_SIZE_LENGTH: usize = 2;
+const CHECKSUM_BIT_LENGTH: usize = 1;
 
-pub use request::*;
-pub use response::*;
-
-const COMMAND_BYTE_SIZE: usize = 2;
-const PACKET_PREFIX: [u8; 5] = [0x08, 0xEE, 0x00, 0x00, 0x00];
-pub trait SoundcorePacket {
-
-    type ByteArr;
-    /// Returns the packet's bytes + checksum
-    fn bytes(&self) -> Self::ByteArr;
-}
-
-impl<T> SoundcorePacket for T
-where
-    T: RequestPacket,
-{
-    type ByteArr = [u8; COMMAND_BYTE_SIZE + PACKET_PREFIX.len() + 3];
-
-    fn bytes(&self) -> Self::ByteArr {
-        let mut bytes = [0; COMMAND_BYTE_SIZE + PACKET_PREFIX.len() + 3];
-        // Add the prefix
-        bytes[..PACKET_PREFIX.len()].copy_from_slice(&PACKET_PREFIX);
-        // Add the command bytes
-        bytes[PACKET_PREFIX.len()..PACKET_PREFIX.len() + COMMAND_BYTE_SIZE]
-            .copy_from_slice(&self.default_bytes());
+pub trait Packet {
+    fn command(&self) -> [u8; 7];
+    fn payload(&self) -> Vec<u8>;
+    fn bytes(&self) -> Vec<u8> {
+        let (command, payload) = (self.command(), self.payload());
+        let length_bytes: [u8; PACKET_SIZE_LENGTH] =
+            ((command.len() + PACKET_SIZE_LENGTH + payload.len() + CHECKSUM_BIT_LENGTH) as u16)
+                .to_le_bytes();
+        let mut bytes = vec![command.to_vec(), length_bytes.to_vec(), payload].concat();
+        bytes.push(generate_checksum(&bytes));
 
         bytes
     }
