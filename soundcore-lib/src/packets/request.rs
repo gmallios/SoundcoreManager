@@ -1,15 +1,81 @@
+use crate::packets::Packet;
 use crate::types::SupportedModels;
 
-use super::COMMAND_BYTE_SIZE;
-
-/// Request Packets are used to request data from the device.
-pub trait RequestPacket {
-    /// Returns the default command bytes without checksum
-    fn default_bytes(&self) -> [u8; COMMAND_BYTE_SIZE];
-    /// Returns the command bytes for the specified variant without checksum
-    fn variant_bytes(&self, variant: SupportedModels) -> [u8; COMMAND_BYTE_SIZE];
+pub enum RequestPacketKind {
+    State,
+    Info,
 }
 
-mod state;
+pub struct RequestPacketBuilder {
+    kind: RequestPacketKind,
+    model: Option<SupportedModels>,
+}
 
+// TODO: Add different packets for different models (if required)
+impl RequestPacketBuilder {
+    pub fn new(kind: RequestPacketKind) -> Self {
+        Self { kind, model: None }
+    }
 
+    pub fn model(mut self, model: SupportedModels) -> Self {
+        self.model = Some(model);
+        self
+    }
+
+    pub fn build(self) -> Vec<u8> {
+        self.bytes()
+    }
+
+    fn state_request(&self) -> [u8; 7] {
+        [0x08, 0xEE, 0x00, 0x00, 0x00, 0x01, 0x01]
+    }
+
+    fn info_request(&self) -> [u8; 7] {
+        [0x08, 0xEE, 0x00, 0x00, 0x00, 0x01, 0x05]
+    }
+
+    fn battery_level(&self) -> [u8; 7] {
+        [0x08, 0xEE, 0x00, 0x00, 0x00, 0x01, 0x03]
+    }
+
+    fn battery_status(&self) -> [u8; 7] {
+        [0x08, 0xEE, 0x00, 0x00, 0x00, 0x01, 0x04]
+    }
+}
+
+impl Packet for RequestPacketBuilder {
+    fn command(&self) -> [u8; 7] {
+        match self.kind {
+            RequestPacketKind::State => self.state_request(),
+            RequestPacketKind::Info => self.info_request(),
+        }
+    }
+
+    fn payload(&self) -> Vec<u8> {
+        // No payload for request packets
+        vec![]
+    }
+}
+
+#[cfg(test)]
+mod request_test {
+    use super::*;
+
+    #[test]
+    fn state_request_default() {
+        let packet = RequestPacketBuilder::new(RequestPacketKind::State).build();
+        assert_eq!(
+            packet,
+            [0x08, 0xEE, 0x00, 0x00, 0x00, 0x01, 0x01, 0x0A, 0x00, 0x02]
+        );
+    }
+
+    #[test]
+    fn info_request_default() {
+        let packet = RequestPacketBuilder::new(RequestPacketKind::Info).build();
+        assert_eq!(
+            packet,
+            [0x08, 0xEE, 0x00, 0x00, 0x00, 0x01, 0x05, 0x0A, 0x00, 0x06]
+        );
+    }
+}
