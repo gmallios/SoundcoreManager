@@ -1,14 +1,16 @@
+use log::error;
 use nom::error::VerboseError;
 
 pub use info::*;
 pub use sound_mode::*;
 pub use state::*;
 
+use crate::api::SoundcoreDeviceState;
+use crate::parsers::TaggedData;
 use crate::{
     models::ResponsePacketKind,
     parsers::{parse_and_check_checksum, parse_packet_header},
 };
-use crate::parsers::TaggedData;
 
 #[derive(Debug)]
 pub enum ResponsePacket {
@@ -17,11 +19,15 @@ pub enum ResponsePacket {
     DeviceInfo(DeviceInfoResponse),
 }
 
+pub trait StateTransformationPacket {
+    fn transform_state(self, state: &SoundcoreDeviceState) -> SoundcoreDeviceState;
+}
+
 impl ResponsePacket {
     pub fn from_bytes(bytes: &[u8]) -> Result<Self, nom::Err<VerboseError<&[u8]>>> {
         let bytes = parse_and_check_checksum(bytes)?.0;
         let (bytes, packet_header) = parse_packet_header(bytes)?;
-        println!("Packet header: {:?}", packet_header);
+
         Ok(match packet_header.kind {
             ResponsePacketKind::StateUpdate => {
                 Self::DeviceState(parse_state_update_packet(bytes)?.1)
@@ -32,6 +38,48 @@ impl ResponsePacket {
             ResponsePacketKind::InfoUpdate => Self::DeviceInfo(parse_device_info_packet(bytes)?.1),
             _ => unimplemented!(),
         })
+    }
+
+    pub fn from_bytes_for_initial_state(
+        bytes: &[u8],
+    ) -> Result<Option<TaggedData<SoundcoreDeviceState>>, nom::Err<VerboseError<&[u8]>>> {
+        let bytes = parse_and_check_checksum(bytes)?.0;
+        let (bytes, packet_header) = parse_packet_header(bytes)?;
+
+        Ok(match packet_header.kind {
+            ResponsePacketKind::StateUpdate => {
+                let tagged_state_resp = parse_state_update_packet(bytes)?.1;
+                let state = ResponsePacket::DeviceState(TaggedData {
+                    tag: tagged_state_resp.tag.clone(),
+                    data: tagged_state_resp.data,
+                })
+                .transform_state(&SoundcoreDeviceState::default());
+                Some(TaggedData {
+                    tag: tagged_state_resp.tag,
+                    data: state,
+                })
+            }
+            _ => {
+                error!(
+                    "Unexpected or unhandled packet kind: {:?}",
+                    packet_header.kind
+                );
+                None
+            }
+        })
+    }
+}
+
+impl StateTransformationPacket for ResponsePacket {
+    fn transform_state(self, state: &SoundcoreDeviceState) -> SoundcoreDeviceState {
+        match self {
+            ResponsePacket::SoundModeUpdate(sound_mode_update) => {
+                sound_mode_update.transform_state(state)
+            },
+            ResponsePacket::DeviceState(state_update) => state_update.data.transform_state(state),
+            // No-op
+            _ => state.clone(),
+        }
     }
 }
 

@@ -9,19 +9,21 @@ use a3040::*;
 use a3930::*;
 use a3951::*;
 
-use crate::models::{
-    AmbientSoundNotice, AutoPowerOff, BassUp, DeviceColor, FirmwareVer, HearingProtect, InEarBeep,
-    PowerOnBatteryNotice, PromptLanguage, SerialNumber, SupportTwoCnn, ThreeDimensionalEffect,
-    LDAC,
-};
-use crate::parsers::{TaggedData, TaggedParseResult};
 use crate::{
     models::{
-        AgeRange, Battery, ButtonModel, EQConfiguration, HearID, SideTone, SoundMode,
-        SoundcoreFeatureFlags, TouchTone, TwsStatus, WearDetection,
+        AgeRange, Battery, ButtonModel, EQConfiguration, HearID, SideTone, SoundcoreFeatureFlags,
+        SoundMode, TouchTone, TwsStatus, WearDetection,
     },
     parsers::ParseError,
 };
+use crate::api::SoundcoreDeviceState;
+use crate::models::{
+    AmbientSoundNotice, AutoPowerOff, BassUp, DeviceColor, FirmwareVer, HearingProtect, InEarBeep,
+    LDAC, PowerOnBatteryNotice, PromptLanguage, SerialNumber, SupportTwoCnn,
+    ThreeDimensionalEffect,
+};
+use crate::packets::StateTransformationPacket;
+use crate::parsers::{TaggedData, TaggedParseResult};
 
 /// This is a generalized version of the state responses for all devices
 /// All device-specific state responses should be able to be converted to this type
@@ -93,6 +95,33 @@ pub fn parse_state_update_packet<'a, E: ParseError<'a>>(
             }),
         ))(bytes)
     })(bytes)
+}
+
+impl Into<SoundcoreDeviceState> for DeviceStateResponse {
+    fn into(self) -> SoundcoreDeviceState {
+        SoundcoreDeviceState {
+            feature_flags: self.feature_flags,
+            battery: self.battery,
+            sound_mode: self.sound_mode,
+            serial: self.sn,
+            fw: self.fw,
+            drc_fw: None, // TODO
+            host_device: self.host_device,
+            tws_status: self.tws_status,
+            button_model: self.button_model,
+            side_tone: self.side_tone,
+            hearid_eq_preset: self.hearid_eq_preset,
+            wear_detection: self.wear_detection,
+            hear_id: self.hear_id,
+            age_range: self.age_range,
+        }
+    }
+}
+
+impl StateTransformationPacket for DeviceStateResponse {
+    fn transform_state(self, _state: &SoundcoreDeviceState) -> SoundcoreDeviceState {
+        self.into()
+    }
 }
 
 mod a3027;
