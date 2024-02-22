@@ -1,9 +1,9 @@
 use std::{
-    rc::{Rc, Weak},
+    sync::{Arc, Weak},
     time::Duration,
 };
 
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 use tokio::sync::RwLock;
 use weak_table::{weak_value_hash_map::Entry, WeakValueHashMap};
 
@@ -12,7 +12,7 @@ use crate::{
     btaddr::BluetoothAdrr,
     device::SoundcoreBLEDevice,
     error::SoundcoreLibResult,
-    types::{SOUNDCORE_NAME_MODEL_MAP, SupportedModels},
+    types::{SupportedModels, SOUNDCORE_NAME_MODEL_MAP},
 };
 
 pub struct DeviceManager<B>
@@ -37,7 +37,7 @@ where
     pub async fn connect(
         &self,
         device: DiscoveredDevice,
-    ) -> SoundcoreLibResult<Rc<SoundcoreBLEDevice<B::Connection>>> {
+    ) -> SoundcoreLibResult<Arc<SoundcoreBLEDevice<B::Connection>>> {
         match self
             .ble_devices
             .write()
@@ -48,7 +48,7 @@ where
             Entry::Vacant(ve) => {
                 // TODO: Check UUID sets based on resolved model
                 let connection = self.ble_manager.connect(device.descriptor, None).await?;
-                let device = Rc::new(SoundcoreBLEDevice::new(connection).await?);
+                let device = Arc::new(SoundcoreBLEDevice::new(connection).await?);
                 ve.insert(device.clone());
                 Ok(device)
             }
@@ -89,8 +89,6 @@ where
         }
     }
 }
-
-
 
 /// A discovered BLE device. The DiscoveredDevice can be upgraded to a SoundcoreBLEDevice.
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
