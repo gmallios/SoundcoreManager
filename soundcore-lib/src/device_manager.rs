@@ -1,26 +1,26 @@
-use std::{
-    sync::{Arc, Weak},
-    time::Duration,
-};
+use std::collections::hash_map::Entry;
+use std::collections::HashMap;
+use std::{sync::Arc, time::Duration};
 
-use serde::{Deserialize, Serialize};
-use tokio::sync::RwLock;
-use weak_table::{weak_value_hash_map::Entry, WeakValueHashMap};
-
+use crate::ble::btleplug::manager::BtlePlugBLEManager;
+#[cfg(any(test, feature = "mock-ble"))]
+use crate::mocks::*;
 use crate::{
-    ble::{btleplug::manager::BtlePlugBLEManager, BLEConnectionManager, BLEDeviceDescriptor},
+    ble::{BLEConnectionManager, BLEDeviceDescriptor},
     btaddr::BluetoothAdrr,
     device::SoundcoreBLEDevice,
     error::SoundcoreLibResult,
     types::{SupportedModels, SOUNDCORE_NAME_MODEL_MAP},
 };
+use serde::{Deserialize, Serialize};
+use tokio::sync::RwLock;
 
 pub struct DeviceManager<B>
 where
     B: BLEConnectionManager,
 {
     ble_manager: B,
-    ble_devices: RwLock<WeakValueHashMap<BluetoothAdrr, Weak<SoundcoreBLEDevice<B::Connection>>>>,
+    ble_devices: RwLock<HashMap<BluetoothAdrr, Arc<SoundcoreBLEDevice<B::Connection>>>>,
 }
 
 impl<B> DeviceManager<B>
@@ -30,7 +30,7 @@ where
     pub async fn new(ble_manager: B) -> Self {
         Self {
             ble_manager,
-            ble_devices: RwLock::new(WeakValueHashMap::new()),
+            ble_devices: RwLock::new(HashMap::new()),
         }
     }
 
@@ -53,6 +53,15 @@ where
                 Ok(device)
             }
         }
+    }
+
+    pub async fn disconnect(&self, addr: BluetoothAdrr) -> SoundcoreLibResult<()> {
+        self.ble_devices.write().await.remove(&addr);
+        Ok(())
+    }
+
+    pub async fn list_open_connections(&self) -> Vec<BluetoothAdrr> {
+        self.ble_devices.read().await.keys().cloned().collect()
     }
 
     pub async fn ble_scan(
@@ -92,6 +101,7 @@ where
 
 /// A discovered BLE device. The DiscoveredDevice can be upgraded to a SoundcoreBLEDevice.
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[serde(rename_all = "camelCase", tag = "type")]
 pub struct DiscoveredDevice {
     /// The BLE device descriptor.
     pub descriptor: BLEDeviceDescriptor,
@@ -99,8 +109,23 @@ pub struct DiscoveredDevice {
     pub model: Option<SupportedModels>,
 }
 
-#[cfg(all(feature = "btleplug-backend", not(feature = "winrt-backend")))]
+#[cfg(all(
+    feature = "btleplug-backend",
+    not(feature = "winrt-backend"),
+    not(feature = "mock-ble")
+))]
 pub async fn create_device_manager() -> DeviceManager<BtlePlugBLEManager> {
     let manager = BtlePlugBLEManager::new().await.unwrap();
     DeviceManager::new(manager).await
+}
+
+/// Create a new device manager with a mock BLE connection manager.
+#[cfg(all(
+    test,
+    feature = "mock-ble",
+    not(feature = "btleplug-backend"),
+    not(feature = "winrt-backend")
+))]
+pub async fn create_device_manager() -> DeviceManager<MockBLEConnectionManager> {
+    DeviceManager::new(MockBLEConnectionManager).await
 }
