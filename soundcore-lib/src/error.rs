@@ -29,6 +29,8 @@ pub enum SoundcoreLibError {
     MissingUUIDSet(String),
     #[error("Missing characteristic: {0}")]
     MissingCharacteristic(String),
+    #[error("Unable to retrieve initial state for device: {0}")]
+    MissingInitialState(String),
     #[error("Win32 error: {0}")]
     WinError(String),
     #[error("IO error")]
@@ -67,7 +69,7 @@ pub enum SoundcoreLibError {
     IncompatibleResponse,
     #[error("Invalid MAC address: {addr}")]
     InvalidMACAddress { addr: String },
-    #[cfg(target_os = "windows")]
+    #[cfg(all(target_os = "windows"))]
     #[error("Unknown Windows Error")]
     UnknownWindowsError {
         #[from]
@@ -78,6 +80,7 @@ pub enum SoundcoreLibError {
         #[from]
         source: tokio::task::JoinError,
     },
+    #[cfg(feature = "btleplug-backend")]
     #[error("Btleplug Error")]
     BtleplugError {
         #[from]
