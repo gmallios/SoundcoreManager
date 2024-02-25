@@ -14,3 +14,9 @@ pub mod statics;
 pub mod types;
 #[allow(non_snake_case)]
 mod utils;
+
+pub mod device;
+pub mod device_manager;
+
+#[cfg(any(test, feature = "mock-ble"))]
+pub mod mocks;

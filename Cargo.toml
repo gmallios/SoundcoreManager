@@ -15,8 +15,13 @@ edition = "2021"
 weak-table = { version = "0.3.2" }
 typeshare = { version = "1.0.1" }
 log = { version = "0.4.20" }
-env_logger = { version = "0.10.1" }
+env_logger = { version = "0.11" }
 thiserror = { version = "1.0.40" }
+tokio = { version = "1" }
+serde = { version = "1" }
+async-trait = { version = "0.1" }
+futures = { version = "0.3" }
+soundcore-lib = { path = "./soundcore-lib" }
 
 [profile.release]
 lto = true

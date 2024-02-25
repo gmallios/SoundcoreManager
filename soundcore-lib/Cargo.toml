@@ -9,6 +9,7 @@ default = ["btleplug-backend"]
 # Remove dep:windows when btleplug can resolve device names
 btleplug-backend = ["dep:btleplug", "dep:windows"]
 winrt-backend = ["dep:windows"]
+mock-ble = []
 
 [dependencies]
 weak-table = { workspace = true }
@@ -16,13 +17,13 @@ typeshare = { workspace = true }
 log = { workspace = true }
 env_logger = { workspace = true }
 thiserror = { workspace = true }
-serde = { version = "1", features = ["derive", "rc"] }
-tokio = { version = "1", features = ["time", "macros", "rt-multi-thread", "sync"] }
-futures = { version = "0.3" }
-strum = { version = "0.25", features = ["derive"] }
+serde = { workspace = true, features = ["derive", "rc"] }
+tokio = { workspace = true, features = ["time", "macros", "rt-multi-thread", "sync"] }
+async-trait = { workspace = true }
+futures = { workspace = true }
+strum = { version = "0.26", features = ["derive"] }
 nom = "7"
 enumflags2 = { version = "0.7.7", features = ["serde"] }
-async-trait = "0.1"
 bluetooth-lib = { path = "../bluetooth-lib" }
 phf = { version = "0.11", default-features = false, features = ["macros"] }
 derive_more = { version = "0.99", features = ["from"] }
@@ -31,6 +32,7 @@ btleplug = { version = "0.11", features = ["serde"], optional = true }
 
 [dev-dependencies]
 test_data = { path = "../test_data" }
+
 
 
 [target.'cfg(target_os = "windows")'.dependencies]
