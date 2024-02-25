@@ -3,17 +3,24 @@
     windows_subsystem = "windows"
 )]
 
+use std::sync::Arc;
+
+use log::info;
+use mpsc::channel;
+use tauri::async_runtime::{Mutex, RwLock};
+use tauri::Manager;
+use tauri_plugin_log::LogTarget;
+use tokio::sync::mpsc;
+
 use bluetooth_lib::platform::BthScanner;
 use bluetooth_lib::Scanner;
 use frontend_types::BthScanResult;
 use soundcore_lib::base::SoundcoreDevice;
-use soundcore_lib::types::{SupportedModels, SOUNDCORE_NAME_MODEL_MAP};
+use soundcore_lib::types::{SOUNDCORE_NAME_MODEL_MAP, SupportedModels};
 
-use std::sync::Arc;
-use tauri::async_runtime::{Mutex, RwLock};
-use tauri::Manager;
-use tauri_plugin_log::LogTarget;
+use crate::async_bridge::{async_bridge, BridgeCommand, BridgeResponse};
 
+pub(crate) mod async_bridge;
 mod device;
 pub(crate) mod frontend_types;
 mod tray;
@@ -21,15 +28,6 @@ pub(crate) mod utils;
 
 #[cfg(target_os = "macos")]
 mod server;
-
-// #[tauri::command]
-// fn close_all(state: State<DeviceState>) -> Result<(), ()> {
-//     let mut device_state = state.device.lock().map_err(|_| ())?;
-//     *device_state = None;
-//     let rfcomm = RFCOMM_STATE.lock().map_err(|_| ())?;
-//     rfcomm.close();
-//     Ok(())
-// }
 
 #[tauri::command]
 async fn scan_for_devices() -> Vec<BthScanResult> {
@@ -51,11 +49,16 @@ async fn scan_for_devices() -> Vec<BthScanResult> {
 struct SoundcoreAppState {
     device: Arc<Mutex<Option<Box<dyn SoundcoreDevice>>>>,
     model: Arc<RwLock<Option<SupportedModels>>>,
+    bridge_tx: Mutex<mpsc::Sender<BridgeCommand>>,
 }
 
-fn main() {
+#[tokio::main]
+async fn main() {
+    tauri::async_runtime::set(tokio::runtime::Handle::current());
     #[cfg(target_os = "macos")]
     server::launch_server();
+
+    // Bring up bridge
 
     // builder()
     //     .filter(None, log::LevelFilter::Debug)
@@ -63,13 +66,30 @@ fn main() {
     //     .filter_module("hyper", log::LevelFilter::Off)
     //     .filter_module("tower", log::LevelFilter::Off)
     //     .init();
+    let (input_tx, input_rx) = channel(1);
+    let (output_tx, mut output_rx) = channel(1);
 
     tauri::Builder::default()
+        .setup(|app| {
+            let bridge_app_handle = app.handle();
+            tokio::spawn(async_bridge(input_rx, output_tx, bridge_app_handle));
+
+            let app_handle = app.handle();
+            tokio::spawn(async move {
+                loop {
+                   if let Some(resp) = output_rx.recv().await {
+                       handle_bridge_output(resp, &app_handle);
+                   }
+                }
+            });
+            Ok(())
+        })
         .system_tray(tray::get_system_tray())
         .on_system_tray_event(tray::handle_tray_event)
         .manage(SoundcoreAppState {
             device: Arc::new(Mutex::new(None)),
             model: Arc::new(RwLock::new(None)),
+            bridge_tx: Mutex::new(input_tx),
         })
         .invoke_handler(tauri::generate_handler![
             tray::set_tray_device_status,
@@ -87,6 +107,7 @@ fn main() {
             device::set_eq,
             device::get_eq,
             scan_for_devices,
+            send_bridge_command
         ])
         .plugin(tauri_plugin_log::Builder::default().targets([
             LogTarget::LogDir,
@@ -119,4 +140,18 @@ fn main() {
             }
             _ => {}
         });
+}
+
+fn handle_bridge_output<R: tauri::Runtime>(resp: BridgeResponse, manager: &impl Manager<R>) {
+    info!("Received response from bridge: {:?}", resp);
+    manager.emit_all("bridge-response", resp).unwrap();
+}
+
+#[tauri::command]
+async fn send_bridge_command(
+    app_state: tauri::State<'_, SoundcoreAppState>,
+    command: BridgeCommand,
+) -> Result<(), String> {
+    let tx = app_state.bridge_tx.lock().await;
+    tx.send(command).await.map_err(|e| e.to_string())
 }
