@@ -1,5 +1,6 @@
 use phf::phf_map;
 use serde::{Deserialize, Serialize};
+use strum::EnumString;
 use typeshare::typeshare;
 
 use crate::error::SoundcoreLibError;
@@ -16,8 +17,8 @@ pub trait CommandEncoder<T> {
     fn encode(&self) -> Result<Vec<u8>, SoundcoreLibError>;
 }
 
+#[derive(Debug, Serialize, Deserialize, Clone, Copy, Eq, PartialEq, Ord, PartialOrd, Hash, EnumString)]
 #[typeshare]
-#[derive(Debug, Serialize, Deserialize, Clone, Copy, Eq, PartialEq, Ord, PartialOrd, Hash)]
 pub enum SupportedModels {
     A3027,
     A3028,
@@ -30,17 +31,13 @@ pub enum SupportedModels {
 }
 
 pub static SOUNDCORE_NAME_MODEL_MAP: phf::Map<&'static str, SupportedModels> = phf_map! {
-    "Soundcore Life Q35" => SupportedModels::A3027,
-    "Soundcore Q35" => SupportedModels::A3027, /* EU Variant */
-    "Soundcore Life Q30" => SupportedModels::A3028,
-    "Soundcore Q30" => SupportedModels::A3028, /* EU Variant */
+    "Q35" => SupportedModels::A3027,
+    "Q30" => SupportedModels::A3028,
     "BES_BLE" => SupportedModels::A3028, /* Q30 has a FW Bug causing it to appear sometimes as BES_BLE */
-    "Soundcore Life Tune" => SupportedModels::A3029,
-    "Soundcore Space Q45" => SupportedModels::A3040,
-    "soundcore Space Q45" => SupportedModels::A3040,
-    "Soundcore Life A2 NC" => SupportedModels::A3935,
-    "Soundcore Life A2 NC+" => SupportedModels::A3935,
-    "Soundcore Liberty Air 2 Pro" => SupportedModels::A3951,
+    "Life Tune" => SupportedModels::A3029,
+    "Q45" => SupportedModels::A3040,
+    "A2 NC" => SupportedModels::A3935,
+    "Liberty Air 2 Pro" => SupportedModels::A3951,
 };
 
 #[typeshare]
