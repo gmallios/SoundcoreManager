@@ -22,10 +22,12 @@ pub enum SoundcoreFeatureFlags {
     TOUCH_TONE,
     GAME_MODE,
     AUTO_POWER_OFF_ON,
+    // TODO: Rename
     InEarBeep,
     PromptLang,
     HearingProtect,
     AmbientSoundNotice,
     PowerOnBatteryNotice,
     SupportTwoCnn,
+    MultipleDeviceList
 }
