@@ -9,7 +9,7 @@ use soundcore_lib::{
     device_manager::{create_device_manager, DeviceManager},
 };
 
-use super::{BridgeCommand, BridgeResponse};
+use super::{BridgeCommand, BridgeResponse, NewStateResponse};
 
 struct CommandLoopState<B: BLEConnectionManager> {
     manager: DeviceManager<B>,
@@ -54,14 +54,14 @@ async fn handle_command<B: BLEConnectionManager>(
     output_tx: mpsc::Sender<BridgeResponse>,
 ) -> BridgeResponse {
     match command {
-        BridgeCommand::ScanBle => command_loop_state
+        BridgeCommand::Scan => command_loop_state
             .lock()
             .await
             .manager
             .ble_scan(None)
             .await
             .map(BridgeResponse::ScanResult),
-        BridgeCommand::DisconnectBle(addr) => {
+        BridgeCommand::Disconnect(addr) => {
             let addr_clone = addr.clone();
             command_loop_state
                 .lock()
@@ -71,7 +71,7 @@ async fn handle_command<B: BLEConnectionManager>(
                 .await
                 .map(|_| BridgeResponse::Disconnected(addr_clone))
         }
-        BridgeCommand::ConnectBle(d) => {
+        BridgeCommand::Connect(d) => {
             let addr = d.clone().descriptor.addr;
             let device = command_loop_state.lock().await.manager.connect(d).await;
             let addr_clone = addr.clone();
@@ -82,8 +82,12 @@ async fn handle_command<B: BLEConnectionManager>(
                     while let Ok(()) = state_channel.changed().await {
                         let state = state_channel.borrow().clone();
                         // TODO: Add logging
+                        let new_state_response = NewStateResponse {
+                            addr: addr_clone.clone(),
+                            state,
+                        };
                         output_tx
-                            .send(BridgeResponse::NewState((addr_clone.clone(), state)))
+                            .send(BridgeResponse::NewState(new_state_response))
                             .await;
                     }
                 });

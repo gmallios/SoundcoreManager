@@ -1,10 +1,13 @@
 use enumflags2::BitFlags;
 use serde::{Deserialize, Serialize};
+use typeshare::typeshare;
 
 use crate::models::{AgeRange, Battery, ButtonModel, CustomHearID, FirmwareVer, HearID, SerialNumber, SideTone, SoundcoreFeatureFlags, SoundMode, TwsStatus, WearDetection};
 
 /// This is a generalized version of the state for all devices
 #[derive(Debug, Serialize, Deserialize, Eq, PartialEq, Clone, Hash, Default)]
+#[serde(rename_all = "camelCase")]
+#[typeshare]
 pub struct SoundcoreDeviceState {
     pub feature_flags: BitFlags<SoundcoreFeatureFlags>,
     pub battery: Battery,

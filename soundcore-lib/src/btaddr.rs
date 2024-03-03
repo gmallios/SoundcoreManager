@@ -1,10 +1,12 @@
 use std::fmt::{Debug, Display};
 
 use serde::{Deserialize, Serialize};
+use typeshare::typeshare;
 
 use crate::error::{SoundcoreLibError, SoundcoreLibResult};
 
 #[derive(Serialize, Deserialize, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
+#[typeshare]
 pub struct BluetoothAdrr {
     pub address: [u8; 6],
 }

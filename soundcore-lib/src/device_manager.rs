@@ -14,6 +14,7 @@ use crate::{
 };
 use serde::{Deserialize, Serialize};
 use tokio::sync::RwLock;
+use typeshare::typeshare;
 
 pub struct DeviceManager<B>
 where
@@ -102,6 +103,7 @@ where
 /// A discovered BLE device. The DiscoveredDevice can be upgraded to a SoundcoreBLEDevice.
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[serde(rename_all = "camelCase", tag = "type")]
+#[typeshare]
 pub struct DiscoveredDevice {
     /// The BLE device descriptor.
     pub descriptor: BLEDeviceDescriptor,

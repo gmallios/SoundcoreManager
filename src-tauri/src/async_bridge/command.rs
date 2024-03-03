@@ -8,7 +8,7 @@ use soundcore_lib::device_manager::DiscoveredDevice;
 #[derive(Debug, Deserialize, Clone)]
 #[serde(rename_all = "camelCase", tag = "command", content = "payload")]
 pub enum BridgeCommand {
-    ScanBle,
-    ConnectBle(DiscoveredDevice),
-    DisconnectBle(BluetoothAdrr),
+    Scan,
+    Connect(DiscoveredDevice),
+    Disconnect(BluetoothAdrr),
 }
