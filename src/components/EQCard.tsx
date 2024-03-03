@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { Line } from "react-chartjs-2";
+import { useEffect, useState } from 'react';
+import { Line } from 'react-chartjs-2';
 import 'chartjs-plugin-dragdata';
 import {
   Chart as ChartJS,
@@ -10,11 +10,11 @@ import {
   Title,
   Tooltip,
   Legend,
-  Filler,
+  Filler
 } from 'chart.js';
-import { Button, Paper } from "@mui/material";
-import useDeviceStore, { EQWave } from "../hooks/useDeviceStore";
-import { useStatus, useUpdateEQ } from "../hooks/useSoundcoreDevice";
+import { Paper } from '@mui/material';
+import { EQWave } from '../hooks/useDeviceStore';
+import { useStatus, useUpdateEQ } from '../hooks/useSoundcoreDevice';
 
 ChartJS.register(
   CategoryScale,
@@ -24,14 +24,10 @@ ChartJS.register(
   Title,
   Tooltip,
   Legend,
-  Filler,
+  Filler
 );
 
-
-
-
 export default function EQCard() {
-
   const options = {
     dragData: true,
     scales: {
@@ -40,23 +36,20 @@ export default function EQCard() {
         max: 6,
         min: -6,
         grid: {
-          display: false,
+          display: false
         }
       },
       x: {
         grid: {
-          display: false,
+          display: false
         }
       }
     },
     // Set cursor
-    onHover(e: any) {
-      const point = e.chart.getElementsAtEventForMode(
-        e,
-        'nearest',
-        { intersect: true },
-        false
-      );
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-expect-error
+    onHover(e) {
+      const point = e.chart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, false);
       if (point.length) e.native.target.style.cursor = 'grab';
       else e.native.target.style.cursor = 'default';
     },
@@ -65,38 +58,36 @@ export default function EQCard() {
         round: 1,
         dragX: true,
         showTooltip: true,
-        onDragEnd: function (_e: any, _datasetIndex: any, index: string | number, value: number) {
-          let newDataSet = dataSet;
+        onDragEnd: function (
+          _e: unknown,
+          _datasetIndex: number,
+          index: string | number,
+          value: number
+        ) {
+          const newDataSet = dataSet;
           newDataSet[index as number] = value;
           setDataSet(newDataSet.slice(0, 8));
         }
       },
       legend: {
-        display: false,
+        display: false
       },
       title: {
         display: true,
-        text: 'EQ',
-      },
-    },
-
+        text: 'EQ'
+      }
+    }
   };
 
-
-  const labels = ["100", "200", "400", "800", "1.6k", "3.2k", "6.4k", "12.8kHz"];
+  const labels = ['100', '200', '400', '800', '1.6k', '3.2k', '6.4k', '12.8kHz'];
   const [dataSet, setDataSet] = useState([0, 0, 0, 0, 0, 0, 0, 0]); /* Values are in dB -6 to 6 */
   const { data: status, isSuccess } = useStatus();
   const updateEQ = useUpdateEQ();
   const [isDataLoaded, setIsDataLoaded] = useState(false);
 
   function scale(number: number, inMin: number, inMax: number, outMin: number, outMax: number) {
-    return (number - inMin) * (outMax - outMin) / (inMax - inMin) + outMin;
+    return ((number - inMin) * (outMax - outMin)) / (inMax - inMin) + outMin;
   }
-
-  function resetEQ() {
-    setDataSet([0, 0, 0, 0, 0, 0, 0, 0]);
-  }
-
 
   useEffect(() => {
     if (status != undefined) {
@@ -120,32 +111,37 @@ export default function EQCard() {
       pos6: scale(dataSet[6], -6, 6, 6, 18),
       pos7: scale(dataSet[7], -6, 6, 6, 18),
       pos8: 12,
-      pos9: 12,
+      pos9: 12
     };
     updateEQ.mutate(eq);
   }, [dataSet]);
 
-
   const data = {
     labels: labels,
-    datasets: [{
-      data: dataSet,
-      borderColor: '9B9B9B',
-      borderWidth: 1,
-      pointRadius: 2,
-      pointHoverRadius: 3,
-      pointBackgroundColor: '#609ACF',
-      pointBorderWidth: 0,
-      spanGaps: false,
-      fill: true,
-      backgroundColor: 'rgba(53, 162, 235, 0.5)',
-      lineTension: 0.3,
-    }],
+    datasets: [
+      {
+        data: dataSet,
+        borderColor: '9B9B9B',
+        borderWidth: 1,
+        pointRadius: 2,
+        pointHoverRadius: 3,
+        pointBackgroundColor: '#609ACF',
+        pointBorderWidth: 0,
+        spanGaps: false,
+        fill: true,
+        backgroundColor: 'rgba(53, 162, 235, 0.5)',
+        lineTension: 0.3
+      }
+    ]
   };
 
   return (
-    <Paper sx={{ display: "flex", margin: 3, justifyContent: "center", alignItems: "center" }}>
-      {isDataLoaded && <><Line data={data} options={options} /></>}
+    <Paper sx={{ display: 'flex', margin: 3, justifyContent: 'center', alignItems: 'center' }}>
+      {isDataLoaded && (
+        <>
+          <Line data={data} options={options} />
+        </>
+      )}
     </Paper>
   );
 }

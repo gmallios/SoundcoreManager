@@ -3,12 +3,12 @@ import create from 'zustand';
 import { SupportedModels } from '../types/soundcore-lib';
 
 interface DeviceStoreState {
-  deviceConnectionState: DeviceConnectionState
-  deviceModel: SupportedModels | undefined,
-  updateDeviceModel: (model: SupportedModels) => void,
-  setDeviceConnectionState: (state: DeviceConnectionState) => void,
-  connectUUID: (bt_name: String, bt_addr: String) => void,
-  close: () => void,
+  deviceConnectionState: DeviceConnectionState;
+  deviceModel: SupportedModels | undefined;
+  updateDeviceModel: (model: SupportedModels) => void;
+  setDeviceConnectionState: (state: DeviceConnectionState) => void;
+  connectUUID: (bt_name: string, bt_addr: string) => void;
+  close: () => void;
 }
 
 export enum DeviceConnectionState {
@@ -54,23 +54,23 @@ export enum DeviceConnectionState {
 // }
 
 export interface ANCValues {
-  option: number,
-  anc_option: number,
-  transparency_option: number,
-  anc_custom: number,
+  option: number;
+  anc_option: number;
+  transparency_option: number;
+  anc_custom: number;
 }
 
 export interface EQWave {
-  pos0: number,
-  pos1: number,
-  pos2: number,
-  pos3: number,
-  pos4: number,
-  pos5: number,
-  pos6: number,
-  pos7: number,
-  pos8: number,
-  pos9: number,
+  pos0: number;
+  pos1: number;
+  pos2: number;
+  pos3: number;
+  pos4: number;
+  pos5: number;
+  pos6: number;
+  pos7: number;
+  pos8: number;
+  pos9: number;
 }
 
 const useDeviceStore = create<DeviceStoreState>((set) => ({
@@ -82,23 +82,27 @@ const useDeviceStore = create<DeviceStoreState>((set) => ({
   setDeviceConnectionState: (new_state: DeviceConnectionState) => {
     set((state) => ({ ...state, deviceConnectionState: new_state }));
   },
-  connectUUID: (selection: String, addr: String) => {
+  connectUUID: (selection: string, addr: string) => {
     set((state) => ({ ...state, deviceConnectionState: DeviceConnectionState.CONNECTING }));
-    invoke("connect", { btName: selection, btAddr: addr }).then((_msg) => {
-      set((state) => ({ ...state, deviceConnectionState: DeviceConnectionState.CONNECTED }));
-    }).catch((err) => {
-      console.log(err);
-      set((state) => ({ ...state, deviceConnectionState: DeviceConnectionState.DISCONNECTED }));
-    });
+    invoke('connect', { btName: selection, btAddr: addr })
+      .then((_msg) => {
+        set((state) => ({ ...state, deviceConnectionState: DeviceConnectionState.CONNECTED }));
+      })
+      .catch((err) => {
+        console.log(err);
+        set((state) => ({ ...state, deviceConnectionState: DeviceConnectionState.DISCONNECTED }));
+      });
   },
   close: () => {
-    invoke("close").then((_msg) => {
-      set((state) => ({ ...state, deviceConnectionState: DeviceConnectionState.DISCONNECTED }));
-    }).catch((err) => {
-      console.log(err);
-      set((state) => ({ ...state, deviceConnectionState: DeviceConnectionState.DISCONNECTED }));
-    });
+    invoke('close')
+      .then((_msg) => {
+        set((state) => ({ ...state, deviceConnectionState: DeviceConnectionState.DISCONNECTED }));
+      })
+      .catch((err) => {
+        console.log(err);
+        set((state) => ({ ...state, deviceConnectionState: DeviceConnectionState.DISCONNECTED }));
+      });
   }
-}))
+}));
 
 export default useDeviceStore;
