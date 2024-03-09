@@ -5,7 +5,7 @@
 
 use std::sync::Arc;
 
-use log::info;
+use log::{info, trace};
 use mpsc::channel;
 use tauri::async_runtime::{Mutex, RwLock};
 use tauri::Manager;
@@ -16,7 +16,7 @@ use bluetooth_lib::platform::BthScanner;
 use bluetooth_lib::Scanner;
 use frontend_types::BthScanResult;
 use soundcore_lib::base::SoundcoreDevice;
-use soundcore_lib::types::{SOUNDCORE_NAME_MODEL_MAP, SupportedModels};
+use soundcore_lib::types::{SupportedModels, SOUNDCORE_NAME_MODEL_MAP};
 
 use crate::async_bridge::{async_bridge, BridgeCommand, BridgeResponse};
 
@@ -50,6 +50,7 @@ struct SoundcoreAppState {
     device: Arc<Mutex<Option<Box<dyn SoundcoreDevice>>>>,
     model: Arc<RwLock<Option<SupportedModels>>>,
     bridge_tx: Mutex<mpsc::Sender<BridgeCommand>>,
+    scan_in_progress: Arc<Mutex<bool>>,
 }
 
 #[tokio::main]
@@ -90,6 +91,7 @@ async fn main() {
             device: Arc::new(Mutex::new(None)),
             model: Arc::new(RwLock::new(None)),
             bridge_tx: Mutex::new(input_tx),
+            scan_in_progress: Arc::new(Mutex::new(false)),
         })
         .invoke_handler(tauri::generate_handler![
             tray::set_tray_device_status,
@@ -143,15 +145,24 @@ async fn main() {
 }
 
 fn handle_bridge_output<R: tauri::Runtime>(resp: BridgeResponse, manager: &impl Manager<R>) {
-    info!("Received response from bridge: {:?}", resp);
-    manager.emit_all("bridge-response", resp).unwrap();
+    trace!("Received response from bridge, emitting event...");
+    trace!("Response: {:?}", resp);
+    manager.emit_all("async-bridge-event", resp).unwrap();
 }
 
 #[tauri::command]
 async fn send_bridge_command(
     app_state: tauri::State<'_, SoundcoreAppState>,
-    command: BridgeCommand,
+    payload: BridgeCommand,
 ) -> Result<(), String> {
+    if let BridgeCommand::Scan = payload {
+        let mut scan_in_progress = app_state.scan_in_progress.lock().await;
+        if *scan_in_progress {
+            return Err("Scan already in progress".to_string());
+        }
+        *scan_in_progress = true;
+    }
+
     let tx = app_state.bridge_tx.lock().await;
-    tx.send(command).await.map_err(|e| e.to_string())
+    tx.send(payload).await.map_err(|e| e.to_string())
 }
