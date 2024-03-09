@@ -1,11 +1,11 @@
 import { Box, Grid, Paper, Typography } from '@mui/material';
-import A3951ImgLeft from './../assets/a3951_img_device_left.webp';
-import A3951ImgRight from './../assets/a3951_img_device_right_edited.webp';
-import A3027Img from './../assets/a3027_img_device.webp';
-import A3028Img from './../assets/a3028_img_device.webp';
-import A3029Img from './../assets/a3029_img_device.webp';
-import A3040Img from './../assets/a3040_img_device.webp';
-import A3935Img from './../assets/a3935_img_device.webp';
+import A3951ImgLeft from '@assets/a3951_img_device_left.webp';
+import A3951ImgRight from '@assets/a3951_img_device_right_edited.webp';
+import A3027Img from '@assets/a3027_img_device.webp';
+import A3028Img from '@assets/a3028_img_device.webp';
+import A3029Img from '@assets/a3029_img_device.webp';
+import A3040Img from '@assets/a3040_img_device.webp';
+import A3935Img from '@assets/a3935_img_device.webp';
 
 import BatteryAlertIcon from '@mui/icons-material/BatteryAlert';
 import Battery20Icon from '@mui/icons-material/Battery20';
@@ -19,7 +19,7 @@ import BatteryCharging80Icon from '@mui/icons-material/BatteryCharging80';
 import BatteryFullIcon from '@mui/icons-material/BatteryFull';
 import BatteryChargingFullIcon from '@mui/icons-material/BatteryChargingFull';
 import BatteryUnknownIcon from '@mui/icons-material/BatteryUnknown';
-import { useBatteryLevel, useCharging, useDeviceModel } from '../hooks/useSoundcoreDevice';
+import { useBatteryLevel, useCharging, useDeviceModel } from '@hooks/useSoundcoreDevice';
 
 export default function OverviewCard() {
   // if(levelQuery.isLoading || chargingQuery.isLoading) {
