@@ -3,13 +3,15 @@ import { StateCreator, StoreApi } from 'zustand';
 import { SoundcoreStoreSlices } from './useSoundcoreStore';
 import { BridgeResponse } from '../types/tauri-backend';
 
+export interface BaseSlice {
+  handleAsyncBridgeEvent: (e: Event<BridgeResponse>) => void;
+}
+
 export const createBaseSlice: StateCreator<SoundcoreStoreSlices, [], [], BaseSlice> = (
   set,
   get
 ) => ({
   handleAsyncBridgeEvent: (e: Event<BridgeResponse>) => {
-    console.log('Handling async bridge event', e);
-
     const payload = e.payload as BridgeResponse;
     const kind = e.payload.kind as BridgeResponse['kind'];
     const handler = bridgeResponseHandlers[kind];
@@ -28,11 +30,9 @@ type BridgeResponseHandlers = {
 };
 const bridgeResponseHandlers: BridgeResponseHandlers = {
   newState: (payload, _set, get) => {
-    console.log('Handling new state', payload);
     get().setStateFromBridgeResponse(payload);
   },
   scanResult: function (payload, _set, get): void {
-    console.log('Handling scan result', payload);
     get().setLatestScan(payload);
   },
   connectionEstablished: function (_e, _set, _get): void {
@@ -45,8 +45,3 @@ const bridgeResponseHandlers: BridgeResponseHandlers = {
     throw new Error('Function not implemented.');
   }
 };
-
-// TODO: Add types
-export interface BaseSlice {
-  handleAsyncBridgeEvent: (e: Event<BridgeResponse>) => void;
-}

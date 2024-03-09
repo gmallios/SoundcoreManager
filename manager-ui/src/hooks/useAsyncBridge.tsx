@@ -1,11 +1,15 @@
 import { Event, listen } from '@tauri-apps/api/event';
 import { useEffect } from 'react';
-import { BridgeResponse } from '../types/tauri-backend';
+import { BridgeCommand, BridgeResponse } from '../types/tauri-backend';
+import { invoke } from '@tauri-apps/api/tauri';
+
+export const AsyncBridgeEvent = 'async-bridge-event';
+export const AsyncBridgeRequest = 'send_bridge_command';
 
 export const useAsyncBridgeEvent = (cb: (event: Event<BridgeResponse>) => void) => {
   return useEffect(() => {
     const unlisten = async () => {
-      await listen('async-bridge-event', (event: Event<BridgeResponse>) => {
+      await listen(AsyncBridgeEvent, (event: Event<BridgeResponse>) => {
         cb(event as Event<BridgeResponse>);
       });
     };
@@ -18,4 +22,8 @@ export const useAsyncBridgeEvent = (cb: (event: Event<BridgeResponse>) => void) 
       unlisten();
     };
   }, [cb]);
+};
+
+export const useAsyncBridgeRequest = (command: BridgeCommand): Promise<void> => {
+  return invoke(AsyncBridgeRequest, { payload: command });
 };

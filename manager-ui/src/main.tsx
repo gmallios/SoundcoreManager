@@ -4,7 +4,6 @@ import './style.css';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { appLogDir } from '@tauri-apps/api/path';
 import { attachConsole } from 'tauri-plugin-log-api';
 
@@ -37,7 +36,6 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
     <CssBaseline />
     <QueryClientProvider client={queryClient}>
       <App />
-      <ReactQueryDevtools />
     </QueryClientProvider>
   </ThemeProvider>
 );

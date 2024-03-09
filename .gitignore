@@ -89,4 +89,4 @@ test_video.mp4
 /tooling/cli.rs
 
 # UI Build directory
-/dist/*
+*/dist/*

@@ -1,0 +1,50 @@
+{
+  "name": "manager-ui",
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "lint": "eslint ./manager-ui",
+    "lint:fix": "eslint --fix ./manager-ui",
+    "format": "prettier --write './**/*.{js,jsx,ts,tsx,css,md,json}' --config ./.prettierrc",
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "tauri": "tauri",
+    "generate-types": "yarn typeshare:tauri && yarn typeshare:soundcore-lib",
+    "typeshare:soundcore-lib": "typeshare ./soundcore-lib --lang=typescript --output-file=./src/types/soundcore-lib.d.ts",
+    "typeshare:tauri": "typeshare ./src-tauri --lang=typescript --output-file=./src/types/tauri-backend.d.ts"
+  },
+  "dependencies": {
+    "@emotion/react": "^11.10.4",
+    "@emotion/styled": "^11.10.4",
+    "@fontsource/roboto": "^4.5.8",
+    "@mui/icons-material": "^5.11.16",
+    "@mui/material": "^5.12.0",
+    "@tanstack/react-query": "^4.20.4",
+    "@tanstack/react-query-devtools": "^4.20.4",
+    "@tauri-apps/api": "^1.5.0",
+    "chart.js": "~3.9.1",
+    "chartjs-plugin-dragdata": "^2.2.4",
+    "react": "^18.2.0",
+    "react-chartjs-2": "^4.3.1",
+    "react-dom": "^18.2.0",
+    "tauri-plugin-log-api": "https://github.com/tauri-apps/tauri-plugin-log#v1",
+    "zustand": "^4.5.2"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^1.5.1",
+    "@types/node": "^18.7.10",
+    "@types/react": "^18.2.6",
+    "@types/react-dom": "^18.0.6",
+    "@typescript-eslint/eslint-plugin": "^7.1.0",
+    "@typescript-eslint/parser": "^7.1.0",
+    "@vitejs/plugin-react": "^4.0.0",
+    "eslint": "^8.57.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.1.3",
+    "eslint-plugin-react": "^7.33.2",
+    "prettier": "^3.2.5",
+    "typescript": "^5.0.4",
+    "vite": "^5.1.5"
+  }
+}

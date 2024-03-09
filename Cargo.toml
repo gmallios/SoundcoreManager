@@ -1,7 +1,7 @@
 [workspace]
 resolver = "2"
 members = [
-    "src-tauri",
+    "manager-app",
     "soundcore-lib",
     "test_data"
 ]

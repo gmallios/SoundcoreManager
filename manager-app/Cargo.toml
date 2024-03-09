@@ -1,5 +1,5 @@
 [package]
-name = "soundcoremanager"
+name = "manager-app"
 version = "0.1.1"
 description = "A Tauri desktop app for managing Soundcore devices"
 authors = ["Grigorios Mallios"]
