@@ -17,6 +17,15 @@ export const createBluetoothSlice: StateCreator<BluetoothSlice> = (set, _get) =>
         console.error(`Could not start scan. ${error}`);
         set({ hasFailed: true });
       });
+  },
+  connectDevice: (device: DiscoveredDevice) => {
+    useAsyncBridgeRequest({ command: 'connect', payload: device })
+      .then(() => {
+        set({ connectedDevices: [..._get().connectedDevices, device.descriptor.addr] });
+      })
+      .catch((error) => {
+        console.error(`Could not connect to device. ${error}`);
+      });
   }
 });
 
@@ -27,4 +36,5 @@ export interface BluetoothSlice {
   connectedDevices: Array<BluetoothAdrr>;
   setLatestScan: (scanRes: DiscoveredDevice[]) => void;
   startScan: () => void;
+  connectDevice: (device: DiscoveredDevice) => void;
 }

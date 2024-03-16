@@ -58,6 +58,12 @@ impl<Connection> SoundcoreBLEDevice<Connection>
         Ok(initial_state)
     }
 
+    // TODO: Change the strategy to: 
+    // 1. Send the state request packet
+    // 2. Check if the state is received within a certain time frame and retry if not
+    // 3. If the state is received, check if we have a SN
+    // 4. If not send a SN request packet
+    // 5. Resolve the state and the model 
     async fn fetch_initial_state(
         connection: &Connection,
         byte_channel: &mut mpsc::Receiver<Vec<u8>>,

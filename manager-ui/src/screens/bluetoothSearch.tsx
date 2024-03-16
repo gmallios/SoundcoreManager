@@ -18,18 +18,25 @@ import { DiscoveredDevice } from '../types/soundcore-lib';
 import BluetoothIcon from '@mui/icons-material/Bluetooth';
 
 export const BluetoothSearchScreen: React.FC = () => {
-  const { isLoading, startScan, latestScanResults } = useSoundcoreStore(
+  const { isLoading, startScan, latestScanResults, connectDevice } = useSoundcoreStore(
     useShallow((state) => ({
       isLoading: state.isLoading,
       startScan: state.startScan,
-      latestScanResults: state.latestScan
+      latestScanResults: state.latestScan,
+      connectDevice: state.connectDevice
     }))
   );
 
-  const [selectedDevice, setSelectedDevice] = React.useState<DiscoveredDevice>();
+  const [selectedDevice, setSelectedDevice] = React.useState<DiscoveredDevice | null>(null);
 
   const connectFabClick = () => {
-    console.log(selectedDevice);
+    if (!selectedDevice) return;
+    connectDevice(selectedDevice);
+  };
+
+  const searchFabClick = () => {
+    startScan();
+    setSelectedDevice(null);
   };
 
   // useEffect(() => {
@@ -68,12 +75,13 @@ export const BluetoothSearchScreen: React.FC = () => {
           size="medium"
           color="primary"
           aria-label="add"
+          disabled={!selectedDevice}
           sx={{ position: 'absolute', bottom: 16, right: 16 }}>
           Connect
           <ArrowForwardIcon sx={{ ml: 1 }} />
         </Fab>
         <Fab
-          onClick={() => startScan()}
+          onClick={() => searchFabClick()}
           variant="extended"
           size="medium"
           color="primary"
