@@ -35,13 +35,16 @@ const bridgeResponseHandlers: BridgeResponseHandlers = {
   scanResult: function (payload, _set, get): void {
     get().setLatestScan(payload);
   },
-  connectionEstablished: function (_e, _set, _get): void {
+  connectionEstablished: (_e, _set, _get): void => {
     throw new Error('Function not implemented.');
   },
-  disconnected: function (_e, _set, _get): void {
+  disconnected: (_e, _set, _get): void => {
     throw new Error('Function not implemented.');
   },
-  error: function (_e, _set, _get): void {
+  error: (_e, _set, _get): void => {
+    throw new Error('Function not implemented.');
+  },
+  adapterEvent: (_payload, _set, _get) => {
     throw new Error('Function not implemented.');
   }
 };

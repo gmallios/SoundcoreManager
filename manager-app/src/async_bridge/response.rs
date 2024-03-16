@@ -1,6 +1,7 @@
 use serde::Serialize;
 
 use soundcore_lib::api::SoundcoreDeviceState;
+use soundcore_lib::ble::BLEAdapterEvent;
 use soundcore_lib::btaddr::BluetoothAdrr;
 use soundcore_lib::device_manager::DiscoveredDevice;
 use typeshare::typeshare;
@@ -13,6 +14,7 @@ pub enum BridgeResponse {
     ConnectionEstablished(BluetoothAdrr),
     NewState(NewStateResponse),
     Disconnected(BluetoothAdrr),
+    AdapterEvent(BLEAdapterEvent),
     Error(String),
 }
 

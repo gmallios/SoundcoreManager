@@ -24,6 +24,12 @@ impl From<BluetoothAdrr> for PeripheralId {
     }
 }
 
+impl From<PeripheralId> for BluetoothAdrr {
+    fn from(val: PeripheralId) -> Self {
+        BluetoothAdrr::from_str(&val.to_string()).unwrap()
+    }
+}
+
 impl From<WriteType> for btleplug::api::WriteType {
     fn from(value: WriteType) -> Self {
         match value {

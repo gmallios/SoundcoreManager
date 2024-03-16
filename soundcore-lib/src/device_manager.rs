@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use std::{sync::Arc, time::Duration};
 
 use crate::ble::btleplug::manager::BtlePlugBLEManager;
+use crate::ble::BLEAdapterEvent;
 #[cfg(any(test, feature = "mock-ble"))]
 use crate::mocks::*;
 use crate::{
@@ -79,6 +80,10 @@ where
             .collect::<Vec<_>>())
     }
 
+    pub async fn get_event_channel(&self) -> SoundcoreLibResult<tokio::sync::mpsc::Receiver<BLEAdapterEvent>> {
+        self.ble_manager.adapter_events().await
+    }
+
     fn map_descriptor_to_discovered_device(descriptor: &BLEDeviceDescriptor) -> DiscoveredDevice {
         DiscoveredDevice {
             descriptor: descriptor.to_owned(),
@@ -98,6 +103,7 @@ where
             None => discovered_device,
         }
     }
+    
 }
 
 /// A discovered BLE device. The DiscoveredDevice can be upgraded to a SoundcoreBLEDevice.

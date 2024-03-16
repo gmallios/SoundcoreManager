@@ -59,21 +59,18 @@ async fn main() {
     #[cfg(target_os = "macos")]
     server::launch_server();
 
-    // Bring up bridge
-
     // builder()
     //     .filter(None, log::LevelFilter::Debug)
     //     .filter_module("h2", log::LevelFilter::Off)
     //     .filter_module("hyper", log::LevelFilter::Off)
     //     .filter_module("tower", log::LevelFilter::Off)
     //     .init();
-    let (input_tx, input_rx) = channel(1);
-    let (output_tx, mut output_rx) = channel(1);
+    let (input_tx, input_rx) = channel(255);
+    let (output_tx, mut output_rx) = channel(255);
 
     tauri::Builder::default()
         .setup(|app| {
-            let bridge_app_handle = app.handle();
-            tokio::spawn(async_bridge(input_rx, output_tx, bridge_app_handle));
+            tokio::spawn(async_bridge(input_rx, output_tx));
 
             let app_handle = app.handle();
             tokio::spawn(async move {

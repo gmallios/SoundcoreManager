@@ -18,7 +18,12 @@ log = { workspace = true }
 env_logger = { workspace = true }
 thiserror = { workspace = true }
 serde = { workspace = true, features = ["derive", "rc"] }
-tokio = { workspace = true, features = ["time", "macros", "rt-multi-thread", "sync"] }
+tokio = { workspace = true, features = [
+    "time",
+    "macros",
+    "rt-multi-thread",
+    "sync",
+] }
 async-trait = { workspace = true }
 futures = { workspace = true }
 strum = { version = "0.26", features = ["derive"] }
@@ -34,7 +39,6 @@ btleplug = { version = "0.11", features = ["serde"], optional = true }
 test_data = { path = "../test_data" }
 
 
-
 [target.'cfg(target_os = "windows")'.dependencies]
 windows = { version = "0.52", features = [
     "Storage_Streams",
@@ -44,5 +48,5 @@ windows = { version = "0.52", features = [
     "Devices_Enumeration",
     "Devices_Bluetooth",
     "Devices_Bluetooth_GenericAttributeProfile",
-    "Devices_Bluetooth_Advertisement"
+    "Devices_Bluetooth_Advertisement",
 ], optional = true }

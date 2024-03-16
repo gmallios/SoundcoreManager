@@ -2,16 +2,22 @@ use std::sync::{Arc, Weak};
 use std::time::Duration;
 
 use async_trait::async_trait;
+use btleplug::api::{Central as _, CentralEvent};
 use btleplug::{
     api::Manager as _,
     platform::{Adapter, Manager},
 };
+use futures::StreamExt;
+use log::warn;
 use tokio::sync::RwLock;
 use weak_table::weak_value_hash_map::Entry;
 use weak_table::WeakValueHashMap;
 
-use crate::ble::{BLEConnectionFactory, BLEConnectionUuidSet, BLEDeviceDescriptor, BLEConnectionManager, BLEDeviceScanner};
 use crate::ble::btleplug::connection::BtlePlugConnection;
+use crate::ble::{
+    BLEConnectionFactory, BLEConnectionManager, BLEConnectionUuidSet, BLEDeviceDescriptor,
+    BLEAdapterEvent, BLEDeviceScanner,
+};
 use crate::btaddr::BluetoothAdrr;
 use crate::error::SoundcoreLibResult;
 
@@ -72,10 +78,13 @@ impl BLEConnectionManager for BtlePlugBLEManager {
         descriptor: BLEDeviceDescriptor,
         uuid_set: Option<BLEConnectionUuidSet>,
     ) -> SoundcoreLibResult<Arc<Self::Connection>> {
-        match self.open_connections.write().await.entry(descriptor.addr.to_owned()) {
-            Entry::Occupied(e) => {
-                Ok(e.get().to_owned())
-            }
+        match self
+            .open_connections
+            .write()
+            .await
+            .entry(descriptor.addr.to_owned())
+        {
+            Entry::Occupied(e) => Ok(e.get().to_owned()),
             Entry::Vacant(e) => {
                 let connection = self
                     .connection_factory
@@ -84,6 +93,42 @@ impl BLEConnectionManager for BtlePlugBLEManager {
                 let new_conn = Arc::new(connection);
                 e.insert(new_conn.clone());
                 Ok(new_conn)
+            }
+        }
+    }
+
+    async fn adapter_events(
+        &self,
+    ) -> SoundcoreLibResult<tokio::sync::mpsc::Receiver<BLEAdapterEvent>> {
+        let (tx, rx) = tokio::sync::mpsc::channel::<BLEAdapterEvent>(255);
+
+        for adapter in self.adapters.clone() {
+            let tx_clone = tx.clone();
+            let mut adapter_events = adapter.events().await.unwrap();
+            tokio::spawn(async move {
+                while let Some(evt) = adapter_events.next().await {
+                 let event: Option<BLEAdapterEvent> = evt.try_into().ok();
+                    if let Some(event) = event {
+                        tx_clone.send(event).await.unwrap();
+                    }
+                }
+            });
+        }
+        Ok(rx)
+    }
+}
+
+
+impl TryInto<BLEAdapterEvent> for CentralEvent {
+    type Error = ();
+
+    fn try_into(self) -> Result<BLEAdapterEvent, Self::Error> {
+        match self {
+            CentralEvent::DeviceDisconnected(id) => Ok(BLEAdapterEvent::DeviceDisconnected(id.into())),
+            CentralEvent::DeviceConnected(id) => Ok(BLEAdapterEvent::DeviceConnected(id.into())),
+            _ => {
+                warn!("Unhandled CentralEvent: {:?}", self);
+                Err(())
             }
         }
     }

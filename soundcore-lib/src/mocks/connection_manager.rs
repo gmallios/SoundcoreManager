@@ -42,4 +42,8 @@ impl BLEConnectionManager for MockBLEConnectionManager {
         let conn = MockBLEConnection::new_with_empty_channel();
         Ok(Arc::new(conn))
     }
+
+    async fn adapter_events(&self) -> SoundcoreLibResult<tokio::sync::mpsc::Receiver<crate::ble::BLEAdapterEvent>> {
+        unimplemented!()
+    }
 }

@@ -1,5 +1,6 @@
 use std::sync::Arc;
 
+use log::debug;
 use tauri::AppHandle;
 use tokio::sync::{mpsc, Mutex};
 
@@ -13,16 +14,12 @@ use super::{BridgeCommand, BridgeResponse, NewStateResponse};
 
 struct CommandLoopState<B: BLEConnectionManager> {
     manager: DeviceManager<B>,
-    app_handle: AppHandle,
-    devices: Vec<Arc<SoundcoreBLEDevice<B::Connection>>>,
 }
 
 impl<B: BLEConnectionManager> CommandLoopState<B> {
-    fn new(manager: DeviceManager<B>, app_handle: AppHandle) -> Self {
+    fn new(manager: DeviceManager<B>) -> Self {
         Self {
             manager,
-            app_handle,
-            devices: Vec::new(),
         }
     }
 }
@@ -30,11 +27,25 @@ impl<B: BLEConnectionManager> CommandLoopState<B> {
 pub async fn async_bridge(
     mut input_rx: mpsc::Receiver<BridgeCommand>,
     output_tx: mpsc::Sender<BridgeResponse>,
-    app_handle: AppHandle,
 ) {
-    let command_loop = tokio::spawn(async move {
-        let manager = create_device_manager().await;
-        let command_loop_state = Arc::new(Mutex::new(CommandLoopState::new(manager, app_handle)));
+    tokio::spawn(async move {
+        let manager =
+            create_device_manager().await;
+
+        // Adapter events
+        let mut manager_event_channel = manager.get_event_channel().await.unwrap();
+        let adapter_tx = output_tx.clone();
+        tokio::task::spawn(async move {
+            while let Some(event) = manager_event_channel.recv().await {
+                adapter_tx
+                    .send(BridgeResponse::AdapterEvent(event))
+                    .await
+                    .expect("Failed to send adapter event");
+            }
+        });
+
+        // Main command loop
+        let command_loop_state = Arc::new(Mutex::new(CommandLoopState::new(manager)));
         loop {
             while let Some(command) = input_rx.recv().await {
                 let command_loop_state = command_loop_state.clone();
