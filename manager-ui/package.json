@@ -10,9 +10,9 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "tauri": "tauri",
-    "generate-types": "yarn typeshare:tauri && yarn typeshare:soundcore-lib",
-    "typeshare:soundcore-lib": "typeshare ./soundcore-lib --lang=typescript --output-file=./src/types/soundcore-lib.d.ts",
-    "typeshare:tauri": "typeshare ./src-tauri --lang=typescript --output-file=./src/types/tauri-backend.d.ts"
+    "gen-types": "yarn typeshare:tauri && yarn typeshare:soundcore-lib",
+    "typeshare:soundcore-lib": "typeshare ../soundcore-lib --lang=typescript --output-file=./src/types/soundcore-lib.d.ts",
+    "typeshare:tauri": "typeshare ../manager-app --lang=typescript --output-file=./src/types/tauri-backend.d.ts"
   },
   "dependencies": {
     "@emotion/react": "^11.10.4",

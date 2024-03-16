@@ -24,6 +24,11 @@ export interface BluetoothAdrr {
   address: [number, number, number, number, number, number];
 }
 
+export interface BLEDeviceDescriptor {
+  addr: BluetoothAdrr;
+  name: string;
+}
+
 export enum SupportedModels {
   A3027 = 'A3027',
   A3028 = 'A3028',

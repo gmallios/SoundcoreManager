@@ -6,7 +6,8 @@
     "build": "yarn workspace manager-ui build",
     "lint": "yarn workspace manager-ui lint",
     "format": "yarn workspace manager-ui format",
-    "tauri": "tauri"
+    "tauri": "tauri",
+    "gen-types": "yarn workspace manager-ui gen-types"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^1.5.10"
