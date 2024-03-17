@@ -6,8 +6,7 @@
     "distDir": "../manager-ui/dist"
   },
   "package": {
-    "productName": "Soundcore Manager",
-    "version": "0.1.0"
+    "productName": "Soundcore Manager"
   },
   "tauri": {
     "allowlist": {

@@ -8,12 +8,19 @@
     "lint:fix": "yarn workspace manager-ui lint:fix",
     "format": "yarn workspace manager-ui format",
     "tauri": "tauri",
-    "gen-types": "yarn workspace manager-ui gen-types"
+    "gen-types": "yarn workspace manager-ui gen-types",
+    "bump-ui:patch": "yarn workspace manager-ui version --no-git-tag-version --patch",
+    "bump-ui:minor": "yarn workspace manager-ui version --no-git-tag-version --minor",
+    "bump-ui:major": "yarn workspace manager-ui version --no-git-tag-version --major",
+    "bump:patch": "yarn bump-ui:patch && yarn version --no-git-tag-version --patch && cargo set-version --bump patch",
+    "bump:minor": "yarn bump-ui:minor && yarn version --no-git-tag-version --minor && cargo set-version --bump minor",
+    "bump:major": "yarn bump-ui:major && yarn version --no-git-tag-version --major && cargo set-version --bump major"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^1.5.10"
   },
   "workspaces": [
     "manager-ui"
-  ]
+  ],
+  "version": "0.2.0"
 }
