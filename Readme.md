@@ -11,21 +11,21 @@
 
 <h5>
 
-# Downloads
-
-- [Windows Latest](https://nightly.link/gmallios/SoundcoreManager/workflows/push/master/SoundcoreManager-windows-latest.exe.zip)
-  standalone binary
-
 # Features
 
 - See charging status and battery level
 - Set ANC Modes
 - Adjust EQ
 
+# Installing
+
+- Check the [releases section](https://github.com/gmallios/SoundcoreManager/releases) for a stable build or try the latest unstable [Windows](https://nightly.link/gmallios/SoundcoreManager/workflows/push/master/SoundcoreManager-windows-latest.exe.zip)
+  standalone binary
+
 # Supported Devices - Mostly Tested
 
 | Model ID | Name              |
-|----------|-------------------|
+| -------- | ----------------- |
 | A3951    | Liberty Air 2 Pro |
 | A3027    | Life Q35          |
 | A3028    | Life Q30          |
@@ -35,7 +35,7 @@
 # Planned Support - Need testers
 
 | Model ID | Name          |
-|----------|---------------|
+| -------- | ------------- |
 | A3040    | Space Q45     |
 | A3025    | Life Q20      |
 | A3033    | Live 2 Neo    |
