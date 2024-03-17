@@ -88,3 +88,30 @@ export interface DeviceStatus {
   left_hearid_customdata: EQWave;
   right_hearid_customdata: EQWave;
 }
+
+export type BLEAdapterEvent =
+  | { kind: 'deviceConnected'; value: BluetoothAdrr }
+  | { kind: 'deviceDisconnected'; value: BluetoothAdrr };
+
+export enum SoundcoreFeatureFlags {
+  SOUND_MODE = 'SOUND_MODE',
+  ANC_MODE = 'ANC_MODE',
+  TRANS_MODE = 'TRANS_MODE',
+  CUSTOM_ANC = 'CUSTOM_ANC',
+  EQ = 'EQ',
+  STEREO_EQ = 'STEREO_EQ',
+  DRC = 'DRC',
+  HEARID = 'HEARID',
+  WEAR_DETECTION = 'WEAR_DETECTION',
+  CUSTOM_BUTTONS = 'CUSTOM_BUTTONS',
+  TOUCH_TONE = 'TOUCH_TONE',
+  GAME_MODE = 'GAME_MODE',
+  AUTO_POWER_OFF_ON = 'AUTO_POWER_OFF_ON',
+  InEarBeep = 'IN_EAR_BEEP',
+  PromptLang = 'PROMPT_LANG',
+  HearingProtect = 'HEARING_PROTECT',
+  AmbientSoundNotice = 'AMBIENT_SOUND_NOTICE',
+  PowerOnBatteryNotice = 'POWER_ON_BATTERY_NOTICE',
+  SupportTwoCnn = 'SUPPORT_TWO_CNN',
+  MultipleDeviceList = 'MULTIPLE_DEVICE_LIST'
+}

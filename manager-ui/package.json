@@ -3,14 +3,15 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "lint": "eslint ./manager-ui",
-    "lint:fix": "eslint --fix ./manager-ui",
+    "lint": "eslint .",
+    "lint:fix": "eslint --fix .",
+    "lint:fix-types": "eslint --fix ./src/types/*",
     "format": "prettier --write './**/*.{js,jsx,ts,tsx,css,md,json}' --config ./.prettierrc",
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
     "tauri": "tauri",
-    "gen-types": "yarn typeshare:tauri && yarn typeshare:soundcore-lib",
+    "gen-types": "yarn typeshare:tauri && yarn typeshare:soundcore-lib && yarn lint:fix-types",
     "typeshare:soundcore-lib": "typeshare ../soundcore-lib --lang=typescript --output-file=./src/types/soundcore-lib.d.ts",
     "typeshare:tauri": "typeshare ../manager-app --lang=typescript --output-file=./src/types/tauri-backend.d.ts"
   },

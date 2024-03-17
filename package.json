@@ -5,6 +5,7 @@
     "dev": "yarn workspace manager-ui dev",
     "build": "yarn workspace manager-ui build",
     "lint": "yarn workspace manager-ui lint",
+    "lint:fix": "yarn workspace manager-ui lint:fix",
     "format": "yarn workspace manager-ui format",
     "tauri": "tauri",
     "gen-types": "yarn workspace manager-ui gen-types"

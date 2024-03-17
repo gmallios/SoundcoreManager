@@ -53,4 +53,5 @@ export type BridgeResponse =
   | { kind: 'connectionEstablished'; payload: BluetoothAdrr }
   | { kind: 'newState'; payload: NewStateResponse }
   | { kind: 'disconnected'; payload: BluetoothAdrr }
+  | { kind: 'adapterEvent'; payload: BLEAdapterEvent }
   | { kind: 'error'; payload: string };

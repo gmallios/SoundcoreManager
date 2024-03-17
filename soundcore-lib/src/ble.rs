@@ -3,6 +3,7 @@ use std::time::Duration;
 
 use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
+use typeshare::typeshare;
 
 use crate::btaddr::BluetoothAdrr;
 use crate::error::SoundcoreLibResult;
@@ -30,7 +31,18 @@ pub trait BLEConnectionManager {
         descriptor: BLEDeviceDescriptor,
         uuid_set: Option<BLEConnectionUuidSet>,
     ) -> SoundcoreLibResult<Arc<Self::Connection>>;
+
+    async fn adapter_events(&self) -> SoundcoreLibResult<tokio::sync::mpsc::Receiver<BLEAdapterEvent>>;
 }
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(rename_all = "camelCase", tag = "kind", content = "value")]
+#[typeshare]
+pub enum BLEAdapterEvent {
+    DeviceConnected(BluetoothAdrr),
+    DeviceDisconnected(BluetoothAdrr),
+}
+
 
 #[async_trait]
 pub trait BLEConnection {
@@ -63,6 +75,7 @@ pub trait DeviceDescriptor {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq, Ord, PartialOrd, Hash)]
+#[typeshare]
 pub struct BLEDeviceDescriptor {
     pub addr: BluetoothAdrr,
     pub name: String,
@@ -92,6 +105,14 @@ pub enum WriteType {
     WithoutResponse,
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+pub struct BLEConnectionUuidSet {
+    pub service_uuid: uuid::Uuid,
+    pub read_uuid: uuid::Uuid,
+    pub write_uuid: uuid::Uuid,
+}
+
+
 #[cfg(all(target_os = "windows", feature = "winrt-backend"))]
 impl From<WriteType> for ::windows::Devices::Bluetooth::GenericAttributeProfile::GattWriteOption {
     fn from(val: WriteType) -> Self {
@@ -102,16 +123,4 @@ impl From<WriteType> for ::windows::Devices::Bluetooth::GenericAttributeProfile:
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct BLEConnectionUuidSet {
-    pub service_uuid: uuid::Uuid,
-    pub read_uuid: uuid::Uuid,
-    pub write_uuid: uuid::Uuid,
-}
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub enum ConnectionEvent {
-    Connected(String),
-    Disconnected(String),
-    DataReceived(Vec<u8>),
-}
