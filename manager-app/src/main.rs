@@ -76,7 +76,7 @@ async fn main() {
             tokio::spawn(async move {
                 loop {
                    if let Some(resp) = output_rx.recv().await {
-                       handle_bridge_output(resp, &app_handle);
+                       handle_bridge_output(resp, &app_handle).await;
                    }
                 }
             });
@@ -141,9 +141,14 @@ async fn main() {
         });
 }
 
-fn handle_bridge_output<R: tauri::Runtime>(resp: BridgeResponse, manager: &impl Manager<R>) {
+async fn handle_bridge_output<R: tauri::Runtime>(resp: BridgeResponse, manager: &impl Manager<R>) {
     trace!("Received response from bridge, emitting event...");
     trace!("Response: {:?}", resp);
+    if let BridgeResponse::ScanResult(_) = resp {
+        let state = manager.state::<SoundcoreAppState>();
+        let mut scan_in_progress = state.scan_in_progress.lock().await;
+        *scan_in_progress = false;
+    }
     manager.emit_all("async-bridge-event", resp).unwrap();
 }
 
