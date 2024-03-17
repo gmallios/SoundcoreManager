@@ -60,12 +60,12 @@ const A3040_FEATURE_FLAGS: BitFlags<SoundcoreFeatureFlags> = make_bitflags!(Soun
     | TOUCH_TONE
     | GAME_MODE
     | AUTO_POWER_OFF_ON
-    | PowerOnBatteryNotice
-    | AmbientSoundNotice
-    | HearingProtect
-    | PromptLang
-    | InEarBeep
-    | SupportTwoCnn
+    | POWER_ON_BATTERY_NOTICE
+    | AMBIENT_SOUND_NOTICE
+    | HEARING_PROTECTION
+    | LANG_PROMPT
+    | IN_EAR_BEEP
+    | SUPPORT_TWO_CONNECTIONS
 });
 
 // TODO: Figure out what the bytes remaining are so this can be all_consuming
