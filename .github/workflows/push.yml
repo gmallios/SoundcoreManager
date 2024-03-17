@@ -60,15 +60,15 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Rename soundcoremanager.exe
+      - name: Rename binary for windows
         if: matrix.platform == 'windows-latest'
-        run: ren target\release\deps\soundcoremanager.exe SoundcoreManager-${{ matrix.platform }}-${{ env.SHORT_SHA }}.exe
+        run: ren "target\release\Soundcore Manager.exe" SoundcoreManager-${{ matrix.platform }}-${{ env.SHORT_SHA }}.exe
 
       - name: ⏫ Upload Build Artifact
         if: matrix.platform == 'windows-latest'
         uses: actions/upload-artifact@v3
         with:
           name: SoundcoreManager-${{ matrix.platform }}.exe
-          path: target\release\deps\SoundcoreManager-${{ matrix.platform }}-${{ env.SHORT_SHA }}.exe
+          path: target\release\SoundcoreManager-${{ matrix.platform }}-${{ env.SHORT_SHA }}.exe
 
         
