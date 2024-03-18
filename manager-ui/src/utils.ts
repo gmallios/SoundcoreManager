@@ -5,5 +5,8 @@ export const compareAddresses = (a: BluetoothAdrr, b: BluetoothAdrr): boolean =>
 };
 
 export const bluetoothAddrToString = (addr: BluetoothAdrr): string => {
-  return addr.address.map((byte) => byte.toString(16).padStart(2, '0')).join(':');
+  return addr.address
+    .map((byte) => byte.toString(16).padStart(2, '0'))
+    .join(':')
+    .toUpperCase();
 };
