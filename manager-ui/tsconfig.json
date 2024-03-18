@@ -22,7 +22,7 @@
       "@screens/*": ["./screens/*"],
       "@hooks/*": ["./hooks/*"],
       "@stores/*": ["./stores/*"],
-      "@types/*": ["./types/*"]
+      "@generated-types/*": ["./types/*"]
     }
   },
   "include": ["src"],
