@@ -11,6 +11,8 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "tauri": "tauri",
+    "test": "vitest",
+    "test:coverage": "vitest --coverage",
     "gen-types": "yarn typeshare:tauri && yarn typeshare:soundcore-lib && yarn lint:fix-types",
     "typeshare:soundcore-lib": "typeshare ../soundcore-lib --lang=typescript --output-file=./src/types/soundcore-lib.d.ts",
     "typeshare:tauri": "typeshare ../manager-app --lang=typescript --output-file=./src/types/tauri-backend.d.ts"
@@ -34,6 +36,8 @@
   },
   "devDependencies": {
     "@tauri-apps/cli": "^1.5.1",
+    "@testing-library/jest-dom": "^6.4.2",
+    "@testing-library/react": "^14.2.1",
     "@types/node": "^18.7.10",
     "@types/react": "^18.2.6",
     "@types/react-dom": "^18.0.6",
@@ -44,10 +48,12 @@
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.1.3",
     "eslint-plugin-react": "^7.33.2",
+    "jsdom": "^24.0.0",
     "prettier": "^3.2.5",
     "typescript": "^5.0.4",
     "vite": "^5.1.5",
     "vite-plugin-eslint": "^1.8.1",
-    "vite-tsconfig-paths": "^4.3.1"
+    "vite-tsconfig-paths": "^4.3.1",
+    "vitest": "^1.4.0"
   }
 }

@@ -9,6 +9,8 @@
     "format": "yarn workspace manager-ui format",
     "tauri": "tauri",
     "gen-types": "yarn workspace manager-ui gen-types",
+    "test": "yarn workspace manager-ui test",
+    "test:coverage": "yarn workspace manager-ui test:coverage",
     "bump-ui:patch": "yarn workspace manager-ui version --no-git-tag-version --patch",
     "bump-ui:minor": "yarn workspace manager-ui version --no-git-tag-version --minor",
     "bump-ui:major": "yarn workspace manager-ui version --no-git-tag-version --major",
