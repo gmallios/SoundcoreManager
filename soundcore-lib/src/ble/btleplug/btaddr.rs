@@ -1,13 +1,15 @@
-use crate::ble::WriteType;
+use std::str::FromStr;
+
+use crate::{ble::WriteType, error::SoundcoreLibError};
 use btleplug::{api::BDAddr, platform::PeripheralId};
 
 use crate::btaddr::BluetoothAdrr;
 
-impl From<BDAddr> for BluetoothAdrr {
-    fn from(value: BDAddr) -> Self {
-        BluetoothAdrr {
-            address: value.into_inner(),
-        }
+impl TryFrom<BDAddr> for BluetoothAdrr {
+    type Error = SoundcoreLibError;
+
+    fn try_from(value: BDAddr) -> Result<Self, Self::Error> {
+        BluetoothAdrr::from_bytes(&value.into_inner())
     }
 }
 
@@ -24,9 +26,11 @@ impl From<BluetoothAdrr> for PeripheralId {
     }
 }
 
-impl From<PeripheralId> for BluetoothAdrr {
-    fn from(val: PeripheralId) -> Self {
-        BluetoothAdrr::from_str(&val.to_string()).unwrap()
+impl TryFrom<PeripheralId> for BluetoothAdrr {
+    type Error = SoundcoreLibError;
+
+    fn try_from(value: PeripheralId) -> Result<Self, Self::Error> {
+        BluetoothAdrr::from_str(&value.to_string())
     }
 }
 

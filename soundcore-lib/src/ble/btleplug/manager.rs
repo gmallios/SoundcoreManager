@@ -19,7 +19,7 @@ use crate::ble::{
     BLEAdapterEvent, BLEDeviceScanner,
 };
 use crate::btaddr::BluetoothAdrr;
-use crate::error::SoundcoreLibResult;
+use crate::error::{SoundcoreLibError, SoundcoreLibResult};
 
 use super::{connection_factory::BtlePlugConnectionFactory, scanner::BtlePlugScanner};
 
@@ -120,15 +120,15 @@ impl BLEConnectionManager for BtlePlugBLEManager {
 
 
 impl TryInto<BLEAdapterEvent> for CentralEvent {
-    type Error = ();
+    type Error = SoundcoreLibError;
 
     fn try_into(self) -> Result<BLEAdapterEvent, Self::Error> {
         match self {
-            CentralEvent::DeviceDisconnected(id) => Ok(BLEAdapterEvent::DeviceDisconnected(id.into())),
-            CentralEvent::DeviceConnected(id) => Ok(BLEAdapterEvent::DeviceConnected(id.into())),
+            CentralEvent::DeviceDisconnected(id) => Ok(BLEAdapterEvent::DeviceDisconnected(id.try_into()?)),
+            CentralEvent::DeviceConnected(id) => Ok(BLEAdapterEvent::DeviceConnected(id.try_into()?)),
             _ => {
                 warn!("Unhandled CentralEvent: {:?}", self);
-                Err(())
+                Err(SoundcoreLibError::Unknown)
             }
         }
     }

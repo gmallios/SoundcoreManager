@@ -1,4 +1,7 @@
-use std::fmt::{Debug, Display};
+use std::{
+    fmt::{Debug, Display},
+    str::FromStr,
+};
 
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
@@ -20,21 +23,19 @@ impl Debug for BluetoothAdrr {
 impl BluetoothAdrr {
     pub const SOUNDCORE_MAC_PREFIXES: [[u8; 3]; 2] = [[0xAC, 0x12, 0x2F], [0xE8, 0xEE, 0xCC]];
 
-    pub fn from_str(address: &str) -> SoundcoreLibResult<Self> {
-        match address.contains(':') {
-            true => Self::from_colon_str(address),
-            false => Self::from_dash_str(address),
-        }
-    }
-
     pub fn from_bytes(bytes: &[u8]) -> SoundcoreLibResult<Self> {
         if bytes.len() != 6 {
             return Err(SoundcoreLibError::InvalidMACAddress {
                 addr: format!("{:?}", bytes),
             });
         }
+
         Ok(Self {
-            address: bytes.try_into().unwrap(),
+            address: bytes
+                .try_into()
+                .map_err(|_| SoundcoreLibError::InvalidMACAddress {
+                    addr: format!("{:?}", bytes),
+                })?,
         })
     }
 
@@ -56,15 +57,14 @@ impl BluetoothAdrr {
     }
 
     fn from_dash_str(address: &str) -> SoundcoreLibResult<Self> {
-        let addr = address
-            .split('-')
-            .map(|x| u8::from_str_radix(x, 16))
-            .collect::<Result<Vec<u8>, _>>()
-            .map_err(|_| SoundcoreLibError::InvalidMACAddress {
-                addr: address.into(),
-            })?;
         Ok(Self {
-            address: addr
+            address: address
+                .split('-')
+                .map(|x| u8::from_str_radix(x, 16))
+                .collect::<Result<Vec<u8>, _>>()
+                .map_err(|_| SoundcoreLibError::InvalidMACAddress {
+                    addr: address.into(),
+                })?
                 .try_into()
                 .map_err(|_| SoundcoreLibError::InvalidMACAddress {
                     addr: address.into(),
@@ -77,19 +77,18 @@ impl BluetoothAdrr {
             .iter()
             .any(|prefix| self.address.starts_with(prefix))
     }
+
+    fn from_bytes_to_string(bytes: &[u8]) -> String {
+        format!(
+            "{:02X}:{:02X}:{:02X}:{:02X}:{:02X}:{:02X}",
+            bytes[0], bytes[1], bytes[2], bytes[3], bytes[4], bytes[5]
+        )
+    }
 }
 
 impl From<BluetoothAdrr> for String {
     fn from(val: BluetoothAdrr) -> Self {
-        format!(
-            "{:02X}:{:02X}:{:02X}:{:02X}:{:02X}:{:02X}",
-            val.address[0],
-            val.address[1],
-            val.address[2],
-            val.address[3],
-            val.address[4],
-            val.address[5]
-        )
+        val.to_string()
     }
 }
 
@@ -113,16 +112,18 @@ impl From<BluetoothAdrr> for u64 {
 
 impl Display for BluetoothAdrr {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "{:02X}:{:02X}:{:02X}:{:02X}:{:02X}:{:02X}",
-            self.address[0],
-            self.address[1],
-            self.address[2],
-            self.address[3],
-            self.address[4],
-            self.address[5],
-        )
+        write!(f, "{}", Self::from_bytes_to_string(&self.address))
+    }
+}
+
+impl FromStr for BluetoothAdrr {
+    type Err = SoundcoreLibError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s.contains(':') {
+            true => Self::from_colon_str(s),
+            false => Self::from_dash_str(s),
+        }
     }
 }
 
@@ -148,9 +149,7 @@ mod mac_tests {
 
     #[test]
     fn into_string() {
-        let address = BluetoothAdrr {
-            address: [0x11, 0x22, 0x33, 0x44, 0x55, 0x66],
-        };
+        let address = BluetoothAdrr::from_bytes(&[0x11, 0x22, 0x33, 0x44, 0x55, 0x66]).unwrap();
 
         let address_str: String = address.into();
 
@@ -159,9 +158,7 @@ mod mac_tests {
 
     #[test]
     fn display_formatting() {
-        let address = BluetoothAdrr {
-            address: [0x11, 0x22, 0x33, 0x44, 0x55, 0x66],
-        };
+        let address = BluetoothAdrr::from_bytes(&[0x11, 0x22, 0x33, 0x44, 0x55, 0x66]).unwrap();
 
         let formatted_address = format!("{}", address);
 
@@ -170,15 +167,11 @@ mod mac_tests {
 
     #[test]
     fn check_soundcore_mac() {
-        let address = BluetoothAdrr {
-            address: [0xAC, 0x12, 0x2F, 0x44, 0x55, 0x66],
-        };
-
+        let address = BluetoothAdrr::from_bytes(&[0xAC, 0x12, 0x2F, 0x44, 0x55, 0x66]).unwrap();
         assert!(address.is_soundcore_mac());
 
-        let non_soundcore = BluetoothAdrr {
-            address: [0x11, 0x22, 0x33, 0x44, 0x55, 0x66],
-        };
+        let non_soundcore =
+            BluetoothAdrr::from_bytes(&[0x11, 0x22, 0x33, 0x44, 0x55, 0x66]).unwrap();
 
         assert!(!non_soundcore.is_soundcore_mac());
     }
@@ -199,9 +192,7 @@ mod mac_tests {
 
     #[test]
     fn test_into_windows_u64() {
-        let address = BluetoothAdrr {
-            address: [0x33, 0x44, 0x55, 0x66, 0x77, 0x00],
-        };
+        let address = BluetoothAdrr::from_bytes(&[0x33, 0x44, 0x55, 0x66, 0x77, 0x00]).unwrap();
         let address_value: u64 = address.into();
         assert_eq!(address_value, 0x334455667700);
     }
