@@ -22,7 +22,8 @@
       "@screens/*": ["./screens/*"],
       "@hooks/*": ["./hooks/*"],
       "@stores/*": ["./stores/*"],
-      "@generated-types/*": ["./types/*"]
+      "@generated-types/*": ["./types/*"],
+      "@utils/*": ["./utils/*"],
     },
     "types": ["vitest/globals"]
   },
