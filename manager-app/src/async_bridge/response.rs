@@ -11,9 +11,10 @@ use typeshare::typeshare;
 #[typeshare]
 pub enum BridgeResponse {
     ScanResult(Vec<DiscoveredDevice>),
-    ConnectionEstablished(BluetoothAdrr),
-    NewState(NewStateResponse),
+    ConnectionEstablished(TaggedStateResponse),
+    NewState(TaggedStateResponse),
     Disconnected(BluetoothAdrr),
+    DisconnectedAll,
     AdapterEvent(BLEAdapterEvent),
     Error(String),
 }
@@ -21,7 +22,7 @@ pub enum BridgeResponse {
 #[derive(Debug, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
 #[typeshare]
-pub struct NewStateResponse {
+pub struct TaggedStateResponse {
     pub addr: BluetoothAdrr,
     pub state: SoundcoreDeviceState,
 }

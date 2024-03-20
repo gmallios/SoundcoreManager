@@ -11,4 +11,5 @@ pub enum BridgeCommand {
     Scan,
     Connect(DiscoveredDevice),
     Disconnect(BluetoothAdrr),
+    DisconnectAll,
 }

@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use log::debug;
+use log::{debug, info, trace};
 use tauri::AppHandle;
 use tokio::sync::{mpsc, Mutex};
 
@@ -10,7 +10,7 @@ use soundcore_lib::{
     device_manager::{create_device_manager, DeviceManager},
 };
 
-use super::{BridgeCommand, BridgeResponse, NewStateResponse};
+use super::{BridgeCommand, BridgeResponse, TaggedStateResponse};
 
 struct CommandLoopState<B: BLEConnectionManager> {
     manager: DeviceManager<B>,
@@ -18,9 +18,7 @@ struct CommandLoopState<B: BLEConnectionManager> {
 
 impl<B: BLEConnectionManager> CommandLoopState<B> {
     fn new(manager: DeviceManager<B>) -> Self {
-        Self {
-            manager,
-        }
+        Self { manager }
     }
 }
 
@@ -29,8 +27,7 @@ pub async fn async_bridge(
     output_tx: mpsc::Sender<BridgeResponse>,
 ) {
     tokio::spawn(async move {
-        let manager =
-            create_device_manager().await;
+        let manager = create_device_manager().await;
 
         // Adapter events
         let mut manager_event_channel = manager.get_event_channel().await.unwrap();
@@ -82,6 +79,14 @@ async fn handle_command<B: BLEConnectionManager>(
                 .await
                 .map(|_| BridgeResponse::Disconnected(addr_clone))
         }
+        BridgeCommand::DisconnectAll => {
+             command_loop_state
+                .lock()
+                .await
+                .manager
+                .disconnect_all()
+                .await.map(|_| BridgeResponse::DisconnectedAll)
+        }
         BridgeCommand::Connect(d) => {
             let addr = d.clone().descriptor.addr;
             let device = command_loop_state.lock().await.manager.connect(d).await;
@@ -89,20 +94,32 @@ async fn handle_command<B: BLEConnectionManager>(
             if let Ok(device) = device {
                 // Get the state channel and listen for changes in the background
                 let mut state_channel = device.state_channel().await;
-                tokio::task::spawn(async move {
+                let _ = tokio::task::spawn(async move {
+                    info!("Listening for state changes for {:?}", addr_clone);
                     while let Ok(()) = state_channel.changed().await {
                         let state = state_channel.borrow().clone();
-                        // TODO: Add logging
-                        let new_state_response = NewStateResponse {
-                            addr: addr_clone.clone(),
+                        trace!(
+                            "Got new state {:?} for {:?}, sending event...",
                             state,
-                        };
-                        output_tx
-                            .send(BridgeResponse::NewState(new_state_response))
+                            addr_clone
+                        );
+                        let res = output_tx
+                            .send(BridgeResponse::NewState(TaggedStateResponse {
+                                addr: addr_clone.clone(),
+                                state,
+                            }))
                             .await;
+
+                        if let Err(e) = res {
+                            debug!("Failed to send new state event: {:?}", e);
+                        }
                     }
+                    trace!("State channel for {:?} closed", addr_clone);
                 });
-                Ok(BridgeResponse::ConnectionEstablished(addr))
+                Ok(BridgeResponse::ConnectionEstablished(TaggedStateResponse {
+                    addr,
+                    state: device.latest_state().await,
+                }))
             } else {
                 Err(device.err().unwrap())
             }

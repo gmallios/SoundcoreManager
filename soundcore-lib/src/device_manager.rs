@@ -80,8 +80,16 @@ where
             .collect::<Vec<_>>())
     }
 
-    pub async fn get_event_channel(&self) -> SoundcoreLibResult<tokio::sync::mpsc::Receiver<BLEAdapterEvent>> {
+    pub async fn get_event_channel(
+        &self,
+    ) -> SoundcoreLibResult<tokio::sync::mpsc::Receiver<BLEAdapterEvent>> {
         self.ble_manager.adapter_events().await
+    }
+
+    pub async fn disconnect_all(&self) -> SoundcoreLibResult<()> {
+        let mut devices = self.ble_devices.write().await;
+        devices.clear();
+        Ok(())
     }
 
     fn map_descriptor_to_discovered_device(descriptor: &BLEDeviceDescriptor) -> DiscoveredDevice {
@@ -103,7 +111,6 @@ where
             None => discovered_device,
         }
     }
-    
 }
 
 /// A discovered BLE device. The DiscoveredDevice can be upgraded to a SoundcoreBLEDevice.
