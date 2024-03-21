@@ -79,14 +79,13 @@ async fn handle_command<B: BLEConnectionManager>(
                 .await
                 .map(|_| BridgeResponse::Disconnected(addr_clone))
         }
-        BridgeCommand::DisconnectAll => {
-             command_loop_state
-                .lock()
-                .await
-                .manager
-                .disconnect_all()
-                .await.map(|_| BridgeResponse::DisconnectedAll)
-        }
+        BridgeCommand::DisconnectAll => command_loop_state
+            .lock()
+            .await
+            .manager
+            .disconnect_all()
+            .await
+            .map(|_| BridgeResponse::DisconnectedAll),
         BridgeCommand::Connect(d) => {
             let addr = d.clone().descriptor.addr;
             let device = command_loop_state.lock().await.manager.connect(d).await;
@@ -129,65 +128,65 @@ async fn handle_command<B: BLEConnectionManager>(
     .unwrap_or_else(|e| e)
 }
 
-// #[cfg(test)]
-// mod test {
-//     use super::*;
-//
-//     async fn create_bridge() -> (mpsc::Sender<BridgeCommand>, mpsc::Receiver<BridgeResponse>) {
-//         let (input_tx, input_rx) = mpsc::channel(1);
-//         let (output_tx, output_rx) = mpsc::channel(1);
-//         async_bridge(input_rx, output_tx).await;
-//         (input_tx, output_rx)
-//     }
-//
-//     #[tokio::test]
-//     async fn should_handle_scan_command_and_produce_response() {
-//         let (input_tx, mut output_rx) = create_bridge().await;
-//         input_tx
-//             .send(BridgeCommand::ScanBle)
-//             .await
-//             .expect("Failed to send command");
-//
-//         let response = output_rx.recv().await.expect("Failed to receive response");
-//
-//         match response {
-//             BridgeResponse::ScanResult(res) => {
-//                 assert!(!res.is_empty());
-//             }
-//             _ => panic!("Unexpected response: {:?}", response),
-//         }
-//     }
-//
-//     #[tokio::test]
-//     async fn should_handle_connect_command_and_produce_response() {
-//         let (input_tx, mut output_rx) = create_bridge().await;
-//         input_tx
-//             .send(BridgeCommand::ScanBle)
-//             .await
-//             .expect("Failed to send command");
-//
-//         let scan_response = output_rx.recv().await.expect("Failed to receive response");
-//
-//         let devices = match scan_response {
-//             BridgeResponse::ScanResult(res) => res,
-//             _ => panic!("Unexpected response: {:?}", scan_response),
-//         };
-//
-//         let device = devices.first().unwrap();
-//
-//         input_tx
-//             .send(BridgeCommand::ConnectBle(device.clone()))
-//             .await
-//             .expect("Failed to send command");
-//
-//         let response = output_rx.recv().await.expect("Failed to receive response");
-//
-//         // TODO: Fix this test
-//         // match response {
-//         //     BridgeResponse::ConnectionEstablished(addr) => {
-//         //         assert_eq!(addr, device.descriptor.addr);
-//         //     }
-//         //     _ => panic!("Unexpected response: {:?}", response),
-//         // }
-//     }
-// }
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    async fn create_bridge() -> (mpsc::Sender<BridgeCommand>, mpsc::Receiver<BridgeResponse>) {
+        let (input_tx, input_rx) = mpsc::channel(1);
+        let (output_tx, output_rx) = mpsc::channel(1);
+        async_bridge(input_rx, output_tx).await;
+        (input_tx, output_rx)
+    }
+
+    #[tokio::test]
+    async fn should_handle_scan_command_and_produce_response() {
+        let (input_tx, mut output_rx) = create_bridge().await;
+        input_tx
+            .send(BridgeCommand::Scan)
+            .await
+            .expect("Failed to send command");
+
+        let response = output_rx.recv().await.expect("Failed to receive response");
+
+        match response {
+            BridgeResponse::ScanResult(res) => {
+                assert!(!res.is_empty());
+            }
+            _ => panic!("Unexpected response: {:?}", response),
+        }
+    }
+
+    #[tokio::test]
+    async fn should_handle_connect_command_and_produce_response() {
+        let (input_tx, mut output_rx) = create_bridge().await;
+        input_tx
+            .send(BridgeCommand::Scan)
+            .await
+            .expect("Failed to send command");
+
+        let scan_response = output_rx.recv().await.expect("Failed to receive response");
+
+        let devices = match scan_response {
+            BridgeResponse::ScanResult(res) => res,
+            _ => panic!("Unexpected response: {:?}", scan_response),
+        };
+
+        let device = devices.first().unwrap();
+
+        input_tx
+            .send(BridgeCommand::Connect(device.clone()))
+            .await
+            .expect("Failed to send command");
+
+        let response = output_rx.recv().await.expect("Failed to receive response");
+
+        // TODO: Fix this test
+        match response {
+            BridgeResponse::ConnectionEstablished(resp) => {
+                assert_eq!(resp.addr, device.descriptor.addr);
+            }
+            _ => panic!("Unexpected response: {:?}", response),
+        }
+    }
+}

@@ -4,7 +4,7 @@ use std::{sync::Arc, time::Duration};
 
 use crate::ble::btleplug::manager::BtlePlugBLEManager;
 use crate::ble::BLEAdapterEvent;
-#[cfg(any(test, feature = "mock-ble"))]
+#[cfg(any(test, feature = "mock"))]
 use crate::mocks::*;
 use crate::{
     ble::{BLEConnectionManager, BLEDeviceDescriptor},
@@ -127,20 +127,15 @@ pub struct DiscoveredDevice {
 #[cfg(all(
     feature = "btleplug-backend",
     not(feature = "winrt-backend"),
-    not(feature = "mock-ble")
+    not(feature = "mock")
 ))]
 pub async fn create_device_manager() -> DeviceManager<BtlePlugBLEManager> {
     let manager = BtlePlugBLEManager::new().await.unwrap();
     DeviceManager::new(manager).await
 }
 
-/// Create a new device manager with a mock BLE connection manager.
-#[cfg(all(
-    test,
-    feature = "mock-ble",
-    not(feature = "btleplug-backend"),
-    not(feature = "winrt-backend")
-))]
+/// default-features shall be set to false
+#[cfg(feature = "mock")]
 pub async fn create_device_manager() -> DeviceManager<MockBLEConnectionManager> {
-    DeviceManager::new(MockBLEConnectionManager).await
+    DeviceManager::new(MockBLEConnectionManager::new()).await
 }

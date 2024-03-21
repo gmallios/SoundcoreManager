@@ -9,7 +9,7 @@ default = ["btleplug-backend"]
 # Remove dep:windows when btleplug can resolve device names
 btleplug-backend = ["dep:btleplug", "dep:windows"]
 winrt-backend = ["dep:windows"]
-mock-ble = []
+mock = []
 
 [dependencies]
 weak-table = { workspace = true }

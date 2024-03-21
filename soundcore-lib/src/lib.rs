@@ -7,7 +7,7 @@ pub mod btaddr;
 pub mod compat;
 pub mod devices;
 pub mod error;
-mod models;
+pub mod models;
 pub mod packets;
 mod parsers;
 pub mod statics;
@@ -18,5 +18,5 @@ mod utils;
 pub mod device;
 pub mod device_manager;
 
-#[cfg(any(test, feature = "mock-ble"))]
+#[cfg(any(test, feature = "mock"))]
 pub mod mocks;

@@ -35,6 +35,9 @@ bluetooth-lib = { path = "../bluetooth-lib/" }
 async-trait = { workspace = true }
 futures = { workspace = true }
 
+[dev-dependencies]
+soundcore-lib = { workspace = true, features = ["mock"], default-features = false}
+
 [features]
 # by default Tauri runs in production mode
 # when `tauri dev` runs it is executed with `cargo run --no-default-features` if `devPath` is an URL
