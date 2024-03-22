@@ -5,23 +5,24 @@ use super::MonoEQ;
 
 #[repr(u16)]
 #[derive(
-FromRepr,
-Debug,
-Clone,
-Copy,
-Ord,
-PartialOrd,
-Eq,
-PartialEq,
-Hash,
-Display,
-EnumIter,
-Serialize,
-Deserialize,
-EnumString,
-Default,
+    FromRepr,
+    Debug,
+    Clone,
+    Copy,
+    Ord,
+    PartialOrd,
+    Eq,
+    PartialEq,
+    Hash,
+    Display,
+    EnumIter,
+    Serialize,
+    Deserialize,
+    EnumString,
+    Default,
 )]
 pub enum EQProfile {
+    // Regular profiles
     #[default]
     SoundcoreSignature = 0x0000,
     Acoustic = 0x0001,
@@ -46,6 +47,14 @@ pub enum EQProfile {
     TrebleBooster = 0x0014,
     TrebleReducer = 0x0015,
     Custom = 0xFEFE,
+    // Professional profiles
+    Foxes = 0x00EE,
+    Halestorm = 0x01EE,
+    Lecrae = 0x02EE,
+    Daya = 0x03EE,
+    CedricGervais = 0x04EE,
+    TheInfamousStringdusters = 0x05EE,
+    JohnPaulWhite = 0x06EE,
 }
 
 impl EQProfile {
@@ -54,7 +63,7 @@ impl EQProfile {
     }
 
     pub fn from_id(id: u16) -> Option<Self> {
-        Self::from_repr(id)
+        Self::from_repr(id.to_be())
     }
 
     pub fn eq(&self) -> MonoEQ {
