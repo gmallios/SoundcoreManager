@@ -1,4 +1,5 @@
 use nom::{
+    branch::alt,
     combinator::{map, map_opt},
     error::context,
     number::complete::le_u16,
@@ -53,5 +54,13 @@ pub fn parse_mono_eq_configuration<'a, E: ParseError<'a>>(
 }
 
 fn parse_eq_profile<'a, E: ParseError<'a>>(bytes: &'a [u8]) -> ParseResult<EQProfile, E> {
-    context("parse_mono_eq_config", map_opt(le_u16, EQProfile::from_id))(bytes)
+    context(
+        "parse_mono_eq_config",
+        alt((
+            // TODO: Pass a variable for the endianness at the state parser level?
+            // This could be an issue if an EQProfile has 2 profiles with the same ID but different endianness (unlikely but possible)
+            map_opt(le_u16, EQProfile::from_id_le),
+            map_opt(le_u16, EQProfile::from_id_be),
+        )),
+    )(bytes)
 }

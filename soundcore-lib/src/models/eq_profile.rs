@@ -62,7 +62,11 @@ impl EQProfile {
         *self as u16
     }
 
-    pub fn from_id(id: u16) -> Option<Self> {
+    pub fn from_id_le(id: u16) -> Option<Self> {
+        Self::from_repr(id)
+    }
+
+    pub fn from_id_be(id: u16) -> Option<Self> {
         Self::from_repr(id.to_be())
     }
 
