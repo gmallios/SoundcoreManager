@@ -16,7 +16,8 @@ pub enum BridgeResponse {
     Disconnected(BluetoothAdrr),
     DisconnectedAll,
     AdapterEvent(BLEAdapterEvent),
-    Error(String),
+    ConnectionFailed(ConnectionFailedResponse),
+    GenericError(String),
 }
 
 #[derive(Debug, Serialize, Clone)]
@@ -25,4 +26,12 @@ pub enum BridgeResponse {
 pub struct TaggedStateResponse {
     pub addr: BluetoothAdrr,
     pub state: SoundcoreDeviceState,
+}
+
+#[derive(Debug, Serialize, Clone)]
+#[serde(rename_all = "camelCase")]
+#[typeshare]
+pub struct ConnectionFailedResponse {
+    pub addr: BluetoothAdrr,
+    pub reason: String,
 }

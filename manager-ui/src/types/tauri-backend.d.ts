@@ -7,6 +7,11 @@ export interface TaggedStateResponse {
   state: SoundcoreDeviceState;
 }
 
+export interface ConnectionFailedResponse {
+  addr: BluetoothAdrr;
+  reason: string;
+}
+
 export interface BthScanResult {
   name: string;
   address: string;
@@ -56,4 +61,5 @@ export type BridgeResponse =
   | { kind: 'disconnected'; payload: BluetoothAdrr }
   | { kind: 'disconnectedAll'; payload?: undefined }
   | { kind: 'adapterEvent'; payload: BLEAdapterEvent }
-  | { kind: 'error'; payload: string };
+  | { kind: 'connectionFailed'; payload: ConnectionFailedResponse }
+  | { kind: 'genericError'; payload: string };

@@ -18,26 +18,83 @@ import { DiscoveredDevice } from '../types/soundcore-lib';
 import BluetoothIcon from '@mui/icons-material/Bluetooth';
 
 export const BluetoothSearchScreen: React.FC = () => {
-  const { isLoading, startScan, latestScanResults, connectDevice } = useSoundcoreStore(
+  const {
+    isLoading: isScanLoading,
+    startScan,
+    latestScanResults,
+    connectDevice,
+    connectedAddresses,
+    failedConnectionMap,
+    removeFailedConnection
+  } = useSoundcoreStore(
     useShallow((state) => ({
-      isLoading: state.isLoading,
+      isLoading: state.isScanLoading,
       startScan: state.startScan,
       latestScanResults: state.latestScan,
-      connectDevice: state.connectDevice
+      connectDevice: state.connectDevice,
+      connectedAddresses: state.connectedAddresses,
+      failedConnectionMap: state.failedConnectionMap,
+      removeFailedConnection: state.removeFailedConnection
     }))
   );
 
   const [selectedDevice, setSelectedDevice] = React.useState<DiscoveredDevice | null>(null);
+  const [isConnecting, setIsConnecting] = React.useState(false);
+
+  if (
+    isScanLoading &&
+    connectedAddresses.size !== 0 &&
+    selectedDevice &&
+    connectedAddresses.has(selectedDevice.descriptor.addr)
+  ) {
+    setIsConnecting(false);
+  }
+
+  if (selectedDevice && failedConnectionMap.has(selectedDevice.descriptor.addr)) {
+    setIsConnecting(false);
+    const reason = failedConnectionMap.get(selectedDevice.descriptor.addr);
+    console.error(`Failed to connect to ${selectedDevice.descriptor.name}, reason: ${reason}`);
+    removeFailedConnection(selectedDevice.descriptor.addr);
+  }
 
   const connectFabClick = () => {
     if (!selectedDevice) return;
     connectDevice(selectedDevice);
+    setIsConnecting(true);
   };
 
   const searchFabClick = () => {
     startScan();
     setSelectedDevice(null);
   };
+
+  if (isConnecting) {
+    return (
+      <div>
+        <Stack
+          sx={{
+            mb: 2,
+            mt: 2,
+            width: '100vw',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}>
+          <Container
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexDirection: 'column',
+              gap: '0.5rem'
+            }}>
+            <Typography color="text.secondary">Connecting...</Typography>
+            <LinearProgress sx={{ width: '100vw', height: '0.15rem' }} />
+          </Container>
+        </Stack>
+      </div>
+    );
+  }
 
   // useEffect(() => {
   //   startScan();
@@ -63,8 +120,8 @@ export const BluetoothSearchScreen: React.FC = () => {
             gap: '0.5rem'
           }}>
           <Typography color="text.secondary">Select a connected device...</Typography>
-          {isLoading && <LinearProgress sx={{ width: '100vw', height: '0.15rem' }} />}
-          {!isLoading && <div style={{ width: '100vw', height: '0.15rem' }}></div>}
+          {isScanLoading && <LinearProgress sx={{ width: '100vw', height: '0.15rem' }} />}
+          {!isScanLoading && <div style={{ width: '100vw', height: '0.15rem' }}></div>}
         </Container>
         {latestScanResults && (
           <BluetoothDeviceList devices={latestScanResults} setSelectedDevice={setSelectedDevice} />
@@ -75,7 +132,7 @@ export const BluetoothSearchScreen: React.FC = () => {
           size="medium"
           color="primary"
           aria-label="add"
-          disabled={!selectedDevice}
+          disabled={!selectedDevice || isConnecting}
           sx={{ position: 'absolute', bottom: 16, right: 16 }}>
           Connect
           <ArrowForwardIcon sx={{ ml: 1 }} />
@@ -86,6 +143,7 @@ export const BluetoothSearchScreen: React.FC = () => {
           size="medium"
           color="primary"
           aria-label="add"
+          disabled={isScanLoading}
           sx={{ position: 'absolute', bottom: 16, left: 16 }}>
           Refresh List
         </Fab>

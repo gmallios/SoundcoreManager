@@ -10,3 +10,8 @@ export const bluetoothAddrToString = (addr: BluetoothAdrr): string => {
     .join(':')
     .toUpperCase();
 };
+
+export const stringToBluetoothAddr = (addr: string): BluetoothAdrr => {
+  const bytes = addr.split(':').map((byte) => parseInt(byte, 16));
+  return { address: bytes } as BluetoothAdrr;
+};

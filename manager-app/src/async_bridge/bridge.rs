@@ -10,7 +10,7 @@ use soundcore_lib::{
     device_manager::{create_device_manager, DeviceManager},
 };
 
-use super::{BridgeCommand, BridgeResponse, TaggedStateResponse};
+use super::{BridgeCommand, BridgeResponse, ConnectionFailedResponse, TaggedStateResponse};
 
 struct CommandLoopState<B: BLEConnectionManager> {
     manager: DeviceManager<B>,
@@ -93,6 +93,9 @@ async fn handle_command<B: BLEConnectionManager>(
             if let Ok(device) = device {
                 // Get the state channel and listen for changes in the background
                 let mut state_channel = device.state_channel().await;
+                
+                // TODO: Investigate this
+                #[allow(clippy::let_underscore_future)]
                 let _ = tokio::task::spawn(async move {
                     info!("Listening for state changes for {:?}", addr_clone);
                     while let Ok(()) = state_channel.changed().await {
@@ -120,11 +123,14 @@ async fn handle_command<B: BLEConnectionManager>(
                     state: device.latest_state().await,
                 }))
             } else {
-                Err(device.err().unwrap())
+                Ok(BridgeResponse::ConnectionFailed(ConnectionFailedResponse {
+                    addr,
+                    reason: device.err().unwrap().to_string(),
+                }))
             }
         }
     }
-    .map_err(|e| BridgeResponse::Error(e.to_string()))
+    .map_err(|e| BridgeResponse::GenericError(e.to_string()))
     .unwrap_or_else(|e| e)
 }
 
