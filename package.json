@@ -3,6 +3,7 @@
   "private": true,
   "scripts": {
     "dev": "yarn workspace manager-ui dev",
+    "dev:force": "yarn workspace manager-ui dev:force",
     "build": "yarn workspace manager-ui build",
     "lint": "yarn workspace manager-ui lint",
     "lint:fix": "yarn workspace manager-ui lint:fix",
