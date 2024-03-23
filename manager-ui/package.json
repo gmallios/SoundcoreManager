@@ -52,7 +52,7 @@
     "prettier": "^3.2.5",
     "typescript": "^5.0.4",
     "vite": "^5.1.5",
-    "vite-plugin-eslint": "^1.8.1",
+    "@nabla/vite-plugin-eslint": "^2.0.2",
     "vite-tsconfig-paths": "^4.3.1",
     "vitest": "^1.4.0"
   }
