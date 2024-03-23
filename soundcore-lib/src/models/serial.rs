@@ -7,18 +7,23 @@ use crate::types::SupportedModels;
 
 #[derive(Debug, Serialize, Deserialize, Eq, PartialEq, Ord, PartialOrd, Clone, Hash)]
 #[typeshare]
-pub struct SerialNumber(pub Arc<str>);
+pub struct SerialNumber {
+    value: Arc<str>,
+    model: Option<SupportedModels>,
+}
 
 impl SerialNumber {
-    pub fn as_str(&self) -> &str {
-        &self.0
+    pub fn to_str(&self) -> &str {
+        &self.value
     }
 
-    pub fn as_model(&self) -> Option<SupportedModels> {
-        match self.as_str().get(0..4) {
-            Some(v) => {
-                ("A".to_owned() + v).parse().ok()
-            }
+    pub fn to_model(&self) -> Option<SupportedModels> {
+        self.model
+    }
+
+    fn extract_model(value: &str) -> Option<SupportedModels> {
+        match value.get(0..4) {
+            Some(v) => ("A".to_owned() + v).parse().ok(),
             None => None,
         }
     }
@@ -26,16 +31,21 @@ impl SerialNumber {
 
 impl Default for SerialNumber {
     fn default() -> Self {
-        Self("XXXXXXXXXXXXXXXX".into())
+        Self {
+            value: "XXXXXXXXXXXXXXXX".into(),
+            model: None,
+        }
     }
 }
 
 impl From<&str> for SerialNumber {
     fn from(s: &str) -> Self {
-        SerialNumber(s.into())
+        SerialNumber {
+            value: s.into(),
+            model: SerialNumber::extract_model(s),
+        }
     }
 }
-
 
 #[cfg(test)]
 mod serial_number {
@@ -44,18 +54,18 @@ mod serial_number {
     #[test]
     fn returns_correct_model() {
         let serial = SerialNumber::from("3040EAC356CCEEE8");
-        assert_eq!(serial.as_model(), Some(SupportedModels::A3040));
+        assert_eq!(serial.to_model(), Some(SupportedModels::A3040));
     }
 
     #[test]
     fn handles_unsupported_model() {
         let serial = SerialNumber::from("3333EAC356CCEEE8");
-        assert_eq!(serial.as_model(), None);
+        assert_eq!(serial.to_model(), None);
     }
 
     #[test]
     fn handles_invalid_serial() {
         let serial = SerialNumber::default();
-        assert_eq!(serial.as_model(), None);
+        assert_eq!(serial.to_model(), None);
     }
 }

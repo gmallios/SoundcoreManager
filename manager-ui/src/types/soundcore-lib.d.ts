@@ -37,8 +37,6 @@ export type AgeRange = number;
 
 export type AmbientSoundNotice = boolean;
 
-export type SerialNumber = string;
-
 export type Battery =
   | { type: 'single'; value: SingleBattery }
   | { type: 'dual'; value: DualBattery };
@@ -55,6 +53,22 @@ export interface SoundMode {
   transMode: TransparencyMode;
   customAnc: CustomANCValue;
   customTrans?: CustomTransparencyValue;
+}
+
+export enum SupportedModels {
+  A3027 = 'A3027',
+  A3028 = 'A3028',
+  A3029 = 'A3029',
+  A3040 = 'A3040',
+  A3930 = 'A3930',
+  A3931 = 'A3931',
+  A3935 = 'A3935',
+  A3951 = 'A3951'
+}
+
+export interface SerialNumber {
+  value: string;
+  model?: SupportedModels;
 }
 
 export interface FirmwareVer {
@@ -93,17 +107,6 @@ export interface BluetoothAdrr {
 export interface BLEDeviceDescriptor {
   addr: BluetoothAdrr;
   name: string;
-}
-
-export enum SupportedModels {
-  A3027 = 'A3027',
-  A3028 = 'A3028',
-  A3029 = 'A3029',
-  A3040 = 'A3040',
-  A3930 = 'A3930',
-  A3931 = 'A3931',
-  A3935 = 'A3935',
-  A3951 = 'A3951'
 }
 
 /** A discovered BLE device. The DiscoveredDevice can be upgraded to a SoundcoreBLEDevice. */
