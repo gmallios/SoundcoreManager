@@ -1,12 +1,15 @@
 use serde::{Deserialize, Serialize};
+use typeshare::typeshare;
 
 #[derive(Debug, Serialize, Deserialize, Eq, PartialEq, Ord, PartialOrd, Clone, Default, Hash)]
+#[typeshare]
 pub struct StereoEQ {
     pub left: MonoEQ,
     pub right: MonoEQ,
 }
 
 #[derive(Debug, Serialize, Deserialize, Eq, PartialEq, Ord, PartialOrd, Clone, Default, Hash)]
+#[typeshare]
 pub struct MonoEQ {
     /**
      * The values that we store are what is

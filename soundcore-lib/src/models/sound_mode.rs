@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use typeshare::typeshare;
 
 use crate::models::custom_trans_value::CustomTransparencyValue;
 
@@ -7,6 +8,7 @@ use super::{ANCMode, CurrentSoundMode, CustomANCValue, TransparencyMode};
 #[derive(
 Debug, Serialize, Deserialize, Eq, PartialEq, Ord, PartialOrd, Clone, Copy, Default, Hash,
 )]
+#[typeshare]
 #[serde(rename_all = "camelCase", tag = "type")]
 pub struct SoundMode {
     pub current: CurrentSoundMode,

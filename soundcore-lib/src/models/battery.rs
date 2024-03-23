@@ -1,13 +1,16 @@
 use serde::{Deserialize, Serialize};
+use typeshare::typeshare;
 
 #[derive(Debug, Serialize, Deserialize, Eq, PartialEq, Ord, PartialOrd, Clone, Copy, Hash)]
-#[serde(rename_all = "camelCase", tag = "type")]
+#[typeshare]
+#[serde(rename_all = "camelCase", tag = "type", content = "value")]
 pub enum Battery {
     Single(SingleBattery),
     Dual(DualBattery),
 }
 
 #[derive(Debug, Serialize, Deserialize, Eq, PartialEq, Ord, PartialOrd, Clone, Copy, Hash)]
+#[typeshare]
 #[serde(rename_all = "camelCase", tag = "type")]
 pub struct DualBattery {
     pub left: SingleBattery,
@@ -15,6 +18,7 @@ pub struct DualBattery {
 }
 
 #[derive(Debug, Serialize, Deserialize, Eq, PartialEq, Ord, PartialOrd, Clone, Copy, Hash)]
+#[typeshare]
 #[serde(rename_all = "camelCase", tag = "type")]
 pub struct SingleBattery {
     pub charging: bool,

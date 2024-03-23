@@ -1,20 +1,26 @@
 use serde::{Deserialize, Serialize};
+use typeshare::typeshare;
 
 use super::StereoEQ;
 
 #[derive(Debug, Serialize, Deserialize, Eq, PartialEq, Ord, PartialOrd, Clone, Hash)]
+#[typeshare]
 pub struct HearIDType(pub u8); // TODO: Move to enum?
 
 #[derive(Debug, Serialize, Deserialize, Eq, PartialEq, Ord, PartialOrd, Clone, Hash)]
+#[typeshare]
 pub struct HearIDMusicType(pub u8); // TODO: Move to enum?
 
 #[derive(Debug, Serialize, Deserialize, Eq, PartialEq, Ord, PartialOrd, Clone, Hash)]
+#[typeshare]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE", tag = "type", content = "value")]
 pub enum HearID {
     Base(BaseHearID),
     Custom(CustomHearID),
 }
 
 #[derive(Debug, Serialize, Deserialize, Eq, PartialEq, Ord, PartialOrd, Clone, Hash)]
+#[typeshare]
 pub struct BaseHearID {
     pub enabled: bool,
     pub values: StereoEQ,
@@ -22,6 +28,7 @@ pub struct BaseHearID {
 }
 
 #[derive(Debug, Serialize, Deserialize, Eq, PartialEq, Ord, PartialOrd, Clone, Hash)]
+#[typeshare]
 pub struct CustomHearID {
     pub base: BaseHearID,
     pub hearid_type: HearIDType,

@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 use strum::{Display, FromRepr};
+use typeshare::typeshare;
 
 #[repr(u8)]
 #[derive(
@@ -17,7 +18,8 @@ FromRepr,
 Display,
 Hash,
 )]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+#[typeshare]
 pub enum CurrentSoundMode {
     ANC = 0,
     Transparency = 1,

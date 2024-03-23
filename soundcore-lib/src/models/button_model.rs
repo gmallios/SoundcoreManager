@@ -1,9 +1,12 @@
 use serde::{Deserialize, Serialize};
 use strum::FromRepr;
+use typeshare::typeshare;
 
-use super::{A3909ButtonModel, A3040ButtonModel};
+use super::{A3040ButtonModel, A3909ButtonModel};
 
 #[derive(Debug, Serialize, Deserialize, Clone, Copy, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[typeshare]
+#[serde(rename_all = "camelCase", tag = "type", content = "value")]
 pub enum ButtonModel {
     A3909(A3909ButtonModel),
     A3040(A3040ButtonModel),
@@ -13,7 +16,8 @@ pub enum ButtonModel {
     Debug, Serialize, Deserialize, Clone, Copy, Hash, PartialEq, Eq, PartialOrd, Ord, FromRepr,
 )]
 #[repr(u8)]
-#[serde(rename_all = "camelCase")]
+#[typeshare]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Action {
     VolumeUp = 0,
     VolumeDown = 1,

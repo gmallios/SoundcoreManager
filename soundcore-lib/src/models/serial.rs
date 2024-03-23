@@ -1,10 +1,12 @@
 use std::sync::Arc;
 
 use serde::{Deserialize, Serialize};
+use typeshare::typeshare;
 
 use crate::types::SupportedModels;
 
 #[derive(Debug, Serialize, Deserialize, Eq, PartialEq, Ord, PartialOrd, Clone, Hash)]
+#[typeshare]
 pub struct SerialNumber(pub Arc<str>);
 
 impl SerialNumber {

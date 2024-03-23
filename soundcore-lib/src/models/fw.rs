@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use typeshare::typeshare;
 
 #[derive(Debug, Serialize, Deserialize, Eq, PartialEq, Ord, PartialOrd, Clone, Copy, Hash)]
 pub enum DeviceFirmware {
@@ -9,6 +10,7 @@ pub enum DeviceFirmware {
 #[derive(
     Debug, Serialize, Deserialize, Eq, PartialEq, Ord, PartialOrd, Clone, Copy, Default, Hash,
 )]
+#[typeshare]
 #[serde(rename_all = "camelCase", tag = "type")]
 pub struct FirmwareVer {
     major: u8,
