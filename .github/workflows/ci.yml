@@ -4,7 +4,7 @@ on: [pull_request, push]
 jobs:
   check:
     name: Run cargo check
-    runs-on: [windows-latest, ubuntu-latest, macos-latest]
+    runs-on: windows-latest
     steps:
       - name: Checkout sources
         uses: actions/checkout@v2
