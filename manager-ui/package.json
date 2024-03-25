@@ -36,6 +36,7 @@
     "zustand": "^4.5.2"
   },
   "devDependencies": {
+    "@nabla/vite-plugin-eslint": "^2.0.2",
     "@tauri-apps/cli": "^1.5.1",
     "@testing-library/jest-dom": "^6.4.2",
     "@testing-library/react": "^14.2.1",
@@ -53,7 +54,6 @@
     "prettier": "^3.2.5",
     "typescript": "^5.0.4",
     "vite": "^5.1.5",
-    "@nabla/vite-plugin-eslint": "^2.0.2",
     "vite-tsconfig-paths": "^4.3.1",
     "vitest": "^1.4.0"
   }

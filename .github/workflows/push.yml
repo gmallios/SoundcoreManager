@@ -1,4 +1,4 @@
-name: "Build latest commit"
+name: 'Build latest commit'
 
 on:
   push:
@@ -26,24 +26,20 @@ jobs:
           toolchain: stable
 
       - name: ⚡ Set up cargo cache
-        uses: actions/cache@v3
-        continue-on-error: false
-        with:
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-            src-tauri/target/
-            target/
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: ${{ runner.os }}-cargo
+        uses: Swatinem/rust-cache@v2
 
-      - name: 🔄 Sync node version
-        uses: actions/setup-node@v3
+      - name: ⏬ Setup node version
+        uses: actions/setup-node@v2
         with:
-          node-version: "lts/*"
-          cache: "yarn"
+          node-version: 20
+
+      - name: ⏬ Enable corepack and install
+        run: corepack enable && corepack install
+
+      - name: 🔄 Setup yarn in node
+        uses: actions/setup-node@v4
+        with:
+          cache: 'yarn'
 
       - name: ⏬ Install Ubuntu dependencies
         if: matrix.platform == 'ubuntu-20.04'
@@ -70,5 +66,3 @@ jobs:
         with:
           name: SoundcoreManager-${{ matrix.platform }}.exe
           path: target\release\SoundcoreManager-${{ matrix.platform }}-${{ env.SHORT_SHA }}.exe
-
-        
