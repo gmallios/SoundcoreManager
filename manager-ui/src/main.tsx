@@ -1,26 +1,9 @@
 import ReactDOM from 'react-dom/client';
 import App from './App';
 import './style.css';
-import { createTheme, ThemeProvider } from '@mui/material/styles';
-import CssBaseline from '@mui/material/CssBaseline';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { appLogDir } from '@tauri-apps/api/path';
 import { attachConsole } from 'tauri-plugin-log-api';
-
-const darkTheme = createTheme({
-  palette: {
-    mode: 'dark'
-  }
-});
-
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      refetchOnWindowFocus: 'always',
-      refetchIntervalInBackground: true
-    }
-  }
-});
+import { NextUIProvider } from '@nextui-org/react';
 
 attachConsole();
 
@@ -32,10 +15,7 @@ attachConsole();
 })();
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
-  <ThemeProvider theme={darkTheme}>
-    <CssBaseline />
-    <QueryClientProvider client={queryClient}>
-      <App />
-    </QueryClientProvider>
-  </ThemeProvider>
+  <NextUIProvider>
+    <App />
+  </NextUIProvider>
 );

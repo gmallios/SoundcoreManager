@@ -16,6 +16,17 @@ import { useShallow } from 'zustand/react/shallow';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { DiscoveredDevice } from '../types/soundcore-lib';
 import BluetoothIcon from '@mui/icons-material/Bluetooth';
+import {
+  Button,
+  Card,
+  CardBody,
+  CardHeader,
+  Navbar,
+  NavbarContent,
+  NavbarItem,
+  ScrollShadow,
+  Skeleton
+} from '@nextui-org/react';
 
 export const BluetoothSearchScreen: React.FC = () => {
   const {
@@ -102,54 +113,96 @@ export const BluetoothSearchScreen: React.FC = () => {
   // }, []);
 
   return (
-    <div>
-      <Stack
-        sx={{
-          mb: 2,
-          mt: 2,
-          width: '100vw',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center'
-        }}>
-        <Container
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            flexDirection: 'column',
-            gap: '0.5rem'
-          }}>
-          <Typography color="text.secondary">Select a connected device...</Typography>
-          {isScanLoading && <LinearProgress sx={{ width: '100vw', height: '0.15rem' }} />}
-          {!isScanLoading && <div style={{ width: '100vw', height: '0.15rem' }}></div>}
-        </Container>
-        {latestScanResults && (
-          <BluetoothDeviceList devices={latestScanResults} setSelectedDevice={setSelectedDevice} />
-        )}
-        <Fab
-          onClick={() => connectFabClick()}
-          variant="extended"
-          size="medium"
-          color="primary"
-          aria-label="add"
-          disabled={!selectedDevice || isConnecting}
-          sx={{ position: 'absolute', bottom: 16, right: 16 }}>
-          Connect
-          <ArrowForwardIcon sx={{ ml: 1 }} />
-        </Fab>
-        <Fab
-          onClick={() => searchFabClick()}
-          variant="extended"
-          size="medium"
-          color="primary"
-          aria-label="add"
-          disabled={isScanLoading}
-          sx={{ position: 'absolute', bottom: 16, left: 16 }}>
-          Refresh List
-        </Fab>
-      </Stack>
-    </div>
+    <>
+      <h1 className="text-center p-0 pt-3 font-semibold text-small text-foreground">
+        Select a device to connect to...
+      </h1>
+
+      <Button color="primary" className="fixed bottom-5 right-10 z-50">
+        Refresh
+      </Button>
+
+      <ScrollShadow className="h-[100vh] overflow-y-auto">
+        <div className="flex flex-col gap-5 w-full p-4">
+          <DeviceCard />
+          <DeviceCard />
+          <DeviceCard />
+          <DeviceCard />
+          <DeviceCard />
+          <DeviceCard />
+        </div>
+      </ScrollShadow>
+    </>
+  );
+  // return (
+  //   <div>
+  //     {/* <Stack
+  //       sx={{
+  //         mb: 2,
+  //         mt: 2,
+  //         width: '100vw',
+  //         display: 'flex',
+  //         alignItems: 'center',
+  //         justifyContent: 'center'
+  //       }}> */}
+  //     <Container
+  //       sx={{
+  //         display: 'flex',
+  //         alignItems: 'center',
+  //         justifyContent: 'center',
+  //         flexDirection: 'column',
+  //         gap: '0.5rem'
+  //       }}>
+  //       <Typography color="text.secondary">Select a connected device...</Typography>
+  //       {isScanLoading && <LinearProgress sx={{ width: '100vw', height: '0.15rem' }} />}
+  //       {!isScanLoading && <div style={{ width: '100vw', height: '0.15rem' }}></div>}
+  //     </Container>
+  //     {latestScanResults && (
+  //       <BluetoothDeviceList devices={latestScanResults} setSelectedDevice={setSelectedDevice} />
+  //     )}
+  //     <Fab
+  //       onClick={() => connectFabClick()}
+  //       variant="extended"
+  //       size="medium"
+  //       color="primary"
+  //       aria-label="add"
+  //       disabled={!selectedDevice || isConnecting}
+  //       sx={{ position: 'absolute', bottom: 16, right: 16 }}>
+  //       Connect
+  //       <ArrowForwardIcon sx={{ ml: 1 }} />
+  //     </Fab>
+  //     <Fab
+  //       onClick={() => searchFabClick()}
+  //       variant="extended"
+  //       size="medium"
+  //       color="primary"
+  //       aria-label="add"
+  //       disabled={isScanLoading}
+  //       sx={{ position: 'absolute', bottom: 16, left: 16 }}>
+  //       Refresh List
+  //     </Fab>
+  //     {/* </Stack> */}
+  //   </div>
+  // );
+};
+
+const DeviceCard: React.FC = () => {
+  return (
+    <Card
+      className="border-none flex-none bg-background/60 dark:bg-default-100/50 max-w-[610px] last:mb-8"
+      shadow="sm">
+      <CardBody>
+        <div className="flex items-center gap-4">
+          <Skeleton className="rounded-lg w-32 h-24">
+            <div className="rounded-lg bg-default-300"></div>
+          </Skeleton>
+          <div className="flex flex-col gap-0">
+            <h3 className="font-semibold text-foreground/90">Soundcore Liberty Air 2 Pro</h3>
+            <p className="text-small text-foreground/70">A3951</p>
+          </div>
+        </div>
+      </CardBody>
+    </Card>
   );
 };
 

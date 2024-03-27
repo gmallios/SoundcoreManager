@@ -29,11 +29,7 @@ export const App: React.FC = () => {
     setFirstRender(false);
   }, []);
 
-  return (
-    <React.Fragment>
-      {connectedAddresses.size !== 0 ? <DeviceStateScreen /> : <BluetoothSearchScreen />}
-    </React.Fragment>
-  );
+  return <>{connectedAddresses.size !== 0 ? <DeviceStateScreen /> : <BluetoothSearchScreen />}</>;
 };
 
 export default App;
