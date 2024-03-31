@@ -9,21 +9,22 @@ use a3040::*;
 use a3930::*;
 use a3951::*;
 
-use crate::{
-    models::{
-        AgeRange, Battery, ButtonModel, EQConfiguration, HearID, SideTone, SoundcoreFeatureFlags,
-        SoundMode, TouchTone, TwsStatus, WearDetection,
-    },
-    parsers::ParseError,
-};
 use crate::api::SoundcoreDeviceState;
 use crate::models::{
     AmbientSoundNotice, AutoPowerOff, BassUp, DeviceColor, FirmwareVer, HearingProtect, InEarBeep,
-    LDAC, PowerOnBatteryNotice, PromptLanguage, SerialNumber, SupportTwoCnn,
-    ThreeDimensionalEffect,
+    PowerOnBatteryNotice, PromptLanguage, SerialNumber, SupportTwoCnn, ThreeDimensionalEffect,
+    LDAC,
 };
 use crate::packets::StateTransformationPacket;
 use crate::parsers::{TaggedData, TaggedParseResult};
+use crate::{
+    api::DeviceFeatureSet,
+    models::{
+        AgeRange, Battery, ButtonModel, EQConfiguration, HearID, SideTone, SoundMode,
+        SoundcoreFeatureFlags, TouchTone, TwsStatus, WearDetection,
+    },
+    parsers::ParseError,
+};
 
 /// This is a generalized version of the state responses for all devices
 /// All device-specific state responses should be able to be converted to this type
@@ -31,7 +32,7 @@ use crate::parsers::{TaggedData, TaggedParseResult};
 /// TODO: Split this into multiple (feature) structs?
 #[derive(Debug, Serialize, Deserialize, Eq, PartialEq, Clone, Hash, Default)]
 pub struct DeviceStateResponse {
-    pub feature_flags: BitFlags<SoundcoreFeatureFlags>,
+    pub feature_set: DeviceFeatureSet,
     pub battery: Battery,
     pub sound_mode: SoundMode,
     pub eq: EQConfiguration,
@@ -97,23 +98,22 @@ pub fn parse_state_update_packet<'a, E: ParseError<'a>>(
     })(bytes)
 }
 
-impl Into<SoundcoreDeviceState> for DeviceStateResponse {
-    fn into(self) -> SoundcoreDeviceState {
+impl From<DeviceStateResponse> for SoundcoreDeviceState {
+    fn from(value: DeviceStateResponse) -> Self {
         SoundcoreDeviceState {
-            feature_flags: self.feature_flags,
-            battery: self.battery,
-            sound_mode: self.sound_mode,
-            serial: self.sn,
-            fw: self.fw,
-            drc_fw: None, // TODO
-            host_device: self.host_device,
-            tws_status: self.tws_status,
-            button_model: self.button_model,
-            side_tone: self.side_tone,
-            hearid_eq_preset: self.hearid_eq_preset,
-            wear_detection: self.wear_detection,
-            hear_id: self.hear_id,
-            age_range: self.age_range,
+            feature_set: value.feature_set,
+            battery: value.battery,
+            sound_mode: value.sound_mode,
+            serial: value.sn,
+            fw: value.fw,
+            host_device: value.host_device,
+            tws_status: value.tws_status,
+            button_model: value.button_model,
+            side_tone: value.side_tone,
+            hearid_eq_preset: value.hearid_eq_preset,
+            wear_detection: value.wear_detection,
+            hear_id: value.hear_id,
+            age_range: value.age_range,
         }
     }
 }
