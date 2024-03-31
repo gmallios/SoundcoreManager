@@ -37,6 +37,23 @@ export type AgeRange = number;
 
 export type AmbientSoundNotice = boolean;
 
+export interface EqualizerFeatures {
+  bands: number;
+  channels: number;
+}
+
+export interface SoundModeFeatures {
+  allowedAncModes: ANCMode[];
+  allowedTransparencyModes: TransparencyMode[];
+  hasNormalMode: boolean;
+}
+
+export interface DeviceFeatureSet {
+  soundModeFeatures?: SoundModeFeatures;
+  equalizerFeatures?: EqualizerFeatures;
+  flags: FeatureFlags[];
+}
+
 export type Battery =
   | { type: 'single'; value: SingleBattery }
   | { type: 'dual'; value: DualBattery };
@@ -84,12 +101,11 @@ export type HearID = { type: 'BASE'; value: BaseHearID } | { type: 'CUSTOM'; val
 
 /** This is a generalized version of the state for all devices */
 export interface SoundcoreDeviceState {
-  featureFlags: BitFlags<SoundcoreFeatureFlags>;
+  featureSet: DeviceFeatureSet;
   battery: Battery;
   soundMode: SoundMode;
   serial?: SerialNumber;
   fw?: FirmwareVer;
-  drcFw?: FirmwareVer;
   hostDevice?: number;
   twsStatus?: TwsStatus;
   buttonModel?: ButtonModel;
@@ -218,6 +234,23 @@ export interface DeviceStatus {
   right_hearid: EQWave;
   left_hearid_customdata: EQWave;
   right_hearid_customdata: EQWave;
+}
+
+export enum FeatureFlags {
+  DRC = 'DRC',
+  HEARID = 'HEARID',
+  WEAR_DETECTION = 'WEAR_DETECTION',
+  CUSTOM_BUTTONS = 'CUSTOM_BUTTONS',
+  TOUCH_TONE = 'TOUCH_TONE',
+  GAME_MODE = 'GAME_MODE',
+  AUTO_POWER_OFF_ON = 'AUTO_POWER_OFF_ON',
+  IN_EAR_BEEP = 'IN_EAR_BEEP',
+  LANG_PROMPT = 'LANG_PROMPT',
+  HEARING_PROTECTION = 'HEARING_PROTECTION',
+  AMBIENT_SOUND_NOTICE = 'AMBIENT_SOUND_NOTICE',
+  POWER_ON_BATTERY_NOTICE = 'POWER_ON_BATTERY_NOTICE',
+  SUPPORT_TWO_CONNECTIONS = 'SUPPORT_TWO_CONNECTIONS',
+  MULTIPLE_DEVICE_LIST = 'MULTIPLE_DEVICE_LIST'
 }
 
 export type BLEAdapterEvent =

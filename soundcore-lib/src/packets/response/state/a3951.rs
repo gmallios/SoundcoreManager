@@ -8,12 +8,11 @@ use nom::{
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    models::{
+    devices::a3951_features, models::{
         A3909ButtonModel, AgeRange, Battery, ButtonModel, CustomHearID, DualBattery,
         EQConfiguration, Gender, HearID, SideTone, SoundMode, SoundcoreFeatureFlags,
         StereoEQConfiguration, TouchTone, TwsStatus, WearDetection,
-    },
-    parsers::u8_parser,
+    }, parsers::u8_parser
 };
 
 use crate::parsers::{
@@ -43,24 +42,12 @@ pub struct A3951StateResponse {
     pub new_battery: Option<(u8, u8)>,
 }
 
-const A3951_FEATURE_FLAGS: BitFlags<SoundcoreFeatureFlags> = make_bitflags!(SoundcoreFeatureFlags::{
-    SOUND_MODE
-    | ANC_MODE
-    | TRANS_MODE
-    | CUSTOM_ANC
-    | CUSTOM_BUTTONS
-    | WEAR_DETECTION
-    | EQ
-    | STEREO_EQ
-    | DRC
-    | HEARID
-    | TOUCH_TONE
-});
+
 
 impl From<A3951StateResponse> for DeviceStateResponse {
     fn from(value: A3951StateResponse) -> Self {
         DeviceStateResponse {
-            feature_flags: A3951_FEATURE_FLAGS,
+            feature_set: a3951_features(),
             battery: Battery::Dual(value.battery),
             sound_mode: value.sound_mode,
             host_device: Some(value.host_device),
@@ -164,45 +151,4 @@ mod a3951_state {
         255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 1, 99, 1, 84, 1, 102, 1,
         84, 0, 1, 0, 0, 0, 1, 1, 6, 0, 1, 0, 0, 0, 0, 242,
     ];
-
-    #[test]
-    fn should_parse_state_same_as_old() {
-        let (remaining, state) =
-            parse_a3951_state_response::<nom::error::VerboseError<&[u8]>>(&RESP_BYTES).unwrap();
-        let old_state = crate::devices::A3951::device_status(&ORIG_RESP_BYTES);
-
-        assert!(remaining.is_empty());
-
-        assert_eq!(state.data.host_device, old_state.host_device);
-        assert_eq!(state.data.tws_status.0, old_state.tws_status);
-        assert_eq!(
-            state.data.battery.left.charging,
-            old_state.battery_charging.left
-        );
-        assert_eq!(state.data.battery.left.level, old_state.battery_level.left);
-        assert_eq!(
-            state.data.battery.right.charging,
-            old_state.battery_charging.right
-        );
-        assert_eq!(
-            state.data.battery.right.level,
-            old_state.battery_level.right
-        );
-        assert_eq!(
-            state.data.sound_mode.anc_mode.as_u8(),
-            old_state.anc_status.anc_option
-        );
-        assert_eq!(
-            state.data.sound_mode.custom_anc.as_u8(),
-            old_state.anc_status.anc_custom
-        );
-        assert_eq!(
-            state.data.sound_mode.anc_mode.as_u8(),
-            old_state.anc_status.anc_option
-        );
-        assert_eq!(
-            state.data.sound_mode.trans_mode.as_u8(),
-            old_state.anc_status.transparency_option
-        );
-    }
 }

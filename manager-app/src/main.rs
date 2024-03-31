@@ -3,54 +3,33 @@
     windows_subsystem = "windows"
 )]
 
+use std::collections::HashMap;
 use std::sync::Arc;
 
 use log::{info, trace};
 use mpsc::channel;
+use soundcore_lib::api::SoundcoreDeviceState;
+use soundcore_lib::btaddr::BluetoothAdrr;
+use tauri::api::notification::Notification;
 use tauri::async_runtime::{Mutex, RwLock};
-use tauri::Manager;
+use tauri::{AppHandle, Manager};
 use tauri_plugin_log::LogTarget;
 use tokio::sync::mpsc;
 
-use bluetooth_lib::platform::BthScanner;
-use bluetooth_lib::Scanner;
-use frontend_types::BthScanResult;
-use soundcore_lib::base::SoundcoreDevice;
-use soundcore_lib::types::{SupportedModels, SOUNDCORE_NAME_MODEL_MAP};
+use soundcore_lib::types::SupportedModels;
 
 use crate::async_bridge::{async_bridge, BridgeCommand, BridgeResponse};
 
 pub(crate) mod async_bridge;
-mod device;
-pub(crate) mod frontend_types;
-mod tray;
-pub(crate) mod utils;
-
-#[cfg(target_os = "macos")]
-mod server;
-
-#[tauri::command]
-async fn scan_for_devices() -> Vec<BthScanResult> {
-    let res = BthScanner::new().scan().await;
-    let mut scan_res: Vec<BthScanResult> = vec![];
-    res.into_iter().for_each(|btdevice| {
-        if !btdevice.connected
-            || !SOUNDCORE_NAME_MODEL_MAP
-                .keys()
-                .any(|name| btdevice.name.contains(name))
-        {
-            return;
-        }
-        scan_res.push(BthScanResult::from(btdevice));
-    });
-    scan_res
-}
+// Remove for now since this uses legacy code
+// TODO: Migrate it to the new async system
+// mod tray;
 
 struct SoundcoreAppState {
-    device: Arc<Mutex<Option<Box<dyn SoundcoreDevice>>>>,
     model: Arc<RwLock<Option<SupportedModels>>>,
     bridge_tx: Mutex<mpsc::Sender<BridgeCommand>>,
     scan_in_progress: Arc<Mutex<bool>>,
+    last_states: Arc<Mutex<HashMap<BluetoothAdrr, SoundcoreDeviceState>>>,
 }
 
 #[tokio::main]
@@ -82,30 +61,17 @@ async fn main() {
             });
             Ok(())
         })
-        .system_tray(tray::get_system_tray())
-        .on_system_tray_event(tray::handle_tray_event)
+        // .system_tray(tray::get_system_tray())
+        // .on_system_tray_event(tray::handle_tray_event)
         .manage(SoundcoreAppState {
-            device: Arc::new(Mutex::new(None)),
             model: Arc::new(RwLock::new(None)),
             bridge_tx: Mutex::new(input_tx),
             scan_in_progress: Arc::new(Mutex::new(false)),
+            last_states: Arc::new(Mutex::new(HashMap::new()))
         })
         .invoke_handler(tauri::generate_handler![
-            tray::set_tray_device_status,
-            tray::set_tray_menu,
-            device::connect,
-            device::close,
-            device::get_model,
-            device::is_connected,
-            device::get_info,
-            device::get_status,
-            device::get_battery_level,
-            device::get_battery_charging,
-            device::set_anc,
-            device::get_anc,
-            device::set_eq,
-            device::get_eq,
-            scan_for_devices,
+            // tray::set_tray_device_status,
+            // tray::set_tray_menu,
             send_bridge_command
         ])
         .plugin(tauri_plugin_log::Builder::default().targets([
@@ -148,6 +114,16 @@ async fn handle_bridge_output<R: tauri::Runtime>(resp: BridgeResponse, manager: 
         let state = manager.state::<SoundcoreAppState>();
         let mut scan_in_progress = state.scan_in_progress.lock().await;
         *scan_in_progress = false;
+    } else if let BridgeResponse::NewState(new_state) = resp.clone() {
+        let state = manager.state::<SoundcoreAppState>();
+        let mut device_states = state.last_states.lock().await;
+        let last_state = device_states.insert(new_state.addr, new_state.state.clone());
+        handle_state_update(last_state, new_state.state, manager.app_handle());
+    } else if let BridgeResponse::ConnectionEstablished(conn) = resp.clone() {
+        // This is the initial state so we don't want to show anything to the user
+        let state = manager.state::<SoundcoreAppState>();
+        let mut device_states = state.last_states.lock().await;
+        device_states.insert(conn.addr, conn.state.clone());
     }
     manager.emit_all("async-bridge-event", resp).unwrap();
 }
@@ -167,4 +143,24 @@ async fn send_bridge_command(
 
     let tx = app_state.bridge_tx.lock().await;
     tx.send(payload).await.map_err(|e| e.to_string())
+}
+
+fn handle_state_update<R: tauri::Runtime>(
+    last_state: Option<SoundcoreDeviceState>,
+    new_state: SoundcoreDeviceState,
+    app_handle: AppHandle<R>,
+) {
+    if let Some(last_state) = last_state {
+        if last_state == new_state {
+            return;
+        }
+        Notification::new("soundcore-manager")
+            .title("Device state update")
+            .body(format!(
+                "Device state update: {:?} -> {:?}",
+                last_state, new_state
+            ))
+            .show()
+            .expect("Failed to show notification");
+    }
 }

@@ -7,18 +7,20 @@ use nom::{
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    models::{
+    devices::a3027_features, models::{
         AgeRange, BaseHearID, DeviceFirmware, EQConfiguration, Gender, HearID, SerialNumber,
-        SingleBattery, SoundMode, SoundcoreFeatureFlags, StereoEQConfiguration,
-        TwsStatus, WearDetection,
-    },
-    parsers::{
-        parse_base_hear_id, parse_bool, parse_dual_fw, parse_serial_number,
-        parse_single_battery, u8_parser,
-    },
+        SingleBattery, SoundMode, SoundcoreFeatureFlags, StereoEQConfiguration, TwsStatus,
+        WearDetection,
+    }, parsers::{
+        parse_base_hear_id, parse_bool, parse_dual_fw, parse_serial_number, parse_single_battery,
+        u8_parser,
+    }
 };
 
-use crate::parsers::{bool_parser, parse_gender, parse_sound_mode, parse_stereo_eq_configuration, ParseError, TaggedData, TaggedParseResult};
+use crate::parsers::{
+    bool_parser, parse_gender, parse_sound_mode, parse_stereo_eq_configuration, ParseError,
+    TaggedData, TaggedParseResult,
+};
 use crate::types::SupportedModels;
 
 use super::DeviceStateResponse;
@@ -38,21 +40,10 @@ pub struct A3027StateResponse {
     pub touch_func: bool,
 }
 
-const A3027_FEATURE_FLAGS: BitFlags<SoundcoreFeatureFlags> = make_bitflags!(SoundcoreFeatureFlags::{
-    SOUND_MODE
-    | ANC_MODE
-    | TRANS_MODE
-    | CUSTOM_ANC
-    | WEAR_DETECTION
-    | EQ
-    | STEREO_EQ
-    | HEARID
-});
-
 impl From<A3027StateResponse> for DeviceStateResponse {
     fn from(value: A3027StateResponse) -> Self {
         DeviceStateResponse {
-            feature_flags: A3027_FEATURE_FLAGS,
+            feature_set: a3027_features(),
             battery: value.battery.into(),
             sound_mode: value.sound_mode,
             eq: value.eq.into(),
@@ -106,7 +97,7 @@ pub fn parse_a3027_state_response<'a, E: ParseError<'a>>(
                         sn,
                         touch_func: touch_func.unwrap_or(false),
                     },
-                }
+                },
             ))
         }),
     )(bytes)

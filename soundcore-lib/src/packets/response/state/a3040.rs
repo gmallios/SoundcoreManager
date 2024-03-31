@@ -6,10 +6,16 @@ use nom::{bytes::complete::take, number::complete::le_u8};
 use serde::{Deserialize, Serialize};
 
 use crate::devices::a3040_features;
-use crate::models::{A3040ButtonModel, ButtonModel, EQConfiguration, PromptLanguage, SoundMode, StereoEQConfiguration, TwsStatus};
+use crate::models::{
+    A3040ButtonModel, ButtonModel, EQConfiguration, PromptLanguage, SoundMode,
+    StereoEQConfiguration, TwsStatus,
+};
 use crate::packets::DeviceStateResponse;
 use crate::parsers::{
-    bool_parser, parse_a3040_button_model, parse_adaptive_sound_mode_customizable_trans, parse_auto_power_off_on, parse_fw, parse_hearing_protect, parse_mono_eq, parse_prompt_language, parse_single_battery, parse_sound_mode, parse_stereo_eq, parse_stereo_eq_configuration, u8_parser, TaggedData, TaggedParseResult
+    bool_parser, parse_a3040_button_model, parse_adaptive_sound_mode_customizable_trans,
+    parse_auto_power_off_on, parse_fw, parse_hearing_protect, parse_mono_eq, parse_prompt_language,
+    parse_single_battery, parse_sound_mode, parse_stereo_eq, parse_stereo_eq_configuration,
+    u8_parser, TaggedData, TaggedParseResult,
 };
 use crate::types::SupportedModels;
 use crate::{
@@ -51,15 +57,14 @@ pub fn parse_a3040_state_response<'a, E: ParseError<'a>>(
     bytes: &'a [u8],
 ) -> TaggedParseResult<A3040StateResponse, E> {
     context("a3040_state_response", |bytes: &'a [u8]| {
-        let (bytes, (battery, fw, sn,eq, offset, button_model)) =
-            tuple((
-                parse_single_battery,
-                parse_fw,
-                parse_serial_number,
-                parse_stereo_eq_configuration(10), // TODO: We have mono eq here, but it appears to be duplicated (bytes are not 1-1, DRC?)
-                le_u8,
-                parse_a3040_button_model,
-            ))(bytes)?;
+        let (bytes, (battery, fw, sn, eq, offset, button_model)) = tuple((
+            parse_single_battery,
+            parse_fw,
+            parse_serial_number,
+            parse_stereo_eq_configuration(10), // TODO: We have mono eq here, but it appears to be duplicated (bytes are not 1-1, DRC?)
+            le_u8,
+            parse_a3040_button_model,
+        ))(bytes)?;
 
         let (bytes, _ignored) = take(offset as usize - 3)(bytes)?;
         let (
@@ -99,7 +104,6 @@ pub fn parse_a3040_state_response<'a, E: ParseError<'a>>(
             bool_parser::<PowerOnBatteryNotice, E>,
         ))(bytes)?;
 
-        println!("Remaining bytes: {:x?}", bytes);
         Ok((
             bytes,
             TaggedData {

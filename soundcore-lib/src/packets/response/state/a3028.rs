@@ -3,18 +3,17 @@ use nom::{combinator::all_consuming, error::context, sequence::tuple};
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    models::{
+    devices::a3028_features, models::{
         AgeRange, BaseHearID, DeviceFirmware, EQConfiguration, Gender, HearID, SerialNumber,
         SingleBattery, SoundMode, SoundcoreFeatureFlags, StereoEQConfiguration, TwsStatus,
-    },
-    parsers::{
+    }, parsers::{
         parse_base_hear_id, parse_dual_fw, parse_serial_number, parse_single_battery, u8_parser,
-    },
+    }
 };
 
 use crate::parsers::{
-    parse_gender, parse_sound_mode, parse_stereo_eq_configuration, ParseError,
-    TaggedData, TaggedParseResult,
+    parse_gender, parse_sound_mode, parse_stereo_eq_configuration, ParseError, TaggedData,
+    TaggedParseResult,
 };
 use crate::types::SupportedModels;
 
@@ -33,19 +32,10 @@ pub struct A3028StateResponse {
     pub sn: SerialNumber,
 }
 
-const A3028_FEATURE_FLAGS: BitFlags<SoundcoreFeatureFlags> = make_bitflags!(SoundcoreFeatureFlags::{
-    SOUND_MODE
-    | ANC_MODE
-    | TRANS_MODE
-    | EQ
-    | STEREO_EQ
-    | HEARID
-});
-
 impl From<A3028StateResponse> for DeviceStateResponse {
     fn from(value: A3028StateResponse) -> Self {
         DeviceStateResponse {
-            feature_flags: A3028_FEATURE_FLAGS,
+            feature_set: a3028_features(),
             battery: value.battery.into(),
             sound_mode: value.sound_mode,
             eq: value.eq.into(),

@@ -8,12 +8,11 @@ use nom::{
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    models::{
+    devices::a3930_features, models::{
         A3909ButtonModel, AgeRange, Battery, ButtonModel, CustomHearID, DualBattery,
         EQConfiguration, Gender, HearID, SideTone, SoundMode, SoundcoreFeatureFlags,
         StereoEQConfiguration, TwsStatus,
-    },
-    parsers::u8_parser,
+    }, parsers::u8_parser
 };
 
 use crate::parsers::{
@@ -40,23 +39,11 @@ pub struct A3930StateResponse {
     pub hear_id_eq_index: Option<(u8, u8)>, // TODO: Parse this correctly
 }
 
-const A3930_FEATURE_FLAGS: BitFlags<SoundcoreFeatureFlags> = make_bitflags!(SoundcoreFeatureFlags::{
-    // TODO: Check if these are correct
-    SOUND_MODE
-    | ANC_MODE
-    | TRANS_MODE
-    | CUSTOM_ANC
-    | CUSTOM_BUTTONS
-    | EQ
-    | STEREO_EQ
-    | DRC
-    | HEARID
-});
 
 impl From<A3930StateResponse> for DeviceStateResponse {
     fn from(value: A3930StateResponse) -> Self {
         DeviceStateResponse {
-            feature_flags: A3930_FEATURE_FLAGS,
+            feature_set: a3930_features(),
             battery: Battery::Dual(value.battery),
             sound_mode: value.sound_mode,
             host_device: Some(value.host_device),

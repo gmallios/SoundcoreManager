@@ -59,7 +59,7 @@ pub fn parse_adaptive_sound_mode_customizable_trans<'a, E: ParseError<'a>>(
                 parse_custom_trans,
             )),
             |(current_mode, custom_anc, trans_mode, anc_mode, _e, custom_trans)| {
-                let custom_anc_value = CustomANCValue::from_u8((custom_anc << 4) as u8);
+                let custom_anc_value = CustomANCValue::from_u8(custom_anc << 4);
                 let _unk = custom_anc & 0x0F;
                 SoundMode {
                     current: current_mode,

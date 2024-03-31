@@ -2,6 +2,7 @@ use enumflags2::{make_bitflags, BitFlags};
 use nom::{combinator::all_consuming, error::context, number::complete::le_u8, sequence::tuple};
 use serde::{Deserialize, Serialize};
 
+use crate::devices::a3029_features;
 use crate::parsers::{
     parse_gender, parse_sound_mode, parse_stereo_eq_configuration, ParseError, TaggedData,
     TaggedParseResult,
@@ -33,19 +34,10 @@ pub struct A3029StateResponse {
     pub hear_id_has_data: bool,
 }
 
-const A3029_FEATURE_FLAGS: BitFlags<SoundcoreFeatureFlags> = make_bitflags!(SoundcoreFeatureFlags::{
-    SOUND_MODE
-    | ANC_MODE
-    | TRANS_MODE
-    | EQ
-    | STEREO_EQ
-    | HEARID
-});
-
 impl From<A3029StateResponse> for DeviceStateResponse {
     fn from(value: A3029StateResponse) -> Self {
         DeviceStateResponse {
-            feature_flags: A3029_FEATURE_FLAGS,
+            feature_set: a3029_features(),
             battery: value.battery.into(),
             sound_mode: value.sound_mode,
             eq: value.eq.into(),
