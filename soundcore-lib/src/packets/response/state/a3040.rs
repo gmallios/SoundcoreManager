@@ -5,12 +5,11 @@ use nom::{bits, combinator::all_consuming, error::context, sequence::tuple};
 use nom::{bytes::complete::take, number::complete::le_u8};
 use serde::{Deserialize, Serialize};
 
-use crate::models::{A3040ButtonModel, ButtonModel, PromptLanguage, TwsStatus, EQConfiguration, StereoEQConfiguration};
+use crate::devices::a3040_features;
+use crate::models::{A3040ButtonModel, ButtonModel, EQConfiguration, PromptLanguage, SoundMode, StereoEQConfiguration, TwsStatus};
 use crate::packets::DeviceStateResponse;
 use crate::parsers::{
-    bool_parser, parse_a3040_button_model, parse_auto_power_off_on, parse_fw,
-    parse_hearing_protect, parse_mono_eq, parse_prompt_language, parse_single_battery,
-    parse_sound_mode, parse_stereo_eq, u8_parser, TaggedData, TaggedParseResult, parse_stereo_eq_configuration,
+    bool_parser, parse_a3040_button_model, parse_adaptive_sound_mode_customizable_trans, parse_auto_power_off_on, parse_fw, parse_hearing_protect, parse_mono_eq, parse_prompt_language, parse_single_battery, parse_sound_mode, parse_stereo_eq, parse_stereo_eq_configuration, u8_parser, TaggedData, TaggedParseResult
 };
 use crate::types::SupportedModels;
 use crate::{
@@ -24,11 +23,11 @@ use crate::{
 
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq, Hash)]
 pub struct A3040StateResponse {
-    pub feature_flags: BitFlags<SoundcoreFeatureFlags>,
     pub battery: SingleBattery,
     pub fw: FirmwareVer,
     pub sn: SerialNumber,
     pub eq: StereoEQConfiguration,
+    pub sound_mode: SoundMode,
     pub touch_tone: TouchTone,
     pub wear_detection: WearDetection,
     pub three_dimensional_effect: ThreeDimensionalEffect,
@@ -47,27 +46,6 @@ pub struct A3040StateResponse {
     pub power_on_battery_notice: PowerOnBatteryNotice,
 }
 
-const A3040_FEATURE_FLAGS: BitFlags<SoundcoreFeatureFlags> = make_bitflags!(SoundcoreFeatureFlags::{
-    SOUND_MODE
-    | ANC_MODE
-    | CUSTOM_BUTTONS
-    | WEAR_DETECTION
-    | EQ
-    | STEREO_EQ
-    // | DRC - Unknown
-    // | HEARID - Unknown
-    // | CUSTOM_ANC - Unknown
-    | TOUCH_TONE
-    | GAME_MODE
-    | AUTO_POWER_OFF_ON
-    | POWER_ON_BATTERY_NOTICE
-    | AMBIENT_SOUND_NOTICE
-    | HEARING_PROTECTION
-    | LANG_PROMPT
-    | IN_EAR_BEEP
-    | SUPPORT_TWO_CONNECTIONS
-});
-
 // TODO: Figure out what the bytes remaining are so this can be all_consuming
 pub fn parse_a3040_state_response<'a, E: ParseError<'a>>(
     bytes: &'a [u8],
@@ -83,11 +61,11 @@ pub fn parse_a3040_state_response<'a, E: ParseError<'a>>(
                 parse_a3040_button_model,
             ))(bytes)?;
 
-        let (bytes, _ignored) = take(offset as usize - 1)(bytes)?;
+        let (bytes, _ignored) = take(offset as usize - 3)(bytes)?;
         let (
             bytes,
             (
-                _sound_mode,
+                sound_mode,
                 touch_tone,
                 wear_detection,
                 three_dimensional_effect,
@@ -104,7 +82,7 @@ pub fn parse_a3040_state_response<'a, E: ParseError<'a>>(
                 power_on_battery_notice,
             ),
         ) = tuple((
-            parse_sound_mode,
+            parse_adaptive_sound_mode_customizable_trans,
             bool_parser::<TouchTone, E>,
             bool_parser::<WearDetection, E>,
             bool_parser::<ThreeDimensionalEffect, E>,
@@ -127,11 +105,11 @@ pub fn parse_a3040_state_response<'a, E: ParseError<'a>>(
             TaggedData {
                 tag: SupportedModels::A3040,
                 data: A3040StateResponse {
-                    feature_flags: A3040_FEATURE_FLAGS,
                     battery,
                     fw,
                     sn,
                     eq,
+                    sound_mode,
                     touch_tone,
                     wear_detection,
                     button_model,
@@ -156,7 +134,7 @@ pub fn parse_a3040_state_response<'a, E: ParseError<'a>>(
 impl From<A3040StateResponse> for DeviceStateResponse {
     fn from(value: A3040StateResponse) -> Self {
         Self {
-            feature_flags: value.feature_flags,
+            feature_set: a3040_features(),
             battery: value.battery.into(),
             fw: value.fw.into(),
             sn: Some(value.sn),
@@ -176,6 +154,7 @@ impl From<A3040StateResponse> for DeviceStateResponse {
             button_model: Some(ButtonModel::A3040(value.button_model)),
             tws_status: Some(TwsStatus(true)),
             eq: value.eq.into(),
+            sound_mode: value.sound_mode,
             ..Default::default()
         }
     }
