@@ -29,7 +29,6 @@ futures = { workspace = true }
 strum = { version = "0.26", features = ["derive"] }
 nom = "7"
 enumflags2 = { version = "0.7.7", features = ["serde"] }
-bluetooth-lib = { path = "../bluetooth-lib" }
 phf = { version = "0.11", default-features = false, features = ["macros"] }
 derive_more = { version = "0.99", features = ["from"] }
 uuid = { version = "1.6.1", features = ["v4", "serde"] }

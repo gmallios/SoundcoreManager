@@ -15,7 +15,6 @@ tauri-build = { version = "1.2", features = [] }
 [dependencies]
 tauri-plugin-log = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v1" }
 log = "0.4.17"
-serde_json = "1.0"
 typeshare = "1.0.1"
 serde = { workspace = true, features = ["derive"] }
 tokio = { workspace = true, features = [
@@ -31,9 +30,6 @@ tauri = { version = "1.2.5", features = [
     "system-tray",
 ] }
 soundcore-lib = { workspace = true }
-bluetooth-lib = { path = "../bluetooth-lib/" }
-async-trait = { workspace = true }
-futures = { workspace = true }
 
 [dev-dependencies]
 soundcore-lib = { workspace = true, features = ["mock"], default-features = false}

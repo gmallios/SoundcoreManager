@@ -48,11 +48,6 @@ pub enum SoundcoreLibError {
         #[from]
         source: std::string::FromUtf8Error,
     },
-    #[error("Bluetooth Error")]
-    BthError {
-        #[from]
-        source: bluetooth_lib::BthError,
-    },
     #[error("Invalid arguments")]
     InvalidArguments,
     #[error("Invalid response")]
@@ -70,7 +65,10 @@ pub enum SoundcoreLibError {
     #[error("Invalid MAC address: {addr}")]
     InvalidMACAddress { addr: String },
     // TODO: Remove btleplug-backend feature when device name resolution is fixed *see scanner.rs*
-    #[cfg(all(target_os = "windows", any(feature = "btleplug-backend", feature = "winrt-backend")))]
+    #[cfg(all(
+        target_os = "windows",
+        any(feature = "btleplug-backend", feature = "winrt-backend")
+    ))]
     #[error("Unknown Windows Error")]
     UnknownWindowsError {
         #[from]

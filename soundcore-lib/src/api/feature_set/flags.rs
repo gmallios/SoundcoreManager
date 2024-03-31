@@ -7,7 +7,6 @@ use typeshare::typeshare;
     Debug, Serialize, Deserialize, Eq, PartialEq, Ord, PartialOrd, Clone, Copy, Hash, EnumIter,
 )]
 #[typeshare]
-#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum FeatureFlags {
     DRC,
     HEARID,
