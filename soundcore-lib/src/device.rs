@@ -24,7 +24,7 @@ where
     connection: Arc<Connection>,
     state_channel: Arc<Mutex<watch::Sender<SoundcoreDeviceState>>>,
     state_channel_handle: JoinHandle<()>,
-    model: Option<SupportedModels>,
+    model: SupportedModels,
 }
 
 impl<Connection> SoundcoreBLEDevice<Connection>
@@ -39,13 +39,20 @@ where
             initial_state,
             connection.descriptor()
         );
-        let state_sender = Arc::new(Mutex::new(watch::channel(initial_state.data).0));
+        let state_sender = Arc::new(Mutex::new(watch::channel(initial_state.data.clone()).0));
         let packet_handler = Self::spawn_packet_handler(state_sender.to_owned(), byte_channel);
+        
+        let model = if let Some(sn) = initial_state.data.serial {
+            sn.to_model().unwrap_or(initial_state.tag)
+        } else {
+            initial_state.tag
+        };
+
         Ok(Self {
             connection,
             state_channel: state_sender,
             state_channel_handle: packet_handler,
-            model: Some(initial_state.tag),
+            model,
         })
     }
 
@@ -157,11 +164,11 @@ where
         self.state_channel.lock().await.borrow().clone()
     }
 
-    async fn set_sound_mode(&self, sound_mode: SoundMode) -> SoundcoreLibResult<()> {
+    pub async fn set_sound_mode(&self, sound_mode: SoundMode) -> SoundcoreLibResult<()> {
         todo!()
     }
 
-    async fn set_eq(&self, eq: EQConfiguration) -> SoundcoreLibResult<()> {
+    pub async fn set_eq(&self, eq: EQConfiguration) -> SoundcoreLibResult<()> {
         todo!()
     }
 }
