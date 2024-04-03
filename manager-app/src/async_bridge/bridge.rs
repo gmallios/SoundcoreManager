@@ -93,7 +93,7 @@ async fn handle_command<B: BLEConnectionManager>(
             if let Ok(device) = device {
                 // Get the state channel and listen for changes in the background
                 let mut state_channel = device.state_channel().await;
-                
+
                 // TODO: Investigate this
                 #[allow(clippy::let_underscore_future)]
                 let _ = tokio::task::spawn(async move {
@@ -116,6 +116,7 @@ async fn handle_command<B: BLEConnectionManager>(
                             debug!("Failed to send new state event: {:?}", e);
                         }
                     }
+                    // TODO: Send a StateChannelClosed event
                     trace!("State channel for {:?} closed", addr_clone);
                 });
                 Ok(BridgeResponse::ConnectionEstablished(TaggedStateResponse {
@@ -127,6 +128,27 @@ async fn handle_command<B: BLEConnectionManager>(
                     addr,
                     reason: device.err().unwrap().to_string(),
                 }))
+            }
+        }
+        BridgeCommand::SetSoundMode(payload) => {
+            let addr_clone = payload.addr.clone();
+            let device = command_loop_state
+                .lock()
+                .await
+                .manager
+                .get_device(payload.addr)
+                .await;
+            
+            if let Some(device) = device {
+                trace!("Setting sound mode for {:?}", addr_clone);
+                let res = device.set_sound_mode(payload.sound_mode).await;
+                if res.is_ok() {
+                    Ok(BridgeResponse::SoundModeUpdated(addr_clone))
+                } else {
+                    Ok(BridgeResponse::GenericError(res.err().unwrap().to_string()))
+                }
+            } else {
+                Ok(BridgeResponse::DeviceNotFound(addr_clone))
             }
         }
     }

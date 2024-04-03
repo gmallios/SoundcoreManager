@@ -57,6 +57,10 @@ where
         }
     }
 
+    pub async fn get_device(&self, addr: BluetoothAdrr) -> Option<Arc<SoundcoreBLEDevice<B::Connection>>> {
+        self.ble_devices.read().await.get(&addr).cloned()
+    }
+
     pub async fn disconnect(&self, addr: BluetoothAdrr) -> SoundcoreLibResult<()> {
         self.ble_devices.write().await.remove(&addr);
         Ok(())

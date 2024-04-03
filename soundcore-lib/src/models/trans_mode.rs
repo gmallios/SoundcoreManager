@@ -1,25 +1,27 @@
 use log::trace;
 use serde::{Deserialize, Serialize};
 use strum::{Display, FromRepr};
+use typeshare::typeshare;
 
 use crate::models::{CustomizableTransparencyMode, NonCustomizableTransparencyMode};
 
 #[repr(u8)]
 #[derive(
-Debug,
-Serialize,
-Deserialize,
-Eq,
-PartialEq,
-Ord,
-PartialOrd,
-Clone,
-Copy,
-FromRepr,
-Display,
-Hash,
+    Debug,
+    Serialize,
+    Deserialize,
+    Eq,
+    PartialEq,
+    Ord,
+    PartialOrd,
+    Clone,
+    Copy,
+    FromRepr,
+    Display,
+    Hash,
 )]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "camelCase", tag = "type", content = "value")]
+#[typeshare]
 pub enum TransparencyMode {
     NonCustomizable(NonCustomizableTransparencyMode),
     Customizable(CustomizableTransparencyMode),
@@ -32,11 +34,11 @@ impl TransparencyMode {
             TransparencyMode::Customizable(mode) => mode.as_u8(),
         }
     }
-    
+
     pub fn from_u8_customizable(value: u8) -> Option<Self> {
         CustomizableTransparencyMode::from_u8(value).map(TransparencyMode::Customizable)
     }
-    
+
     pub fn from_u8_non_customizable(value: u8) -> Option<Self> {
         NonCustomizableTransparencyMode::from_u8(value).map(TransparencyMode::NonCustomizable)
     }

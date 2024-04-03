@@ -59,10 +59,18 @@ export type Battery =
   | { type: 'dual'; value: DualBattery };
 
 export enum CurrentSoundMode {
-  ANC = 'ANC',
-  Transparency = 'TRANSPARENCY',
-  Normal = 'NORMAL'
+  ANC = 'anc',
+  Transparency = 'transparency',
+  Normal = 'normal'
 }
+
+export type ANCMode =
+  | { type: 'sceneBased'; value: SceneBasedANCMode }
+  | { type: 'adaptive'; value: AdaptiveANCMode };
+
+export type TransparencyMode =
+  | { type: 'nonCustomizable'; value: NonCustomizableTransparencyMode }
+  | { type: 'customizable'; value: CustomizableTransparencyMode };
 
 export interface SoundMode {
   current: CurrentSoundMode;
@@ -97,7 +105,7 @@ export type ButtonModel =
   | { type: 'a3909'; value: A3909ButtonModel }
   | { type: 'a3040'; value: A3040ButtonModel };
 
-export type HearID = { type: 'BASE'; value: BaseHearID } | { type: 'CUSTOM'; value: CustomHearID };
+export type HearID = { type: 'base'; value: BaseHearID } | { type: 'custom'; value: CustomHearID };
 
 /** This is a generalized version of the state for all devices */
 export interface SoundcoreDeviceState {
@@ -134,16 +142,16 @@ export interface DiscoveredDevice {
 }
 
 export enum Action {
-  VolumeUp = 'VOLUME_UP',
-  VolumeDown = 'VOLUME_DOWN',
-  PreviousSong = 'PREVIOUS_SONG',
-  NextSong = 'NEXT_SONG',
-  AmbientSound = 'AMBIENT_SOUND',
-  VoiceAssistant = 'VOICE_ASSISTANT',
-  PlayPause = 'PLAY_PAUSE',
-  BassUpToggle = 'BASS_UP_TOGGLE',
-  Null = 'NULL',
-  ControlThreeDimensionalEffect = 'CONTROL_THREE_DIMENSIONAL_EFFECT'
+  VolumeUp = 'volumeUp',
+  VolumeDown = 'volumeDown',
+  PreviousSong = 'previousSong',
+  NextSong = 'nextSong',
+  AmbientSound = 'ambientSound',
+  VoiceAssistant = 'voiceAssistant',
+  PlayPause = 'playPause',
+  BassUpToggle = 'bassUpToggle',
+  Null = 'null',
+  ControlThreeDimensionalEffect = 'controlThreeDimensionalEffect'
 }
 
 export interface A3040ButtonModel {
@@ -257,34 +265,56 @@ export type BLEAdapterEvent =
   | { kind: 'deviceConnected'; value: BluetoothAdrr }
   | { kind: 'deviceDisconnected'; value: BluetoothAdrr };
 
+export enum AdaptiveANCMode {
+  Custom = 'Custom',
+  Adaptive = 'Adaptive'
+}
+
+export enum CustomizableTransparencyMode {
+  TalkMode = 'talkMode',
+  Custom = 'custom'
+}
+
 export type EQConfiguration =
   | { type: 'stereo'; value: StereoEQConfiguration }
   | { type: 'mono'; value: MonoEQConfiguration };
 
 export enum SoundcoreFeatureFlags {
-  SOUND_MODE = 'SOUND_MODE',
-  ANC_MODE = 'ANC_MODE',
-  TRANS_MODE = 'TRANS_MODE',
-  CUSTOM_ANC = 'CUSTOM_ANC',
-  EQ = 'EQ',
-  STEREO_EQ = 'STEREO_EQ',
-  DRC = 'DRC',
-  HEARID = 'HEARID',
-  WEAR_DETECTION = 'WEAR_DETECTION',
-  CUSTOM_BUTTONS = 'CUSTOM_BUTTONS',
-  TOUCH_TONE = 'TOUCH_TONE',
-  GAME_MODE = 'GAME_MODE',
-  AUTO_POWER_OFF_ON = 'AUTO_POWER_OFF_ON',
-  IN_EAR_BEEP = 'IN_EAR_BEEP',
-  LANG_PROMPT = 'LANG_PROMPT',
-  HEARING_PROTECTION = 'HEARING_PROTECTION',
-  AMBIENT_SOUND_NOTICE = 'AMBIENT_SOUND_NOTICE',
-  POWER_ON_BATTERY_NOTICE = 'POWER_ON_BATTERY_NOTICE',
-  SUPPORT_TWO_CONNECTIONS = 'SUPPORT_TWO_CONNECTIONS',
-  MULTIPLE_DEVICE_LIST = 'MULTIPLE_DEVICE_LIST'
+  SOUND_MODE = 'soundMode',
+  ANC_MODE = 'ancMode',
+  TRANS_MODE = 'transMode',
+  CUSTOM_ANC = 'customAnc',
+  EQ = 'eq',
+  STEREO_EQ = 'stereoEq',
+  DRC = 'drc',
+  HEARID = 'hearid',
+  WEAR_DETECTION = 'wearDetection',
+  CUSTOM_BUTTONS = 'customButtons',
+  TOUCH_TONE = 'touchTone',
+  GAME_MODE = 'gameMode',
+  AUTO_POWER_OFF_ON = 'autoPowerOffOn',
+  IN_EAR_BEEP = 'inEarBeep',
+  LANG_PROMPT = 'langPrompt',
+  HEARING_PROTECTION = 'hearingProtection',
+  AMBIENT_SOUND_NOTICE = 'ambientSoundNotice',
+  POWER_ON_BATTERY_NOTICE = 'powerOnBatteryNotice',
+  SUPPORT_TWO_CONNECTIONS = 'supportTwoConnections',
+  MULTIPLE_DEVICE_LIST = 'multipleDeviceList'
+}
+
+export enum NonCustomizableTransparencyMode {
+  FullyTransparent = 'fullyTransparent',
+  Vocal = 'vocal'
 }
 
 export enum PromptLanguage {
   English = 'English',
   Chinese = 'Chinese'
+}
+
+export enum SceneBasedANCMode {
+  Transport = 'Transport',
+  Outdoor = 'Outdoor',
+  Indoor = 'Indoor',
+  Custom = 'Custom'
 }

@@ -1,6 +1,7 @@
 use log::trace;
 use serde::{Deserialize, Serialize};
 use strum::{Display, FromRepr};
+use typeshare::typeshare;
 
 #[repr(u8)]
 #[derive(
@@ -19,6 +20,7 @@ Display,
 Hash,
 )]
 #[serde(rename_all = "camelCase")]
+#[typeshare]
 pub enum NonCustomizableTransparencyMode {
     #[default]
     FullyTransparent = 0,

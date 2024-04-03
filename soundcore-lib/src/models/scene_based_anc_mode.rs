@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 use strum::{Display, FromRepr};
+use typeshare::typeshare;
 
 #[repr(u8)]
 #[derive(
@@ -17,6 +18,7 @@ FromRepr,
 Display,
 Hash,
 )]
+#[typeshare]
 pub enum SceneBasedANCMode {
     #[default]
     Transport = 0,

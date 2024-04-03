@@ -13,7 +13,7 @@ pub struct HearIDMusicType(pub u8); // TODO: Move to enum?
 
 #[derive(Debug, Serialize, Deserialize, Eq, PartialEq, Ord, PartialOrd, Clone, Hash)]
 #[typeshare]
-#[serde(rename_all = "SCREAMING_SNAKE_CASE", tag = "type", content = "value")]
+#[serde(rename_all = "camelCase", tag = "type", content = "value")]
 pub enum HearID {
     Base(BaseHearID),
     Custom(CustomHearID),

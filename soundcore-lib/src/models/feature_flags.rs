@@ -10,7 +10,7 @@ use typeshare::typeshare;
 #[bitflags]
 #[repr(u32)]
 #[typeshare]
-#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+#[serde(rename_all = "camelCase")]
 pub enum SoundcoreFeatureFlags {
     SOUND_MODE,
     ANC_MODE,

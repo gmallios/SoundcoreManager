@@ -18,6 +18,8 @@ pub enum BridgeResponse {
     AdapterEvent(BLEAdapterEvent),
     ConnectionFailed(ConnectionFailedResponse),
     GenericError(String),
+    DeviceNotFound(BluetoothAdrr),
+    SoundModeUpdated(BluetoothAdrr),
 }
 
 #[derive(Debug, Serialize, Clone)]

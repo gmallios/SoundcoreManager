@@ -6,7 +6,6 @@ import { BatteryIcon } from './batteryIcon';
 
 export const DeviceStateCard: React.FC = () => {
   const currentState = useSoundcoreStore((state) => state.currentViewedDeviceState());
-  currentState?.battery;
 
   return (
     <>

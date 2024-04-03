@@ -1,11 +1,13 @@
 use serde::{Deserialize, Serialize};
+use typeshare::typeshare;
 
 use crate::models::AdaptiveANCMode;
 use crate::models::SceneBasedANCMode;
 
 #[repr(u8)]
 #[derive(Debug, Serialize, Deserialize, Eq, PartialEq, Ord, PartialOrd, Clone, Copy, Hash)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "camelCase", tag = "type", content = "value")]
+#[typeshare]
 pub enum ANCMode {
     SceneBased(SceneBasedANCMode),
     Adaptive(AdaptiveANCMode),

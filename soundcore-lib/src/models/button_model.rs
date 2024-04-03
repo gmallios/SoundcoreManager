@@ -17,7 +17,7 @@ pub enum ButtonModel {
 )]
 #[repr(u8)]
 #[typeshare]
-#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+#[serde(rename_all = "camelCase")]
 pub enum Action {
     VolumeUp = 0,
     VolumeDown = 1,

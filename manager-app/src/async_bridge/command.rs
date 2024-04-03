@@ -1,6 +1,7 @@
 use serde::Deserialize;
-use typeshare::typeshare;
 use soundcore_lib::btaddr::BluetoothAdrr;
+use soundcore_lib::models::SoundMode;
+use typeshare::typeshare;
 
 use soundcore_lib::device_manager::DiscoveredDevice;
 
@@ -12,4 +13,12 @@ pub enum BridgeCommand {
     Connect(DiscoveredDevice),
     Disconnect(BluetoothAdrr),
     DisconnectAll,
+    SetSoundMode(SetSoundModePayload),
+}
+#[derive(Debug, Deserialize, Clone)]
+#[typeshare]
+#[serde(rename_all = "camelCase")]
+pub struct SetSoundModePayload {
+    pub addr: BluetoothAdrr,
+    pub sound_mode: SoundMode,
 }

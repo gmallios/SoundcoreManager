@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 use strum::{Display, FromRepr};
+use typeshare::typeshare;
 
 #[repr(u8)]
 #[derive(
@@ -18,6 +19,7 @@ Display,
 Hash,
 )]
 #[serde(rename_all = "camelCase")]
+#[typeshare]
 pub enum CustomizableTransparencyMode {
     #[default]
     TalkMode = 0,
