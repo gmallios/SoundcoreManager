@@ -11,7 +11,8 @@ impl CustomANCValue {
         trace!("CustomANC::from_u8({})", value);
         match value {
             255 => CustomANCValue(255),
-            _ => CustomANCValue(value.clamp(0, 10)),
+            // TODO: Check if any other device has a different range and implement it
+            _ => CustomANCValue(value.clamp(0, 5)),
         }
     }
 

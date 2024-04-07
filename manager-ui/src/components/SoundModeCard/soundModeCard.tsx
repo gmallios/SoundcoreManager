@@ -1,10 +1,10 @@
-import { Button, Grid, Icon, Paper, Stack, styled } from '@mui/material';
+import { Button, Collapse, Grid, Icon, Paper, Stack, styled } from '@mui/material';
 import { useSoundcoreStore } from '@stores/useSoundcoreStore';
 import ANCIcon from '../../assets/ambient_icon_anc.png';
 import NormalIcon from '../../assets/ambient_icon_off.png';
 import TransIcon from '../../assets/ambient_icon_trans.png';
 import React, { useCallback, useEffect, useState } from 'react';
-import { CurrentSoundMode, DeviceFeatureSet, SoundMode } from '@generated-types/soundcore-lib.d.ts';
+import { CurrentSoundMode, DeviceFeatureSet, SoundMode } from '@generated-types/soundcore-lib';
 import { useUpdateDeviceSoundMode } from '@hooks/useDeviceCommand';
 
 export const SoundModeCard: React.FC<{ features: DeviceFeatureSet }> = ({ features }) => {
@@ -98,10 +98,12 @@ export const SoundModeCard: React.FC<{ features: DeviceFeatureSet }> = ({ featur
   const currentSoundModeKey = mapModeToCurrentSoundModeKey(selectedSoundMode.current);
   let currentSubValue;
   let currentSoundModeType: string;
+  let hasCustomValueSlider: boolean = false;
 
   if (currentSoundModeKey) {
     currentSubValue = selectedSoundMode[currentSoundModeKey].value;
     currentSoundModeType = selectedSoundMode[currentSoundModeKey].type;
+    hasCustomValueSlider = currentSoundModeType.toLowerCase() === 'custom';
   }
 
   return (
@@ -129,10 +131,10 @@ export const SoundModeCard: React.FC<{ features: DeviceFeatureSet }> = ({ featur
                 icon={ANCIcon}
                 setSliderIcon={setIcon}
                 setSliderPosition={() =>
-                  setSelectedSoundMode((prev) => ({
-                    ...prev,
+                  useUpdateDeviceSoundMode(deviceAddr, {
+                    ...selectedSoundMode,
                     current: CurrentSoundMode.ANC
-                  }))
+                  })
                 }
               />
             )}
@@ -142,10 +144,10 @@ export const SoundModeCard: React.FC<{ features: DeviceFeatureSet }> = ({ featur
                 icon={NormalIcon}
                 setSliderIcon={setIcon}
                 setSliderPosition={() =>
-                  setSelectedSoundMode((prev) => ({
-                    ...prev,
+                  useUpdateDeviceSoundMode(deviceAddr, {
+                    ...selectedSoundMode,
                     current: CurrentSoundMode.Normal
-                  }))
+                  })
                 }
               />
             )}
@@ -155,28 +157,31 @@ export const SoundModeCard: React.FC<{ features: DeviceFeatureSet }> = ({ featur
                 icon={TransIcon}
                 setSliderIcon={setIcon}
                 setSliderPosition={() =>
-                  setSelectedSoundMode((prev) => ({
-                    ...prev,
+                  useUpdateDeviceSoundMode(deviceAddr, {
+                    ...selectedSoundMode,
                     current: CurrentSoundMode.Transparency
-                  }))
+                  })
                 }
               />
             )}
           </SliderSelectorWrapper>
         </Grid>
 
-        {modeButtons && modeButtons.length > 0 && currentSoundModeKey && (
+        <Collapse in={modeButtons && modeButtons.length > 0} timeout="auto">
           <ModeGroupButtons
             buttons={modeButtons}
-            onClick={(value) =>
-              useUpdateDeviceSoundMode(deviceAddr, {
-                ...selectedSoundMode,
-                [currentSoundModeKey]: { type: currentSoundModeType, value }
-              })
-            }
+            onClick={(value) => {
+              if (currentSoundModeKey) {
+                useUpdateDeviceSoundMode(deviceAddr, {
+                  ...selectedSoundMode,
+                  [currentSoundModeKey]: { type: currentSoundModeType, value }
+                });
+              }
+            }}
             selectedValue={currentSubValue}
           />
-        )}
+        </Collapse>
+        {hasCustomValueSlider && <h1> Custom</h1>}
         {/* <SliderSubButtons layout={layout} position={position} /> */}
       </Grid>
     </Paper>
@@ -195,16 +200,17 @@ const ModeGroupButtons: React.FC<{
           container
           direction="row"
           spacing={1}
-          sx={{ display: 'flex', justifyContent: 'space-evenly', pt: 2 }}></Grid>
+          sx={{ display: 'flex', justifyContent: 'space-evenly', pt: 2 }}>
+          {buttons.map((button) => (
+            <ModeGroupButton
+              key={button.value}
+              active={selectedValue === button.value}
+              onClick={() => onClick(button.value)}>
+              {button.title}
+            </ModeGroupButton>
+          ))}
+        </Grid>
       </Stack>
-      {buttons.map((button) => (
-        <ModeGroupButton
-          key={button.value}
-          active={selectedValue === button.value}
-          onClick={() => onClick(button.value)}>
-          {button.title}
-        </ModeGroupButton>
-      ))}
     </Grid>
   );
 };

@@ -173,6 +173,7 @@ impl BLEConnection for BtlePlugConnection {
             self.write_characteristic.clone(),
             bytes.to_owned(),
         );
+        trace!("Writing bytes: {:#X?} to characteristic: {:?}", bytes, self.write_characteristic);
         tokio::spawn(async move {
             peripheral
                 .write(&writer_characteristic, &bytes, write_type.into())

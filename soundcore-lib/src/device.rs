@@ -12,7 +12,7 @@ use crate::error::{SoundcoreLibError, SoundcoreLibResult};
 use crate::models::{EQConfiguration, SoundMode};
 use crate::packets::{
     DeviceStateResponse, RequestPacketBuilder, RequestPacketKind, ResponsePacket,
-    StateTransformationPacket,
+    SoundModeCommandBuilder, StateTransformationPacket,
 };
 use crate::parsers::TaggedData;
 use crate::types::SupportedModels;
@@ -41,7 +41,7 @@ where
         );
         let state_sender = Arc::new(Mutex::new(watch::channel(initial_state.data.clone()).0));
         let packet_handler = Self::spawn_packet_handler(state_sender.to_owned(), byte_channel);
-        
+
         let model = if let Some(sn) = initial_state.data.serial {
             sn.to_model().unwrap_or(initial_state.tag)
         } else {
@@ -134,6 +134,10 @@ where
         tokio::task::spawn(async move {
             while let Some(bytes) = byte_channel.recv().await {
                 trace!("Received bytes: {:?}", bytes);
+                if bytes.is_empty() {
+                    continue;
+                }
+
                 match ResponsePacket::from_bytes(&bytes) {
                     Ok(packet) => {
                         let state_sender = state_sender.lock().await;
@@ -165,7 +169,26 @@ where
     }
 
     pub async fn set_sound_mode(&self, sound_mode: SoundMode) -> SoundcoreLibResult<()> {
-        todo!()
+        // TODO: perform some validation on the sound mode/features
+        // TODO: Check if https://github.com/Oppzippy/OpenSCQ30/blob/dec0ad3f2659205ff6efdb8d12ec333ba9f3a0b4/lib/src/soundcore_device/device/device_command_dispatcher.rs#L28
+        // is valid for all models or device-specific
+        let command = SoundModeCommandBuilder::new(sound_mode, self.model).build();
+        let latest_state = self.latest_state().await;
+
+        if latest_state.sound_mode == sound_mode {
+            return Ok(());
+        }
+
+        self.connection
+            .write(&command, WriteType::WithoutResponse)
+            .await?;
+
+        let state_sender = self.state_channel.lock().await;
+        let mut new_state = state_sender.borrow().clone();
+        new_state.sound_mode = sound_mode;
+        state_sender.send_replace(new_state);
+        
+        Ok(())
     }
 
     pub async fn set_eq(&self, eq: EQConfiguration) -> SoundcoreLibResult<()> {

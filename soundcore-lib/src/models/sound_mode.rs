@@ -6,7 +6,7 @@ use crate::models::custom_trans_value::CustomTransparencyValue;
 use super::{ANCMode, CurrentSoundMode, CustomANCValue, TransparencyMode};
 
 #[derive(
-Debug, Serialize, Deserialize, Eq, PartialEq, Ord, PartialOrd, Clone, Copy, Default, Hash,
+    Debug, Serialize, Deserialize, Eq, PartialEq, Ord, PartialOrd, Clone, Copy, Default, Hash,
 )]
 #[typeshare]
 #[serde(rename_all = "camelCase", tag = "type")]
@@ -28,12 +28,13 @@ impl SoundMode {
         ]
     }
 
-    pub fn to_bytes_with_custom_transparency(&self) -> [u8; 5] {
+    pub fn to_bytes_with_custom_transparency(&self) -> [u8; 6] {
         [
             self.current.as_u8(),
-            self.anc_mode.as_u8(),
+            (self.custom_anc.as_u8() << 4) | 0x01, // TODO: 0x01 mask is unknown if it is constant
             self.trans_mode.as_u8(),
-            self.custom_anc.as_u8(),
+            self.anc_mode.as_u8(),
+            0x00,
             self.custom_trans.unwrap_or_default().as_u8(),
         ]
     }

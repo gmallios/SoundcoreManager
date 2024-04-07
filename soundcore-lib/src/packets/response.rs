@@ -1,4 +1,4 @@
-use log::error;
+use log::{error, warn};
 use nom::error::VerboseError;
 
 pub use info::*;
@@ -17,6 +17,7 @@ pub enum ResponsePacket {
     DeviceState(TaggedData<DeviceStateResponse>),
     SoundModeUpdate(SoundModeUpdateResponse),
     DeviceInfo(DeviceInfoResponse),
+    Unknown
 }
 
 pub trait StateTransformationPacket {
@@ -36,7 +37,14 @@ impl ResponsePacket {
                 Self::SoundModeUpdate(parse_sound_mode_update_packet(bytes)?.1)
             }
             ResponsePacketKind::InfoUpdate => Self::DeviceInfo(parse_device_info_packet(bytes)?.1),
-            _ => unimplemented!(),
+            _ => {
+                // TODO: Have an array of Acks and handle those properly
+                error!(
+                    "Unexpected or unhandled packet kind {:?} and bytes {:?}",
+                    packet_header.kind, bytes
+                );
+                ResponsePacket::Unknown
+            },
         })
     }
 

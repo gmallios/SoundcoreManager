@@ -18,7 +18,7 @@ FromRepr,
 Display,
 Hash,
 )]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "lowercase")]
 #[typeshare]
 pub enum CurrentSoundMode {
     ANC = 0,
