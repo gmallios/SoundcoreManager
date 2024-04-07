@@ -16,7 +16,7 @@
     "test:coverage": "vitest --coverage",
     "gen-types": "yarn typeshare:tauri && yarn typeshare:soundcore-lib && yarn lint:fix-types",
     "typeshare:soundcore-lib": "typeshare ../soundcore-lib --lang=typescript --output-file=./src/types/soundcore-lib.ts",
-    "typeshare:tauri": "typeshare ../manager-app --lang=typescript --output-file=./src/types/tauri-backend.ts"
+    "typeshare:tauri": "typeshare ../manager-app --lang=typescript --output-file=./src/types/tauri-backend.d.ts"
   },
   "dependencies": {
     "@emotion/react": "^11.10.4",

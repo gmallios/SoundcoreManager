@@ -1,9 +1,11 @@
 use log::trace;
 use serde::{Deserialize, Serialize};
+use typeshare::typeshare;
 
 #[derive(
 Debug, Serialize, Deserialize, Eq, PartialEq, Ord, PartialOrd, Clone, Copy, Default, Hash,
 )]
+#[typeshare]
 pub struct CustomANCValue(pub u8);
 
 impl CustomANCValue {

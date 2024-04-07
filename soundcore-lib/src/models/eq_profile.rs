@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 use strum::{Display, EnumIter, EnumString, FromRepr};
+use typeshare::typeshare;
 
 use super::MonoEQ;
 
@@ -21,6 +22,7 @@ use super::MonoEQ;
     EnumString,
     Default,
 )]
+#[typeshare]
 pub enum EQProfile {
     // Regular profiles
     #[default]

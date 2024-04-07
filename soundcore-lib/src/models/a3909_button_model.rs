@@ -1,11 +1,13 @@
 use crate::models::Action;
 use serde::{Deserialize, Serialize};
+use typeshare::typeshare;
 
 
 /// This is the A3909 variant of the CustomBtnModel
 /// TODO: Check if there are common models to other button models, if so move them to a common file
 #[derive(Debug, Serialize, Deserialize, Clone, Copy, Hash, PartialEq, Eq, PartialOrd, Ord)]
 #[serde(rename_all = "camelCase")]
+#[typeshare]
 pub struct A3909ButtonModel {
     pub left: ButtonSide,
     pub right: ButtonSide,
@@ -25,6 +27,7 @@ impl A3909ButtonModel {
 
 #[derive(Debug, Serialize, Deserialize, Clone, Copy, Hash, PartialEq, Eq, PartialOrd, Ord)]
 #[serde(rename_all = "camelCase")]
+#[typeshare]
 pub struct ButtonSide {
     pub double_press: TwsButtonAction,
     pub single_press: NonTwsButtonAction,
@@ -33,6 +36,7 @@ pub struct ButtonSide {
 
 #[derive(Debug, Serialize, Deserialize, Clone, Copy, Hash, PartialEq, Eq, PartialOrd, Ord)]
 #[serde(rename_all = "camelCase")]
+#[typeshare]
 pub struct TwsButtonAction {
     pub non_tws_action: Action, /* Disconnected Action */
     pub tws_action: Action,     /* Connected Action */
@@ -50,6 +54,7 @@ impl TwsButtonAction {
 
 #[derive(Debug, Serialize, Deserialize, Clone, Copy, Hash, PartialEq, Eq, PartialOrd, Ord)]
 #[serde(rename_all = "camelCase")]
+#[typeshare]
 pub struct NonTwsButtonAction {
     pub action: Action,
     pub enabled: bool,
@@ -62,7 +67,7 @@ impl NonTwsButtonAction {
 }
 
 #[cfg(test)]
-mod a3909_button_model {
+mod tests {
     use super::*;
 
     #[test]

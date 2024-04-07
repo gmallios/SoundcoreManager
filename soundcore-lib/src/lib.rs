@@ -6,7 +6,6 @@ pub mod error;
 pub mod models;
 pub mod packets;
 mod parsers;
-pub mod statics;
 pub mod types;
 #[allow(non_snake_case)]
 mod utils;
