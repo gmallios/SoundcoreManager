@@ -35,15 +35,7 @@ struct SoundcoreAppState {
 #[tokio::main]
 async fn main() {
     tauri::async_runtime::set(tokio::runtime::Handle::current());
-    #[cfg(target_os = "macos")]
-    server::launch_server();
 
-    // builder()
-    //     .filter(None, log::LevelFilter::Debug)
-    //     .filter_module("h2", log::LevelFilter::Off)
-    //     .filter_module("hyper", log::LevelFilter::Off)
-    //     .filter_module("tower", log::LevelFilter::Off)
-    //     .init();
     let (input_tx, input_rx) = channel(255);
     let (output_tx, mut output_rx) = channel(255);
 
@@ -154,13 +146,17 @@ fn handle_state_update<R: tauri::Runtime>(
         if last_state == new_state {
             return;
         }
-        Notification::new("soundcore-manager")
-            .title("Device state update")
-            .body(format!(
-                "Device state update: {:?} -> {:?}",
-                last_state, new_state
-            ))
-            .show()
-            .expect("Failed to show notification");
+        // This is a bit too verbose for now
+        // TODO: Add a setting to enable/disable this
+        // TODO: Improve the notification message based on the values changed
+        // TODO: Don't show this if we are the originator of the change
+        // Notification::new("soundcore-manager")
+        //     .title("Device state update")
+        //     .body(format!(
+        //         "Device state update: {:?} -> {:?}",
+        //         last_state, new_state
+        //     ))
+        //     .show()
+        //     .expect("Failed to show notification");
     }
 }
