@@ -27,6 +27,6 @@
     },
     "types": ["vitest/globals"]
   },
-  "include": ["src", "./setupTest.ts", "src/types/soundcore-lib.d.ts", "src/types/soundcore-lib.d.ts"],
+  "include": ["src", "./setupTest.ts"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }
