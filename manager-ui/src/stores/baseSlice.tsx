@@ -76,5 +76,11 @@ const bridgeResponseHandlers: BridgeResponseHandlers = {
   },
   disconnectedAll: (_payload, _set, _get) => {
     // TODO: Wait for this beforing "starting" the app? No-op for now.
+  },
+  deviceNotFound: (_payload, _set, _get) => {
+    throw new Error('Function not implemented.');
+  },
+  soundModeUpdated: (_payload, _set, _get) => {
+    throw new Error('Function not implemented.');
   }
 };

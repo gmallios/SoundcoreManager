@@ -84,6 +84,10 @@ export interface SoundMode {
   customTrans?: CustomTransparencyValue;
 }
 
+export type EQConfiguration =
+  | { type: 'stereo'; value: StereoEQConfiguration }
+  | { type: 'mono'; value: MonoEQConfiguration };
+
 export enum SupportedModels {
   A3027 = 'A3027',
   A3028 = 'A3028',
@@ -116,6 +120,7 @@ export interface SoundcoreDeviceState {
   featureSet: DeviceFeatureSet;
   battery: Battery;
   soundMode: SoundMode;
+  eqConfiguration: EQConfiguration;
   serial?: SerialNumber;
   fw?: FirmwareVer;
   hostDevice?: number;
@@ -213,7 +218,7 @@ export interface StereoEQ {
 export enum EQProfile {
   SoundcoreSignature = 'SoundcoreSignature',
   Acoustic = 'Acoustic',
-  BassBooster = 'BassBooster',
+  BassBoosted = 'BassBoosted',
   BassReducer = 'BassReducer',
   Classical = 'Classical',
   Podcast = 'Podcast',
@@ -296,10 +301,6 @@ export enum CustomizableTransparencyMode {
   TalkMode = 'talkMode',
   Custom = 'custom'
 }
-
-export type EQConfiguration =
-  | { type: 'stereo'; value: StereoEQConfiguration }
-  | { type: 'mono'; value: MonoEQConfiguration };
 
 export enum SoundcoreFeatureFlags {
   SOUND_MODE = 'soundMode',

@@ -1,26 +1,24 @@
 import { Button, Collapse, Grid, Icon, Paper, Stack, styled } from '@mui/material';
 import { useSoundcoreStore } from '@stores/useSoundcoreStore';
-import ANCIcon from '../../assets/ambient_icon_anc.png';
-import NormalIcon from '../../assets/ambient_icon_off.png';
-import TransIcon from '../../assets/ambient_icon_trans.png';
+import ANCIcon from '@assets/ambient_icon_anc.png';
+import NormalIcon from '@assets/ambient_icon_off.png';
+import TransIcon from '@assets/ambient_icon_trans.png';
 import React, { useCallback, useEffect, useState } from 'react';
-import { CurrentSoundMode, DeviceFeatureSet, SoundMode } from '@generated-types/soundcore-lib';
+import { CurrentSoundMode, SoundMode, SoundcoreDeviceState } from '@generated-types/soundcore-lib';
 import { useUpdateDeviceSoundMode } from '@hooks/useDeviceCommand';
 
-export const SoundModeCard: React.FC<{ features: DeviceFeatureSet }> = ({ features }) => {
-  if (!features.soundModeFeatures) {
-    return <></>;
-  }
+export interface SoundModeCardProps {
+  state: SoundcoreDeviceState;
+}
 
-  const ancFeatures = features.soundModeFeatures.allowedAncModes;
-  const transparencyFeatures = features.soundModeFeatures.allowedTransparencyModes;
-  const hasNormalMode = features.soundModeFeatures.hasNormalMode;
-  const deviceSoundModeState = useSoundcoreStore((state) =>
-    state.currentViewedDeviceState()
-  )?.soundMode;
+export const SoundModeCard = ({ state }: SoundModeCardProps): JSX.Element => {
+  const soundModeState = state.soundMode;
+  const ancFeatures = state.featureSet.soundModeFeatures?.allowedAncModes;
+  const transparencyFeatures = state.featureSet.soundModeFeatures?.allowedTransparencyModes;
+  const hasNormalMode = state.featureSet.soundModeFeatures?.hasNormalMode;
   const deviceAddr = useSoundcoreStore((state) => state.currentViewedDevice);
 
-  if (!deviceSoundModeState || !deviceAddr) {
+  if (!soundModeState || !deviceAddr || !ancFeatures || !transparencyFeatures || !hasNormalMode) {
     return <></>;
   }
 
@@ -35,18 +33,15 @@ export const SoundModeCard: React.FC<{ features: DeviceFeatureSet }> = ({ featur
     }
   }, []);
 
-  const mapModeToCurrentSoundModeKey = useCallback(
-    (mode: CurrentSoundMode): keyof SoundMode | null => {
-      const lowerCaseMode = mode.toLowerCase();
-      if (lowerCaseMode === CurrentSoundMode.ANC.toLowerCase()) {
-        return 'ancMode';
-      } else if (lowerCaseMode === CurrentSoundMode.Transparency.toLowerCase()) {
-        return 'transMode';
-      }
-      return null;
-    },
-    []
-  );
+  const mapModeToCurrentSoundModeKey = useCallback((mode: CurrentSoundMode) => {
+    const lowerCaseMode = mode.toLowerCase();
+    if (lowerCaseMode === CurrentSoundMode.ANC.toLowerCase()) {
+      return 'ancMode';
+    } else if (lowerCaseMode === CurrentSoundMode.Transparency.toLowerCase()) {
+      return 'transMode';
+    }
+    return null;
+  }, []);
 
   const mapModeToFeatures = useCallback((mode: CurrentSoundMode) => {
     const lowerCaseMode = mode.toLowerCase();
@@ -68,13 +63,13 @@ export const SoundModeCard: React.FC<{ features: DeviceFeatureSet }> = ({ featur
     }
   }, []);
 
-  const [selectedSoundMode, setSelectedSoundMode] = useState<SoundMode>(deviceSoundModeState);
+  const [selectedSoundMode, setSelectedSoundMode] = useState<SoundMode>(soundModeState);
 
   // Synchronize external changes originating from the device
   useEffect(() => {
-    setSelectedSoundMode(deviceSoundModeState);
-    setIcon(mapPositionToIcon(mapModeToPosition(deviceSoundModeState.current)));
-  }, [deviceSoundModeState]);
+    setSelectedSoundMode(soundModeState);
+    setIcon(mapPositionToIcon(mapModeToPosition(soundModeState.current)));
+  }, [soundModeState]);
 
   useEffect(() => {
     console.log('selectedSoundMode', selectedSoundMode);
@@ -96,14 +91,14 @@ export const SoundModeCard: React.FC<{ features: DeviceFeatureSet }> = ({ featur
     });
 
   const currentSoundModeKey = mapModeToCurrentSoundModeKey(selectedSoundMode.current);
-  let currentSubValue;
+  let currentSubValue = '';
   let currentSoundModeType: string;
   let hasCustomValueSlider: boolean = false;
 
   if (currentSoundModeKey) {
-    currentSubValue = selectedSoundMode[currentSoundModeKey].value;
+    currentSubValue = selectedSoundMode[currentSoundModeKey].value as string;
     currentSoundModeType = selectedSoundMode[currentSoundModeKey].type;
-    hasCustomValueSlider = currentSoundModeType.toLowerCase() === 'custom';
+    hasCustomValueSlider = currentSoundModeType?.toLowerCase() === 'custom';
   }
 
   return (

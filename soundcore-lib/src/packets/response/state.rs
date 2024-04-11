@@ -105,6 +105,7 @@ impl From<DeviceStateResponse> for SoundcoreDeviceState {
             battery: value.battery,
             sound_mode: value.sound_mode,
             serial: value.sn,
+            eq_configuration: value.eq,
             fw: value.fw,
             host_device: value.host_device,
             tws_status: value.tws_status,
