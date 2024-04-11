@@ -59,7 +59,7 @@ pub fn parse_adaptive_sound_mode_customizable_trans<'a, E: ParseError<'a>>(
                 parse_custom_trans,
             )),
             |(current_mode, custom_anc, trans_mode, anc_mode, _e, custom_trans)| {
-                let custom_anc_value = CustomANCValue::from_u8(custom_anc << 4);
+                let custom_anc_value = CustomANCValue::from_u8(custom_anc >> 4);
                 let _unk = custom_anc & 0x0F;
                 SoundMode {
                     current: current_mode,
@@ -138,15 +138,15 @@ mod test {
 
     #[test]
     fn should_parse_a3040_sound_mode() {
-        let bytes = [0x0, 0x51, 0x1, 0x1, 0x0, 0x5];
-        let output = super::parse_sound_mode::<nom::error::VerboseError<&[u8]>>(&bytes).unwrap();
+        let bytes = [0x0, 0x31, 0x1, 0x1, 0x0, 0x5];
+        let output = parse_sound_mode::<nom::error::VerboseError<&[u8]>>(&bytes).unwrap();
 
         assert_eq!(
             SoundMode {
                 current: CurrentSoundMode::ANC,
                 anc_mode: ANCMode::Adaptive(AdaptiveANCMode::Adaptive),
                 trans_mode: TransparencyMode::Customizable(CustomizableTransparencyMode::Custom),
-                custom_anc: CustomANCValue(0xA),
+                custom_anc: CustomANCValue(0x3),
                 custom_trans: Some(CustomTransparencyValue(0x5)),
             },
             output.1
@@ -154,14 +154,35 @@ mod test {
     }
 
     #[test]
+    fn should_handle_variable_a3040_custom_values() {
+        for i in 0..=5 {
+            let bytes = [0x0, (i << 4) | 0x01, 0x1, 0x1, 0, i];
+            let output = parse_sound_mode::<nom::error::VerboseError<&[u8]>>(&bytes).unwrap();
+
+            assert_eq!(
+                SoundMode {
+                    current: CurrentSoundMode::ANC,
+                    anc_mode: ANCMode::Adaptive(AdaptiveANCMode::Adaptive),
+                    trans_mode: TransparencyMode::Customizable(
+                        CustomizableTransparencyMode::Custom
+                    ),
+                    custom_anc: CustomANCValue(i),
+                    custom_trans: Some(CustomTransparencyValue(i)),
+                },
+                output.1
+            );
+        }
+    }
+
+    #[test]
     fn should_parse_a3951_sound_mode() {
-        let bytes = [0x00, 0x01, 0x01, 0x06];
-        let output = super::parse_sound_mode::<nom::error::VerboseError<&[u8]>>(&bytes).unwrap();
+        let bytes = [0x00, 0x01, 0x01, 0x03];
+        let output = parse_sound_mode::<nom::error::VerboseError<&[u8]>>(&bytes).unwrap();
         assert_eq!(
             SoundMode {
                 current: CurrentSoundMode::ANC,
                 anc_mode: ANCMode::SceneBased(SceneBasedANCMode::Outdoor),
-                custom_anc: CustomANCValue(0x6),
+                custom_anc: CustomANCValue(0x3),
                 custom_trans: None,
                 trans_mode: TransparencyMode::NonCustomizable(
                     NonCustomizableTransparencyMode::Vocal
@@ -169,5 +190,25 @@ mod test {
             },
             output.1
         );
+    }
+
+    #[test]
+    fn should_handle_variable_a3951_custom_values() {
+        for i in 0..=5 {
+            let bytes = [0x00, 0x01, 0x01, i];
+            let output = parse_sound_mode::<nom::error::VerboseError<&[u8]>>(&bytes).unwrap();
+            assert_eq!(
+                SoundMode {
+                    current: CurrentSoundMode::ANC,
+                    anc_mode: ANCMode::SceneBased(SceneBasedANCMode::Outdoor),
+                    custom_anc: CustomANCValue(i),
+                    custom_trans: None,
+                    trans_mode: TransparencyMode::NonCustomizable(
+                        NonCustomizableTransparencyMode::Vocal
+                    ),
+                },
+                output.1
+            );
+        }
     }
 }
