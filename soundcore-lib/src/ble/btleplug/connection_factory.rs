@@ -1,5 +1,5 @@
 use async_trait::async_trait;
-use btleplug::api::{Central, Manager as _, Peripheral as _};
+use btleplug::api::{Central, Peripheral as _};
 use btleplug::platform::{Adapter, Manager, Peripheral};
 
 use crate::ble::{BLEConnectionFactory, BLEDeviceDescriptor};

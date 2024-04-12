@@ -1,4 +1,4 @@
-use log::{error, warn};
+use log::error;
 use nom::error::VerboseError;
 
 pub use info::*;
@@ -17,7 +17,7 @@ pub enum ResponsePacket {
     DeviceState(TaggedData<DeviceStateResponse>),
     SoundModeUpdate(SoundModeUpdateResponse),
     DeviceInfo(DeviceInfoResponse),
-    Unknown
+    Unknown,
 }
 
 pub trait StateTransformationPacket {
@@ -44,7 +44,7 @@ impl ResponsePacket {
                     packet_header.kind, bytes
                 );
                 ResponsePacket::Unknown
-            },
+            }
         })
     }
 
@@ -58,7 +58,7 @@ impl ResponsePacket {
             ResponsePacketKind::StateUpdate => {
                 let tagged_state_resp = parse_state_update_packet(bytes)?.1;
                 let state = ResponsePacket::DeviceState(TaggedData {
-                    tag: tagged_state_resp.tag.clone(),
+                    tag: tagged_state_resp.tag,
                     data: tagged_state_resp.data,
                 })
                 .transform_state(&SoundcoreDeviceState::default());
@@ -83,7 +83,7 @@ impl StateTransformationPacket for ResponsePacket {
         match self {
             ResponsePacket::SoundModeUpdate(sound_mode_update) => {
                 sound_mode_update.transform_state(state)
-            },
+            }
             ResponsePacket::DeviceState(state_update) => state_update.data.transform_state(state),
             // No-op
             _ => state.clone(),

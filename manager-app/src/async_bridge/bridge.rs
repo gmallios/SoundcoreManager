@@ -1,10 +1,9 @@
 use std::sync::Arc;
 
 use log::{debug, info, trace};
-use tauri::AppHandle;
+
 use tokio::sync::{mpsc, Mutex};
 
-use soundcore_lib::device::SoundcoreBLEDevice;
 use soundcore_lib::{
     ble::BLEConnectionManager,
     device_manager::{create_device_manager, DeviceManager},
@@ -138,7 +137,7 @@ async fn handle_command<B: BLEConnectionManager>(
                 .manager
                 .get_device(payload.addr)
                 .await;
-            
+
             if let Some(device) = device {
                 trace!("Setting sound mode for {:?}", addr_clone);
                 let res = device.set_sound_mode(payload.sound_mode).await;

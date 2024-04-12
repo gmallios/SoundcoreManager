@@ -2,11 +2,11 @@ use std::{str::FromStr, time::Duration};
 
 use async_trait::async_trait;
 
+use crate::btaddr::BluetoothAdrr;
 use crate::{
     ble::{BLEDeviceDescriptor, BLEDeviceScanner},
     error::SoundcoreLibResult,
 };
-use crate::btaddr::BluetoothAdrr;
 
 pub struct MockBLEScanner;
 
@@ -14,7 +14,7 @@ pub struct MockBLEScanner;
 impl BLEDeviceScanner for MockBLEScanner {
     async fn scan(
         &self,
-        duration: Option<Duration>,
+        _duration: Option<Duration>,
     ) -> SoundcoreLibResult<Vec<BLEDeviceDescriptor>> {
         let descriptor = BLEDeviceDescriptor {
             addr: BluetoothAdrr::from_str("00:11:22:33:44:55").unwrap(),

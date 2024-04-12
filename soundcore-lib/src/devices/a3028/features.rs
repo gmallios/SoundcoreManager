@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use crate::api::{DeviceFeatureSet, EqualizerFeatures, FeatureFlags, SoundModeFeatures};
+use crate::api::{DeviceFeatureSet, EqualizerFeatures, SoundModeFeatures};
 
 pub fn a3028_features() -> DeviceFeatureSet {
     DeviceFeatureSet {

@@ -1,28 +1,23 @@
-use std::num::NonZeroUsize;
-
-use enumflags2::{make_bitflags, BitFlags};
-use nom::{bits, combinator::all_consuming, error::context, sequence::tuple};
 use nom::{bytes::complete::take, number::complete::le_u8};
+use nom::{error::context, sequence::tuple};
 use serde::{Deserialize, Serialize};
 
 use crate::devices::a3040_features;
 use crate::models::{
-    A3040ButtonModel, ButtonModel, EQConfiguration, PromptLanguage, SoundMode,
-    StereoEQConfiguration, TwsStatus,
+    A3040ButtonModel, ButtonModel, PromptLanguage, SoundMode, StereoEQConfiguration, TwsStatus,
 };
 use crate::packets::DeviceStateResponse;
 use crate::parsers::{
     bool_parser, parse_a3040_button_model, parse_adaptive_sound_mode_customizable_trans,
-    parse_auto_power_off_on, parse_fw, parse_hearing_protect, parse_mono_eq, parse_prompt_language,
-    parse_single_battery, parse_sound_mode, parse_stereo_eq, parse_stereo_eq_configuration,
-    u8_parser, TaggedData, TaggedParseResult,
+    parse_auto_power_off_on, parse_fw, parse_hearing_protect, parse_prompt_language,
+    parse_single_battery, parse_stereo_eq_configuration, u8_parser, TaggedData, TaggedParseResult,
 };
 use crate::types::SupportedModels;
 use crate::{
     models::{
         AmbientSoundNotice, AutoPowerOff, BassUp, DeviceColor, FirmwareVer, HearingProtect,
-        InEarBeep, PowerOnBatteryNotice, SerialNumber, SingleBattery, SoundcoreFeatureFlags,
-        SupportTwoCnn, ThreeDimensionalEffect, TouchTone, WearDetection, LDAC,
+        InEarBeep, PowerOnBatteryNotice, SerialNumber, SingleBattery, SupportTwoCnn,
+        ThreeDimensionalEffect, TouchTone, WearDetection, LDAC,
     },
     parsers::{parse_serial_number, ParseError},
 };
@@ -132,7 +127,7 @@ pub fn parse_a3040_state_response<'a, E: ParseError<'a>>(
                 },
             },
         ))
-    })(&bytes)
+    })(bytes)
 }
 
 impl From<A3040StateResponse> for DeviceStateResponse {

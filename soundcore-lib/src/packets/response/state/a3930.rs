@@ -1,4 +1,3 @@
-use enumflags2::{make_bitflags, BitFlags};
 use nom::{
     combinator::{all_consuming, opt},
     error::context,
@@ -8,11 +7,12 @@ use nom::{
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    devices::a3930_features, models::{
-        A3909ButtonModel, AgeRange, Battery, ButtonModel, CustomHearID, DualBattery,
-        EQConfiguration, Gender, HearID, SideTone, SoundMode, SoundcoreFeatureFlags,
-        StereoEQConfiguration, TwsStatus,
-    }, parsers::u8_parser
+    devices::a3930_features,
+    models::{
+        A3909ButtonModel, AgeRange, Battery, ButtonModel, CustomHearID, DualBattery, Gender,
+        HearID, SideTone, SoundMode, StereoEQConfiguration, TwsStatus,
+    },
+    parsers::u8_parser,
 };
 
 use crate::parsers::{
@@ -38,7 +38,6 @@ pub struct A3930StateResponse {
     pub hear_id_has_custom_data: bool,
     pub hear_id_eq_index: Option<(u8, u8)>, // TODO: Parse this correctly
 }
-
 
 impl From<A3930StateResponse> for DeviceStateResponse {
     fn from(value: A3930StateResponse) -> Self {

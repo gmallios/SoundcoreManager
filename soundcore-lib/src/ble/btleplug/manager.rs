@@ -15,8 +15,8 @@ use weak_table::WeakValueHashMap;
 
 use crate::ble::btleplug::connection::BtlePlugConnection;
 use crate::ble::{
-    BLEConnectionFactory, BLEConnectionManager, BLEConnectionUuidSet, BLEDeviceDescriptor,
-    BLEAdapterEvent, BLEDeviceScanner,
+    BLEAdapterEvent, BLEConnectionFactory, BLEConnectionManager, BLEConnectionUuidSet,
+    BLEDeviceDescriptor, BLEDeviceScanner,
 };
 use crate::btaddr::BluetoothAdrr;
 use crate::error::{SoundcoreLibError, SoundcoreLibResult};
@@ -107,7 +107,7 @@ impl BLEConnectionManager for BtlePlugBLEManager {
             let mut adapter_events = adapter.events().await.unwrap();
             tokio::spawn(async move {
                 while let Some(evt) = adapter_events.next().await {
-                 let event: Option<BLEAdapterEvent> = evt.try_into().ok();
+                    let event: Option<BLEAdapterEvent> = evt.try_into().ok();
                     if let Some(event) = event {
                         tx_clone.send(event).await.unwrap();
                     }
@@ -118,14 +118,17 @@ impl BLEConnectionManager for BtlePlugBLEManager {
     }
 }
 
-
 impl TryInto<BLEAdapterEvent> for CentralEvent {
     type Error = SoundcoreLibError;
 
     fn try_into(self) -> Result<BLEAdapterEvent, Self::Error> {
         match self {
-            CentralEvent::DeviceDisconnected(id) => Ok(BLEAdapterEvent::DeviceDisconnected(id.try_into()?)),
-            CentralEvent::DeviceConnected(id) => Ok(BLEAdapterEvent::DeviceConnected(id.try_into()?)),
+            CentralEvent::DeviceDisconnected(id) => {
+                Ok(BLEAdapterEvent::DeviceDisconnected(id.try_into()?))
+            }
+            CentralEvent::DeviceConnected(id) => {
+                Ok(BLEAdapterEvent::DeviceConnected(id.try_into()?))
+            }
             _ => {
                 warn!("Unhandled CentralEvent: {:?}", self);
                 Err(SoundcoreLibError::Unknown)

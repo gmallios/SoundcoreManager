@@ -1,5 +1,5 @@
-use serde::{Serialize, Deserialize};
 use derive_more::From;
+use serde::{Deserialize, Serialize};
 
 /// This u8 is a char which based on it fetches the apropriate image for the device (Reference: OtaBaseActivity/renderProductIcon).
 /// Perhaps this can be internally mapped to our product images.

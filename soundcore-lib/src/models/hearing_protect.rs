@@ -1,5 +1,5 @@
-use serde::{Serialize, Deserialize};
 use derive_more::From;
+use serde::{Deserialize, Serialize};
 
 #[derive(
     Debug, Serialize, Deserialize, Eq, PartialEq, Ord, PartialOrd, Clone, Copy, Default, Hash, From,

@@ -4,19 +4,19 @@ use typeshare::typeshare;
 
 #[repr(u8)]
 #[derive(
-Debug,
-Serialize,
-Deserialize,
-Eq,
-PartialEq,
-Ord,
-PartialOrd,
-Clone,
-Copy,
-Default,
-FromRepr,
-Display,
-Hash,
+    Debug,
+    Serialize,
+    Deserialize,
+    Eq,
+    PartialEq,
+    Ord,
+    PartialOrd,
+    Clone,
+    Copy,
+    Default,
+    FromRepr,
+    Display,
+    Hash,
 )]
 #[typeshare]
 pub enum AdaptiveANCMode {

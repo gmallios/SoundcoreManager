@@ -1,12 +1,12 @@
 use nom::{combinator::map, error::context};
 use serde::{Deserialize, Serialize};
 
+use crate::api::SoundcoreDeviceState;
+use crate::packets::StateTransformationPacket;
 use crate::{
     models::SoundMode,
     parsers::{parse_sound_mode, ParseError, ParseResult},
 };
-use crate::api::SoundcoreDeviceState;
-use crate::packets::StateTransformationPacket;
 
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq, Hash)]
 pub struct SoundModeUpdateResponse(pub SoundMode);

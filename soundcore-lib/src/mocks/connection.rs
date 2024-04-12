@@ -13,6 +13,12 @@ pub struct MockBLEConnection {
     read_channel_loop: Mutex<Option<tokio::sync::mpsc::Receiver<Vec<u8>>>>,
 }
 
+impl Default for MockBLEConnection {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl MockBLEConnection {
     pub fn new() -> Self {
         MockBLEConnection {
@@ -45,7 +51,7 @@ impl BLEConnection for MockBLEConnection {
         Ok(self.read_channel_loop.lock().await.take().unwrap())
     }
 
-    async fn write(&self, bytes: &[u8], write_type: WriteType) -> SoundcoreLibResult<()> {
+    async fn write(&self, _bytes: &[u8], _write_type: WriteType) -> SoundcoreLibResult<()> {
         // TODO: Implement it, no-op for now
         Ok(())
     }

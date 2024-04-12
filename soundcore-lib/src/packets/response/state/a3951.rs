@@ -1,4 +1,3 @@
-use enumflags2::{make_bitflags, BitFlags};
 use nom::{
     combinator::{all_consuming, opt},
     error::context,
@@ -8,17 +7,17 @@ use nom::{
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    devices::a3951_features, models::{
-        A3909ButtonModel, AgeRange, Battery, ButtonModel, CustomHearID, DualBattery,
-        EQConfiguration, Gender, HearID, SideTone, SoundMode, SoundcoreFeatureFlags,
-        StereoEQConfiguration, TouchTone, TwsStatus, WearDetection,
-    }, parsers::u8_parser
+    devices::a3951_features,
+    models::{
+        A3909ButtonModel, AgeRange, Battery, ButtonModel, CustomHearID, DualBattery, Gender,
+        HearID, SideTone, SoundMode, StereoEQConfiguration, TouchTone, TwsStatus, WearDetection,
+    },
+    parsers::u8_parser,
 };
 
 use crate::parsers::{
     bool_parser, parse_a3909_button_model, parse_custom_hear_id, parse_dual_battery, parse_gender,
-    parse_sound_mode, parse_stereo_eq_configuration, ParseError, TaggedData,
-    TaggedParseResult,
+    parse_sound_mode, parse_stereo_eq_configuration, ParseError, TaggedData, TaggedParseResult,
 };
 use crate::types::SupportedModels;
 
@@ -41,8 +40,6 @@ pub struct A3951StateResponse {
     pub hearid_eq_preset: Option<u16>,
     pub new_battery: Option<(u8, u8)>,
 }
-
-
 
 impl From<A3951StateResponse> for DeviceStateResponse {
     fn from(value: A3951StateResponse) -> Self {
@@ -135,7 +132,6 @@ pub fn parse_a3951_state_response<'a, E: ParseError<'a>>(
 
 #[cfg(test)]
 mod a3951_state {
-    use super::*;
 
     const RESP_BYTES: [u8; 86] = [
         1, 1, 5, 5, 1, 0, 254, 254, 160, 150, 130, 120, 120, 120, 120, 120, 160, 150, 130, 120,

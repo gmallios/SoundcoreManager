@@ -32,9 +32,12 @@ impl MonoEQ {
         }
     }
 
-
     pub fn to_bytes(&self, bands: usize) -> Vec<u8> {
-        self.values.iter().take(bands).map(|&v| Self::to_byte(&v)).collect()
+        self.values
+            .iter()
+            .take(bands)
+            .map(|&v| Self::to_byte(&v))
+            .collect()
     }
 
     pub fn from_signed_bytes(bytes: Vec<i8>) -> Self {
@@ -75,10 +78,11 @@ impl MonoEQ {
         (value * 10.0).clamp(Self::MIN_FLOAT, Self::MAX_FLOAT) as u8
     }
 
-
     /* Input should be clamped to -120..=120 then converted to the range 0..=240 */
     fn from_signed(value: &i8) -> u8 {
-        value.clamp(&Self::MIN_SIGNED, &Self::MAX_SIGNED).wrapping_add(Self::MIN_SIGNED.abs()) as u8
+        value
+            .clamp(&Self::MIN_SIGNED, &Self::MAX_SIGNED)
+            .wrapping_add(Self::MIN_SIGNED.abs()) as u8
     }
 
     fn to_signed(value: u8) -> i8 {
@@ -86,14 +90,16 @@ impl MonoEQ {
     }
 }
 
-
 #[cfg(test)]
 mod eq_model {
     #[test]
     fn from_signed_check() {
-        let signed_values = vec![-120, -100, -80, -60, -40, -20, 0, 20, 40, 60, 80, 100, 120];
+        let signed_values = [-120, -100, -80, -60, -40, -20, 0, 20, 40, 60, 80, 100, 120];
         let expected_values = vec![0, 20, 40, 60, 80, 100, 120, 140, 160, 180, 200, 220, 240];
-        let actual_values: Vec<u8> = signed_values.iter().map(super::MonoEQ::from_signed).collect();
+        let actual_values: Vec<u8> = signed_values
+            .iter()
+            .map(super::MonoEQ::from_signed)
+            .collect();
         assert_eq!(expected_values, actual_values);
     }
 }

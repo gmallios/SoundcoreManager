@@ -1,4 +1,3 @@
-use enumflags2::BitFlags;
 use nom::{branch::alt, combinator::map, error::context};
 use serde::{Deserialize, Serialize};
 
@@ -20,8 +19,8 @@ use crate::parsers::{TaggedData, TaggedParseResult};
 use crate::{
     api::DeviceFeatureSet,
     models::{
-        AgeRange, Battery, ButtonModel, EQConfiguration, HearID, SideTone, SoundMode,
-        SoundcoreFeatureFlags, TouchTone, TwsStatus, WearDetection,
+        AgeRange, Battery, ButtonModel, EQConfiguration, HearID, SideTone, SoundMode, TouchTone,
+        TwsStatus, WearDetection,
     },
     parsers::ParseError,
 };

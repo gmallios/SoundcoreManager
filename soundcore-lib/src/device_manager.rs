@@ -2,7 +2,6 @@ use std::collections::hash_map::Entry;
 use std::collections::HashMap;
 use std::{sync::Arc, time::Duration};
 
-use crate::ble::btleplug::manager::BtlePlugBLEManager;
 use crate::ble::BLEAdapterEvent;
 #[cfg(any(test, feature = "mock"))]
 use crate::mocks::*;
@@ -16,6 +15,10 @@ use crate::{
 use serde::{Deserialize, Serialize};
 use tokio::sync::RwLock;
 use typeshare::typeshare;
+
+// TODO: Specify clippy & fmt features
+#[allow(unused_imports)]
+use crate::ble::btleplug::manager::BtlePlugBLEManager;
 
 pub struct DeviceManager<B>
 where
@@ -57,7 +60,10 @@ where
         }
     }
 
-    pub async fn get_device(&self, addr: BluetoothAdrr) -> Option<Arc<SoundcoreBLEDevice<B::Connection>>> {
+    pub async fn get_device(
+        &self,
+        addr: BluetoothAdrr,
+    ) -> Option<Arc<SoundcoreBLEDevice<B::Connection>>> {
         self.ble_devices.read().await.get(&addr).cloned()
     }
 

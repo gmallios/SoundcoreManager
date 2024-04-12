@@ -1,4 +1,3 @@
-use log::trace;
 use serde::{Deserialize, Serialize};
 use strum::{Display, FromRepr};
 use typeshare::typeshare;

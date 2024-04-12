@@ -4,7 +4,6 @@ use crate::models::{MonoEQ, StereoEQ};
 
 use super::{ParseError, ParseResult};
 
-
 pub fn parse_mono_eq<'a, E: ParseError<'a>>(
     bands: usize,
 ) -> impl Fn(&'a [u8]) -> ParseResult<MonoEQ, E> {
@@ -39,7 +38,7 @@ mod eq_parser {
         let bytes = [0x00, 0x10, 0xF0, 0x10, 0x00, 0x10, 0xF0, 0x10];
         let expected = Ok((
             &b""[..],
-            MonoEQ::from_signed_bytes(vec![-120, -104, 120, -104, -120, -104, 120, -104])
+            MonoEQ::from_signed_bytes(vec![-120, -104, 120, -104, -120, -104, 120, -104]),
         ));
         let output = parse_mono_eq::<nom::error::VerboseError<&[u8]>>(8)(&bytes);
 
@@ -56,7 +55,9 @@ mod eq_parser {
         let expected = Ok((
             &b""[..],
             StereoEQ {
-                left: MonoEQ::from_signed_bytes(vec![-120, -120, -120, -120, -120, -120, -120, -120]),
+                left: MonoEQ::from_signed_bytes(vec![
+                    -120, -120, -120, -120, -120, -120, -120, -120,
+                ]),
                 right: eq,
             },
         ));

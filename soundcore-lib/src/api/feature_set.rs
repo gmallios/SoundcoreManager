@@ -3,13 +3,13 @@ use std::sync::Arc;
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
+mod equalizer_features;
 mod flags;
 mod sound_mode_features;
-mod equalizer_features;
 
+pub use equalizer_features::*;
 pub use flags::*;
 pub use sound_mode_features::*;
-pub use equalizer_features::*;
 
 #[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq, Ord, PartialOrd, Hash)]
 #[typeshare]

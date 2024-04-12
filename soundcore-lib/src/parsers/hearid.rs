@@ -49,12 +49,12 @@ pub fn parse_custom_hear_id<'a, E: ParseError<'a>>(
                             right: r_eq,
                         }),
                     };
-                    return CustomHearID {
+                    CustomHearID {
                         base,
                         hearid_type,
                         hearid_music_type,
                         custom_values: eq,
-                    };
+                    }
                 },
             ),
         )(bytes)

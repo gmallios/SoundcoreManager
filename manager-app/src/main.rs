@@ -6,11 +6,11 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 
-use log::{info, trace};
+use log::trace;
 use mpsc::channel;
 use soundcore_lib::api::SoundcoreDeviceState;
 use soundcore_lib::btaddr::BluetoothAdrr;
-use tauri::api::notification::Notification;
+
 use tauri::async_runtime::{Mutex, RwLock};
 use tauri::{AppHandle, Manager};
 use tauri_plugin_log::LogTarget;
@@ -140,12 +140,10 @@ async fn send_bridge_command(
 fn handle_state_update<R: tauri::Runtime>(
     last_state: Option<SoundcoreDeviceState>,
     new_state: SoundcoreDeviceState,
-    app_handle: AppHandle<R>,
+    _app_handle: AppHandle<R>,
 ) {
     if let Some(last_state) = last_state {
-        if last_state == new_state {
-            return;
-        }
+        if last_state == new_state {}
         // This is a bit too verbose for now
         // TODO: Add a setting to enable/disable this
         // TODO: Improve the notification message based on the values changed

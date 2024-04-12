@@ -47,8 +47,8 @@ impl BLEConnectionManager for MockBLEConnectionManager {
 
     async fn connect(
         &self,
-        descriptor: BLEDeviceDescriptor,
-        uuid_set: Option<BLEConnectionUuidSet>,
+        _descriptor: BLEDeviceDescriptor,
+        _uuid_set: Option<BLEConnectionUuidSet>,
     ) -> SoundcoreLibResult<Arc<Self::Connection>> {
         let conn = MockBLEConnection::new_with_empty_channel();
         Ok(Arc::new(conn))

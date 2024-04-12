@@ -4,19 +4,19 @@ use typeshare::typeshare;
 
 #[repr(u8)]
 #[derive(
-Debug,
-Serialize,
-Deserialize,
-Eq,
-PartialEq,
-Ord,
-PartialOrd,
-Clone,
-Copy,
-Default,
-FromRepr,
-Display,
-Hash,
+    Debug,
+    Serialize,
+    Deserialize,
+    Eq,
+    PartialEq,
+    Ord,
+    PartialOrd,
+    Clone,
+    Copy,
+    Default,
+    FromRepr,
+    Display,
+    Hash,
 )]
 #[typeshare]
 pub enum SceneBasedANCMode {
@@ -31,7 +31,7 @@ impl SceneBasedANCMode {
     pub fn from_u8(value: u8) -> Option<Self> {
         Self::from_repr(value)
     }
-    
+
     pub fn as_u8(&self) -> u8 {
         *self as u8
     }
@@ -43,10 +43,22 @@ mod scene_based_anc_mode_tests {
 
     #[test]
     fn init_from_u8() {
-        assert_eq!(SceneBasedANCMode::from_u8(0), Some(SceneBasedANCMode::Transport));
-        assert_eq!(SceneBasedANCMode::from_u8(1), Some(SceneBasedANCMode::Outdoor));
-        assert_eq!(SceneBasedANCMode::from_u8(2), Some(SceneBasedANCMode::Indoor));
-        assert_eq!(SceneBasedANCMode::from_u8(3), Some(SceneBasedANCMode::Custom));
+        assert_eq!(
+            SceneBasedANCMode::from_u8(0),
+            Some(SceneBasedANCMode::Transport)
+        );
+        assert_eq!(
+            SceneBasedANCMode::from_u8(1),
+            Some(SceneBasedANCMode::Outdoor)
+        );
+        assert_eq!(
+            SceneBasedANCMode::from_u8(2),
+            Some(SceneBasedANCMode::Indoor)
+        );
+        assert_eq!(
+            SceneBasedANCMode::from_u8(3),
+            Some(SceneBasedANCMode::Custom)
+        );
     }
 
     #[test]

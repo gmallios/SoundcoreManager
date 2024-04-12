@@ -1,7 +1,13 @@
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
-use crate::{api::DeviceFeatureSet, models::{AgeRange, Battery, ButtonModel, CustomHearID, EQConfiguration, FirmwareVer, HearID, SerialNumber, SideTone, SoundMode, SoundcoreFeatureFlags, TwsStatus, WearDetection}};
+use crate::{
+    api::DeviceFeatureSet,
+    models::{
+        AgeRange, Battery, ButtonModel, EQConfiguration, FirmwareVer, HearID, SerialNumber,
+        SideTone, SoundMode, TwsStatus, WearDetection,
+    },
+};
 
 /// This is a generalized version of the state for all devices
 #[derive(Debug, Serialize, Deserialize, Eq, PartialEq, Clone, Hash, Default)]
@@ -23,4 +29,3 @@ pub struct SoundcoreDeviceState {
     pub hear_id: Option<HearID>,
     pub age_range: Option<AgeRange>,
 }
-

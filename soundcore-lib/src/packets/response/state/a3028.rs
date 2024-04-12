@@ -1,14 +1,15 @@
-use enumflags2::{make_bitflags, BitFlags};
 use nom::{combinator::all_consuming, error::context, sequence::tuple};
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    devices::a3028_features, models::{
-        AgeRange, BaseHearID, DeviceFirmware, EQConfiguration, Gender, HearID, SerialNumber,
-        SingleBattery, SoundMode, SoundcoreFeatureFlags, StereoEQConfiguration, TwsStatus,
-    }, parsers::{
+    devices::a3028_features,
+    models::{
+        AgeRange, BaseHearID, DeviceFirmware, Gender, HearID, SerialNumber, SingleBattery,
+        SoundMode, StereoEQConfiguration, TwsStatus,
+    },
+    parsers::{
         parse_base_hear_id, parse_dual_fw, parse_serial_number, parse_single_battery, u8_parser,
-    }
+    },
 };
 
 use crate::parsers::{

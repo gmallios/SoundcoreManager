@@ -1,6 +1,9 @@
 use async_trait::async_trait;
 
-use crate::{ble::{BLEConnectionFactory, BLEConnectionUuidSet, BLEDeviceDescriptor}, error::SoundcoreLibResult};
+use crate::{
+    ble::{BLEConnectionFactory, BLEConnectionUuidSet, BLEDeviceDescriptor},
+    error::SoundcoreLibResult,
+};
 
 use super::MockBLEConnection;
 
@@ -12,8 +15,8 @@ impl BLEConnectionFactory for MockBLEConnectionFactory {
 
     async fn connect(
         &self,
-        descriptor: BLEDeviceDescriptor,
-        uuid_set: Option<BLEConnectionUuidSet>,
+        _descriptor: BLEDeviceDescriptor,
+        _uuid_set: Option<BLEConnectionUuidSet>,
     ) -> SoundcoreLibResult<Self::Connection> {
         unimplemented!()
     }

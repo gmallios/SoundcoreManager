@@ -3,8 +3,6 @@ use serde::{Deserialize, Serialize};
 use strum::EnumString;
 use typeshare::typeshare;
 
-use crate::error::SoundcoreLibError;
-
 #[derive(
     Debug, Serialize, Deserialize, Clone, Copy, Eq, PartialEq, Ord, PartialOrd, Hash, EnumString,
 )]

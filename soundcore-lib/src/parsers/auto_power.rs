@@ -10,7 +10,10 @@ pub fn parse_auto_power_off_on<'a, E: ParseError<'a>>(
     context(
         "parse_auto_power_off_on",
         map(tuple((parse_bool, le_u8)), |(enabled, index)| {
-            AutoPowerOff { enabled, index: index.clamp(0, 3) }
+            AutoPowerOff {
+                enabled,
+                index: index.clamp(0, 3),
+            }
         }),
     )(bytes)
 }

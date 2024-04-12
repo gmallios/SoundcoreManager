@@ -32,7 +32,9 @@ pub trait BLEConnectionManager {
         uuid_set: Option<BLEConnectionUuidSet>,
     ) -> SoundcoreLibResult<Arc<Self::Connection>>;
 
-    async fn adapter_events(&self) -> SoundcoreLibResult<tokio::sync::mpsc::Receiver<BLEAdapterEvent>>;
+    async fn adapter_events(
+        &self,
+    ) -> SoundcoreLibResult<tokio::sync::mpsc::Receiver<BLEAdapterEvent>>;
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -42,7 +44,6 @@ pub enum BLEAdapterEvent {
     DeviceConnected(BluetoothAdrr),
     DeviceDisconnected(BluetoothAdrr),
 }
-
 
 #[async_trait]
 pub trait BLEConnection {
@@ -112,7 +113,6 @@ pub struct BLEConnectionUuidSet {
     pub write_uuid: uuid::Uuid,
 }
 
-
 #[cfg(all(target_os = "windows", feature = "winrt-backend"))]
 impl From<WriteType> for ::windows::Devices::Bluetooth::GenericAttributeProfile::GattWriteOption {
     fn from(val: WriteType) -> Self {
@@ -122,5 +122,3 @@ impl From<WriteType> for ::windows::Devices::Bluetooth::GenericAttributeProfile:
         }
     }
 }
-
-
