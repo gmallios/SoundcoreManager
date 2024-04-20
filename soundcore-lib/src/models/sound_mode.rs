@@ -31,7 +31,7 @@ impl SoundMode {
     pub fn to_bytes_with_custom_transparency(&self) -> [u8; 6] {
         [
             self.current.as_u8(),
-            (self.custom_anc.as_u8() << 4) | 0x01, // TODO: 0x01 mask is unknown if it is constant
+            (self.custom_anc.as_u8() << 4) | 0x01, // TODO: 0x01 is the bit for auto ANC, some new devices support it
             self.trans_mode.as_u8(),
             self.anc_mode.as_u8(),
             0x00,
