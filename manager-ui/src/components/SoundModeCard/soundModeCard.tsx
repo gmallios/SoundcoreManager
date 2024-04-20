@@ -1,10 +1,10 @@
-import { Button, Collapse, Grid, Icon, Paper, Stack, styled } from '@mui/material';
+import { Button, Collapse, Grid, Icon, Paper, Slider, Stack, styled } from '@mui/material';
 import { useSoundcoreStore } from '@stores/useSoundcoreStore';
 import ANCIcon from '@assets/ambient_icon_anc.png';
 import NormalIcon from '@assets/ambient_icon_off.png';
 import TransIcon from '@assets/ambient_icon_trans.png';
 import React, { useCallback, useEffect, useState } from 'react';
-import { CurrentSoundMode, SoundMode, SoundcoreDeviceState } from '@generated-types/soundcore-lib';
+import { CurrentSoundMode, SoundcoreDeviceState, SoundMode } from '@generated-types/soundcore-lib';
 import { useUpdateDeviceSoundMode } from '@hooks/useDeviceCommand';
 
 export interface SoundModeCardProps {
@@ -15,7 +15,9 @@ export const SoundModeCard = ({ state }: SoundModeCardProps): JSX.Element => {
   const soundModeState = state.soundMode;
   const ancFeatures = state.featureSet.soundModeFeatures?.allowedAncModes;
   const transparencyFeatures = state.featureSet.soundModeFeatures?.allowedTransparencyModes;
-  const hasNormalMode = state.featureSet.soundModeFeatures?.hasNormalMode;
+  const hasNormalMode = state.featureSet.soundModeFeatures?.hasNormal;
+  const maxCustomAncValue = state.featureSet.soundModeFeatures?.maxCustomAnc;
+  const maxCustomTransValue = state.featureSet.soundModeFeatures?.maxCustomTransparency;
   const deviceAddr = useSoundcoreStore((state) => state.currentViewedDevice);
 
   if (!soundModeState || !deviceAddr || !ancFeatures || !transparencyFeatures || !hasNormalMode) {
@@ -71,10 +73,6 @@ export const SoundModeCard = ({ state }: SoundModeCardProps): JSX.Element => {
     setIcon(mapPositionToIcon(mapModeToPosition(soundModeState.current)));
   }, [soundModeState]);
 
-  useEffect(() => {
-    console.log('selectedSoundMode', selectedSoundMode);
-  }, [selectedSoundMode]);
-
   const [icon, setIcon] = useState<string>(
     mapPositionToIcon(mapModeToPosition(selectedSoundMode.current))
   );
@@ -90,15 +88,39 @@ export const SoundModeCard = ({ state }: SoundModeCardProps): JSX.Element => {
       return 0;
     });
 
-  const currentSoundModeKey = mapModeToCurrentSoundModeKey(selectedSoundMode.current);
-  let currentSubValue = '';
-  let currentSoundModeType: string;
-  let hasCustomValueSlider: boolean = false;
+  const handleCustomValueChange = (value: number) => {
+    if (selectedSoundMode.current === CurrentSoundMode.ANC) {
+      useUpdateDeviceSoundMode(deviceAddr, {
+        ...selectedSoundMode,
+        customAnc: value
+      });
+    } else if (selectedSoundMode.current === CurrentSoundMode.Transparency) {
+      useUpdateDeviceSoundMode(deviceAddr, {
+        ...selectedSoundMode,
+        customTrans: value
+      });
+    }
+  };
 
-  if (currentSoundModeKey) {
-    currentSubValue = selectedSoundMode[currentSoundModeKey].value as string;
-    currentSoundModeType = selectedSoundMode[currentSoundModeKey].type;
-    hasCustomValueSlider = currentSoundModeType?.toLowerCase() === 'custom';
+  const currentNonNormalSoundModeKey = mapModeToCurrentSoundModeKey(selectedSoundMode.current);
+  let currentSubValue = '';
+  let currentCustomAncOrTransValue = 0;
+  let maxCustomSliderValue = 0;
+  let currentSoundModeType: string;
+  let isCustomSoundModeSelected: boolean = false;
+
+  if (currentNonNormalSoundModeKey) {
+    currentSubValue = selectedSoundMode[currentNonNormalSoundModeKey].value as string;
+    currentSoundModeType = selectedSoundMode[currentNonNormalSoundModeKey].type;
+    isCustomSoundModeSelected =
+      selectedSoundMode[currentNonNormalSoundModeKey].value.toLowerCase() === 'custom';
+    if (currentNonNormalSoundModeKey === 'ancMode') {
+      currentCustomAncOrTransValue = selectedSoundMode.customAnc;
+      maxCustomSliderValue = maxCustomAncValue || 5;
+    } else if (currentNonNormalSoundModeKey === 'transMode') {
+      currentCustomAncOrTransValue = selectedSoundMode.customTrans || 0;
+      maxCustomSliderValue = maxCustomTransValue || 5;
+    }
   }
 
   return (
@@ -166,18 +188,25 @@ export const SoundModeCard = ({ state }: SoundModeCardProps): JSX.Element => {
           <ModeGroupButtons
             buttons={modeButtons}
             onClick={(value) => {
-              if (currentSoundModeKey) {
+              if (currentNonNormalSoundModeKey) {
                 useUpdateDeviceSoundMode(deviceAddr, {
                   ...selectedSoundMode,
-                  [currentSoundModeKey]: { type: currentSoundModeType, value }
+                  [currentNonNormalSoundModeKey]: { type: currentSoundModeType, value }
                 });
               }
             }}
             selectedValue={currentSubValue}
           />
         </Collapse>
-        {hasCustomValueSlider && <h1> Custom</h1>}
-        {/* <SliderSubButtons layout={layout} position={position} /> */}
+        <Collapse in={isCustomSoundModeSelected} timeout="auto">
+          <Grid item>
+            <CustomValueSlider
+              value={currentCustomAncOrTransValue}
+              maxValue={maxCustomSliderValue}
+              onChange={(v) => handleCustomValueChange(v)}
+            />
+          </Grid>
+        </Collapse>
       </Grid>
     </Paper>
   );
@@ -308,5 +337,23 @@ const SliderButton: React.FC<{
         <img src={icon} height="32" />
       </Icon>
     </SliderButtonInner>
+  );
+};
+
+const CustomValueSlider: React.FC<{
+  value: number;
+  maxValue: number;
+  onChange: (value: number) => void;
+}> = ({ value, maxValue, onChange }) => {
+  return (
+    <Slider
+      size="small"
+      value={value}
+      onChange={(_e, v) => onChange(v as number)}
+      min={0}
+      max={maxValue}
+      sx={{ mt: 2, pb: 0, width: '98%' }}
+      marks
+    />
   );
 };

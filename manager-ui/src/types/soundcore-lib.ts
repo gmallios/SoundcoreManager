@@ -49,7 +49,11 @@ export interface EqualizerFeatures {
 export interface SoundModeFeatures {
   allowedAncModes: ANCMode[];
   allowedTransparencyModes: TransparencyMode[];
-  hasNormalMode: boolean;
+  hasNormal: boolean;
+  hasCustomizableAnc: boolean;
+  hasCustomizableTransparency: boolean;
+  maxCustomAnc?: number;
+  maxCustomTransparency?: number;
 }
 
 export interface DeviceFeatureSet {
@@ -218,7 +222,7 @@ export interface StereoEQ {
 export enum EQProfile {
   SoundcoreSignature = 'SoundcoreSignature',
   Acoustic = 'Acoustic',
-  BassBoosted = 'BassBoosted',
+  BassBooster = 'BassBooster',
   BassReducer = 'BassReducer',
   Classical = 'Classical',
   Podcast = 'Podcast',
@@ -245,7 +249,8 @@ export enum EQProfile {
   Daya = 'Daya',
   CedricGervais = 'CedricGervais',
   TheInfamousStringdusters = 'TheInfamousStringdusters',
-  JohnPaulWhite = 'JohnPaulWhite'
+  JohnPaulWhite = 'JohnPaulWhite',
+  SoundcoreSignatureBassUp = 'SoundcoreSignatureBassUp'
 }
 
 export interface StereoEQConfiguration {
