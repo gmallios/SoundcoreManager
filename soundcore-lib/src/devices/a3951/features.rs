@@ -5,7 +5,7 @@ use crate::api::{DeviceFeatureSet, EqualizerFeatures, FeatureFlags, SoundModeFea
 pub fn a3951_features() -> DeviceFeatureSet {
     DeviceFeatureSet {
         sound_mode_features: Some(
-            SoundModeFeatures::adaptive_customizable_anc_customizable_transparency(),
+            SoundModeFeatures::scene_based_customizable_anc_non_customizable_transparency(),
         ),
         equalizer_features: Some(EqualizerFeatures {
             bands: 8,
