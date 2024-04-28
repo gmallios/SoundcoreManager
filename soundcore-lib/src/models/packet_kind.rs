@@ -6,6 +6,9 @@ pub enum ResponsePacketKind {
     /* Packets which *should* update the state in some way */
     StateUpdate,
     InfoUpdate,
+    ThreeDimensionalEffectUpdate,
+    BassUpUpdate,
+    EqInfoUpdate,
     SoundModeUpdate,
     BattLevelUpdate,
     BattChargingUpdate,
@@ -19,10 +22,16 @@ pub enum ResponsePacketKind {
 
 /* We can use Generic Arg Infer "#![feature(generic_arg_infer)]" once https://github.com/rust-lang/rust/issues/85077 is stabilized */
 /* This also could be dynamically be created, since the bytes match the command id bytes */
-pub const PACKET_KIND_MAP: [(&[u8; 2], ResponsePacketKind); 10] = [
+pub const PACKET_KIND_MAP: [(&[u8; 2], ResponsePacketKind); 13] = [
     (&[0xFF, 0xFF], ResponsePacketKind::Unknown),
     /* Updates */
     (&[0x01, 0x01], ResponsePacketKind::StateUpdate),
+    (&[0x02, 0x01], ResponsePacketKind::EqInfoUpdate),
+    (&[0x02, 0x04], ResponsePacketKind::BassUpUpdate),
+    (
+        &[0x02, 0x06],
+        ResponsePacketKind::ThreeDimensionalEffectUpdate,
+    ),
     (&[0x01, 0x03], ResponsePacketKind::BattLevelUpdate),
     (&[0x01, 0x04], ResponsePacketKind::BattChargingUpdate),
     (&[0x01, 0x05], ResponsePacketKind::InfoUpdate),

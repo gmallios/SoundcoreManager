@@ -1,10 +1,6 @@
 use log::error;
 use nom::error::VerboseError;
 
-pub use info::*;
-pub use sound_mode::*;
-pub use state::*;
-
 use crate::api::SoundcoreDeviceState;
 use crate::parsers::TaggedData;
 use crate::{
@@ -12,11 +8,23 @@ use crate::{
     parsers::{parse_and_check_checksum, parse_packet_header},
 };
 
+mod battery;
+mod info;
+mod sound_mode;
+mod state;
+mod bass_up;
+
+pub use info::*;
+pub use sound_mode::*;
+pub use state::*;
+pub use bass_up::*;
+
 #[derive(Debug)]
 pub enum ResponsePacket {
     DeviceState(TaggedData<DeviceStateResponse>),
     SoundModeUpdate(SoundModeUpdateResponse),
     DeviceInfo(DeviceInfoResponse),
+    BassUpUpdate(BassUpUpdateResponse),
     Unknown,
 }
 
@@ -37,6 +45,7 @@ impl ResponsePacket {
                 Self::SoundModeUpdate(parse_sound_mode_update_packet(bytes)?.1)
             }
             ResponsePacketKind::InfoUpdate => Self::DeviceInfo(parse_device_info_packet(bytes)?.1),
+            ResponsePacketKind::BassUpUpdate => Self::BassUpUpdate(parse_bass_up_update(bytes)?.1),
             _ => {
                 // TODO: Have an array of Acks and handle those properly
                 error!(
@@ -85,16 +94,12 @@ impl StateTransformationPacket for ResponsePacket {
                 sound_mode_update.transform_state(state)
             }
             ResponsePacket::DeviceState(state_update) => state_update.data.transform_state(state),
+            ResponsePacket::BassUpUpdate(packet) => packet.transform_state(state),
             // No-op
             _ => state.clone(),
         }
     }
 }
-
-mod battery;
-mod info;
-mod sound_mode;
-mod state;
 
 #[cfg(test)]
 mod response_test {
