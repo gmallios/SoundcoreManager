@@ -114,6 +114,19 @@ impl From<DeviceStateResponse> for SoundcoreDeviceState {
             wear_detection: value.wear_detection,
             hear_id: value.hear_id,
             age_range: value.age_range,
+            touch_tone: value.touch_tone,
+            bass_up: value.bass_up,
+            auto_power_off: value.auto_power_off,
+            support_two_cnn: value.support_two_cnn,
+            in_ear_beep: value.in_ear_beep,
+            ambient_sound_notice: value.ambient_sound_notice,
+            power_on_battery_notice: value.power_on_battery_notice,
+            three_dimensional_effect: value.three_dimensional_effect,
+            device_color: value.device_color,
+            ldac: value.ldac,
+            prompt_language: value.prompt_language,
+            hearing_protect: value.hearing_protect,
+            hear_id_has_data: value.hear_id_has_data,
         }
     }
 }
