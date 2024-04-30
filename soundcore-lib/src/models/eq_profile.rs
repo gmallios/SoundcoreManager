@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use strum::{Display, EnumIter, EnumString, FromRepr};
+use strum::{Display, EnumCount, EnumIter, EnumString, FromRepr};
 use typeshare::typeshare;
 
 use super::MonoEQ;
@@ -20,6 +20,7 @@ use super::MonoEQ;
     Serialize,
     Deserialize,
     EnumString,
+    EnumCount,
     Default,
 )]
 #[typeshare]

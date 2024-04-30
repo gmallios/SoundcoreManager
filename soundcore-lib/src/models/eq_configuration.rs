@@ -10,6 +10,15 @@ pub enum EQConfiguration {
     Mono(MonoEQConfiguration),
 }
 
+impl EQConfiguration {
+    pub fn set_profile(&mut self, profile: EQProfile) {
+        match self {
+            EQConfiguration::Stereo(config) => config.profile = profile,
+            EQConfiguration::Mono(config) => config.profile = profile,
+        }
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize, Eq, PartialEq, Ord, PartialOrd, Clone, Hash, Default)]
 #[typeshare]
 pub struct StereoEQConfiguration {
@@ -41,3 +50,4 @@ impl From<MonoEQConfiguration> for EQConfiguration {
         EQConfiguration::Mono(config)
     }
 }
+

@@ -11,10 +11,12 @@ use crate::{
     parsers::{parse_and_check_checksum, parse_packet_header},
 };
 use crate::api::SoundcoreDeviceState;
+use crate::packets::response::eq_info_update::{EqInfoUpdate, parse_eq_info_update};
 use crate::parsers::TaggedData;
 
 mod bass_up;
 mod battery;
+mod eq_info_update;
 mod info;
 mod sound_mode;
 mod state;
@@ -25,6 +27,7 @@ pub enum ResponsePacket {
     SoundModeUpdate(SoundModeUpdateResponse),
     DeviceInfo(DeviceInfoResponse),
     BassUpUpdate(BassUpUpdateResponse),
+    EqInfoUpdate(EqInfoUpdate),
     Unknown,
 }
 
@@ -46,6 +49,7 @@ impl ResponsePacket {
             }
             ResponsePacketKind::InfoUpdate => Self::DeviceInfo(parse_device_info_packet(bytes)?.1),
             ResponsePacketKind::BassUpUpdate => Self::BassUpUpdate(parse_bass_up_update(bytes)?.1),
+            ResponsePacketKind::EqInfoUpdate => Self::EqInfoUpdate(parse_eq_info_update(bytes)?.1),
             _ => {
                 // TODO: Have an array of Acks and handle those properly
                 error!(
@@ -95,6 +99,7 @@ impl StateTransformationPacket for ResponsePacket {
             }
             ResponsePacket::DeviceState(state_update) => state_update.data.transform_state(state),
             ResponsePacket::BassUpUpdate(packet) => packet.transform_state(state),
+            ResponsePacket::EqInfoUpdate(packet) => packet.transform_state(state),
             // No-op
             _ => state.clone(),
         }
