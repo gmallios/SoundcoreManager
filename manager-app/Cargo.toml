@@ -29,10 +29,10 @@ tauri = { version = "1.2.5", features = [
     "process-command-api",
     "system-tray",
 ] }
-soundcore-lib = { workspace = true }
+soundcore-lib = { workspace = true, features = ["btleplug-backend"] }
 
 [dev-dependencies]
-soundcore-lib = { workspace = true, features = ["mock"], default-features = false}
+soundcore-lib = { workspace = true, features = ["mock"], default-features = false }
 
 [features]
 # by default Tauri runs in production mode

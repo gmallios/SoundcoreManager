@@ -1,23 +1,23 @@
 use log::error;
 use nom::error::VerboseError;
 
-use crate::api::SoundcoreDeviceState;
-use crate::parsers::TaggedData;
+pub use bass_up::*;
+pub use info::*;
+pub use sound_mode::*;
+pub use state::*;
+
 use crate::{
     models::ResponsePacketKind,
     parsers::{parse_and_check_checksum, parse_packet_header},
 };
+use crate::api::SoundcoreDeviceState;
+use crate::parsers::TaggedData;
 
+mod bass_up;
 mod battery;
 mod info;
 mod sound_mode;
 mod state;
-mod bass_up;
-
-pub use info::*;
-pub use sound_mode::*;
-pub use state::*;
-pub use bass_up::*;
 
 #[derive(Debug)]
 pub enum ResponsePacket {

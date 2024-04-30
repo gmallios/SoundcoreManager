@@ -19,13 +19,13 @@ pub fn parse_stereo_eq_configuration<'a, E: ParseError<'a>>(
             map(
                 pair(parse_eq_profile, parse_stereo_eq(eq_bands)),
                 |(profile, eq)| match profile {
-                    EQProfile::Custom => StereoEQConfiguration { profile, eq },
+                    EQProfile::Custom => StereoEQConfiguration { profile, eq},
                     _ => StereoEQConfiguration {
                         profile,
                         eq: StereoEQ {
                             left: profile.eq(),
                             right: profile.eq(),
-                        },
+                        }
                     },
                 },
             ),

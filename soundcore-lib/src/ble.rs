@@ -8,9 +8,9 @@ use typeshare::typeshare;
 use crate::btaddr::BluetoothAdrr;
 use crate::error::SoundcoreLibResult;
 
-#[cfg(feature = "btleplug-backend")]
+#[cfg(all(feature = "btleplug-backend", not(feature = "mock")))]
 pub mod btleplug;
-#[cfg(feature = "winrt-backend")]
+#[cfg(all(feature = "winrt-backend", not(feature = "mock")))]
 pub mod windows;
 
 #[async_trait]
@@ -80,12 +80,29 @@ pub trait DeviceDescriptor {
 pub struct BLEDeviceDescriptor {
     pub addr: BluetoothAdrr,
     pub name: String,
+    #[cfg(all(feature = "btleplug-backend", not(feature = "mock")))]
+    #[typeshare(skip)]
+    pub id: ::btleplug::platform::PeripheralId,
 }
 
 impl BLEDeviceDescriptor {
+    #[cfg(any(not(feature = "btleplug-backend"), feature = "mock"))]
     pub fn new(mac_addr: impl Into<BluetoothAdrr>, name: impl Into<String>) -> Self {
         Self {
             addr: mac_addr.into(),
+            name: name.into(),
+        }
+    }
+
+    #[cfg(all(feature = "btleplug-backend", not(feature = "mock")))]
+    pub fn new(
+        mac_addr: impl Into<BluetoothAdrr>,
+        id: impl Into<::btleplug::platform::PeripheralId>,
+        name: impl Into<String>,
+    ) -> Self {
+        Self {
+            addr: mac_addr.into(),
+            id: id.into(),
             name: name.into(),
         }
     }

@@ -5,7 +5,7 @@ pub mod devices;
 pub mod error;
 pub mod models;
 pub mod packets;
-mod parsers;
+pub(crate) mod parsers;
 pub mod types;
 #[allow(non_snake_case)]
 mod utils;

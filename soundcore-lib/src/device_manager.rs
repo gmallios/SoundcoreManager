@@ -18,6 +18,7 @@ use typeshare::typeshare;
 
 // TODO: Specify clippy & fmt features
 #[allow(unused_imports)]
+#[cfg(all(feature = "btleplug-backend", not(feature = "mock")))]
 use crate::ble::btleplug::manager::BtlePlugBLEManager;
 
 pub struct DeviceManager<B>

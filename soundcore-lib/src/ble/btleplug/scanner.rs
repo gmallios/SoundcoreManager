@@ -105,6 +105,7 @@ impl BtlePlugScanner {
 
         Some(BLEDeviceDescriptor::new(
             BluetoothAdrr::try_from(peripheral.address()).ok()?,
+            peripheral.id(),
             name,
         ))
     }

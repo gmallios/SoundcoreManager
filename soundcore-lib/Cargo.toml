@@ -36,6 +36,7 @@ btleplug = { version = "0.11", features = ["serde"], optional = true }
 
 [dev-dependencies]
 test_data = { path = "../test_data" }
+soundcore-lib = { path = ".", features = ["mock"], default-features = false }
 
 
 [target.'cfg(target_os = "windows")'.dependencies]

@@ -21,7 +21,7 @@ tokio = { version = "1" }
 serde = { version = "1" }
 async-trait = { version = "0.1" }
 futures = { version = "0.3" }
-soundcore-lib = { path = "./soundcore-lib" }
+soundcore-lib = { path = "./soundcore-lib", default-features = false }
 
 [profile.release]
 lto = true

@@ -28,7 +28,7 @@ pub enum EQProfile {
     #[default]
     SoundcoreSignature = 0x0000,
     Acoustic = 0x0001,
-    BassBoosted = 0x0002,
+    BassBooster = 0x0002,
     BassReducer = 0x0003,
     Classical = 0x0004,
     Podcast = 0x0005,
@@ -76,7 +76,7 @@ impl EQProfile {
         let eq: [i8; 8] = match self {
             Self::SoundcoreSignature => [0, 0, 0, 0, 0, 0, 0, 0],
             Self::Acoustic => [40, 10, 20, 20, 40, 40, 40, 20],
-            Self::BassBoosted => [40, 30, 10, 0, 0, 0, 0, 0],
+            Self::BassBooster => [40, 30, 10, 0, 0, 0, 0, 0],
             Self::BassReducer => [-40, -30, -10, 0, 0, 0, 0, 0],
             Self::Classical => [30, 30, -20, -20, 0, 20, 30, 40],
             Self::Podcast => [-30, 20, 40, 40, 30, 20, 0, -20],
