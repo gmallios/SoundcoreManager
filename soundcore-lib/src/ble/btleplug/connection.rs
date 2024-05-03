@@ -82,12 +82,13 @@ impl BtlePlugConnection {
 
         match service {
             Some(service) => {
+                trace!("Inspecting Service: {:#?}", service);
                 let characteristics = service.characteristics.to_owned();
                 let read_characteristic = characteristics.to_owned().into_iter().find(|c| {
                     c.properties.contains(CharPropFlags::NOTIFY)
                         && c.properties.contains(CharPropFlags::READ)
                 });
-
+                
                 let write_characteristic = characteristics.into_iter().find(|c| {
                     c.properties.contains(CharPropFlags::WRITE)
                         && c.properties.contains(CharPropFlags::WRITE_WITHOUT_RESPONSE)
@@ -104,7 +105,11 @@ impl BtlePlugConnection {
                     _ => Ok(None),
                 }
             }
-            _ => Ok(None),
+            _ => {
+                trace!("No suitable service found for device: {:?}", peripheral.address());
+                trace!("Available services: {:#?}", services);
+                Ok(None)
+            },
         }
     }
 
