@@ -1,5 +1,5 @@
 use async_trait::async_trait;
-use btleplug::api::{CharPropFlags, Characteristic, Peripheral as _, Service};
+use btleplug::api::{Characteristic, CharPropFlags, Peripheral as _, Service};
 use btleplug::platform::Peripheral;
 use futures::StreamExt;
 use log::{error, trace, warn};
@@ -78,39 +78,36 @@ impl BtlePlugConnection {
             .filter(|svc| !EXCLUDED_SERVICE_UUIDS.contains(&svc.uuid))
             .collect::<Vec<_>>();
 
-        let service = services.first();
+        for service in services.iter() {
+            trace!("Inspecting Service: {:#?}", service);
+            let characteristics = service.characteristics.to_owned();
+            let read_characteristic = characteristics.to_owned().into_iter().find(|c| {
+                c.properties.contains(CharPropFlags::NOTIFY)
+                    && c.properties.contains(CharPropFlags::READ)
+            });
 
-        match service {
-            Some(service) => {
-                trace!("Inspecting Service: {:#?}", service);
-                let characteristics = service.characteristics.to_owned();
-                let read_characteristic = characteristics.to_owned().into_iter().find(|c| {
-                    c.properties.contains(CharPropFlags::NOTIFY)
-                        && c.properties.contains(CharPropFlags::READ)
-                });
-                
-                let write_characteristic = characteristics.into_iter().find(|c| {
-                    c.properties.contains(CharPropFlags::WRITE)
-                        && c.properties.contains(CharPropFlags::WRITE_WITHOUT_RESPONSE)
-                });
+            let write_characteristic = characteristics.into_iter().find(|c| {
+                c.properties.contains(CharPropFlags::WRITE)
+                    && c.properties.contains(CharPropFlags::WRITE_WITHOUT_RESPONSE)
+            });
 
-                match (read_characteristic, write_characteristic) {
-                    (Some(read_characteristic), Some(write_characteristic)) => {
-                        Ok(Some(BLEConnectionUuidSet {
-                            service_uuid: service.uuid,
-                            read_uuid: read_characteristic.uuid,
-                            write_uuid: write_characteristic.uuid,
-                        }))
-                    }
-                    _ => Ok(None),
-                }
+            if let (Some(read_characteristic), Some(write_characteristic)) =
+                (read_characteristic, write_characteristic)
+            {
+                return Ok(Some(BLEConnectionUuidSet {
+                    service_uuid: service.uuid,
+                    read_uuid: read_characteristic.uuid,
+                    write_uuid: write_characteristic.uuid,
+                }));
             }
-            _ => {
-                trace!("No suitable service found for device: {:?}", peripheral.address());
-                trace!("Available services: {:#?}", services);
-                Ok(None)
-            },
         }
+
+        trace!(
+            "No suitable service found for device: {:?}",
+            peripheral.address()
+        );
+        trace!("Available services: {:#?}", services);
+        Ok(None)
     }
 
     fn find_service_by_uuid(peripheral: &Peripheral, uuid: Uuid) -> Option<Service> {
