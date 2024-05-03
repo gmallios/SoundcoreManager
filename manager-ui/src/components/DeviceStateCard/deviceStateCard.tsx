@@ -13,10 +13,7 @@ export const DeviceStateCard: React.FC = () => {
         <Paper
           sx={{ display: 'flex', margin: 1.5, justifyContent: 'center', alignItems: 'center' }}
           elevation={0}>
-          <ProductImageWithBattery
-            model={currentState?.serial?.model}
-            battery={currentState?.battery}
-          />
+          <ProductImageWithBattery model={'A3947'} battery={currentState?.battery} />
         </Paper>
       </Box>
     </>

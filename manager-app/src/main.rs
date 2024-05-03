@@ -8,15 +8,14 @@ use std::sync::Arc;
 
 use log::trace;
 use mpsc::channel;
-use soundcore_lib::api::SoundcoreDeviceState;
-use soundcore_lib::btaddr::BluetoothAdrr;
-
-use tauri::async_runtime::{Mutex, RwLock};
 use tauri::{AppHandle, Manager};
+use tauri::async_runtime::{Mutex, RwLock};
 use tauri_plugin_log::LogTarget;
 use tokio::sync::mpsc;
 
-use soundcore_lib::types::SupportedModels;
+use soundcore_lib::api::SoundcoreDeviceState;
+use soundcore_lib::btaddr::BluetoothAdrr;
+use soundcore_lib::types::KnownProductCodes;
 
 use crate::async_bridge::{async_bridge, BridgeCommand, BridgeResponse};
 
@@ -26,7 +25,7 @@ pub(crate) mod async_bridge;
 // mod tray;
 
 struct SoundcoreAppState {
-    model: Arc<RwLock<Option<SupportedModels>>>,
+    model: Arc<RwLock<Option<KnownProductCodes>>>,
     bridge_tx: Mutex<mpsc::Sender<BridgeCommand>>,
     scan_in_progress: Arc<Mutex<bool>>,
     last_states: Arc<Mutex<HashMap<BluetoothAdrr, SoundcoreDeviceState>>>,

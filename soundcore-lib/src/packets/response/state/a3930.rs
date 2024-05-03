@@ -19,7 +19,7 @@ use crate::parsers::{
     bool_parser, parse_a3909_button_model, parse_custom_hear_id, parse_dual_battery, parse_gender,
     parse_sound_mode, parse_stereo_eq_configuration, ParseError, TaggedData, TaggedParseResult,
 };
-use crate::types::SupportedModels;
+use crate::types::KnownProductCodes;
 
 use super::DeviceStateResponse;
 
@@ -99,7 +99,7 @@ pub fn parse_a3930_state_response<'a, E: ParseError<'a>>(
             Ok((
                 bytes,
                 TaggedData {
-                    tag: SupportedModels::A3930,
+                    tag: KnownProductCodes::A3930,
                     data: A3930StateResponse {
                         host_device,
                         tws_status,

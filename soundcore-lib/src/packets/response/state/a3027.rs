@@ -16,12 +16,11 @@ use crate::{
         u8_parser,
     },
 };
-
 use crate::parsers::{
     bool_parser, parse_gender, parse_sound_mode, parse_stereo_eq_configuration, ParseError,
     TaggedData, TaggedParseResult,
 };
-use crate::types::SupportedModels;
+use crate::types::KnownProductCodes;
 
 use super::DeviceStateResponse;
 
@@ -83,7 +82,7 @@ pub fn parse_a3027_state_response<'a, E: ParseError<'a>>(
             Ok((
                 bytes,
                 TaggedData {
-                    tag: SupportedModels::A3027,
+                    tag: KnownProductCodes::A3027,
                     data: A3027StateResponse {
                         tws_status: TwsStatus(true),
                         battery,

@@ -1,12 +1,6 @@
 use nom::{combinator::all_consuming, error::context, number::complete::le_u8, sequence::tuple};
 use serde::{Deserialize, Serialize};
 
-use crate::devices::a3029_features;
-use crate::parsers::{
-    parse_gender, parse_sound_mode, parse_stereo_eq_configuration, ParseError, TaggedData,
-    TaggedParseResult,
-};
-use crate::types::SupportedModels;
 use crate::{
     models::{
         AgeRange, BaseHearID, DeviceFirmware, Gender, HearID, SerialNumber, SingleBattery,
@@ -16,6 +10,12 @@ use crate::{
         parse_base_hear_id, parse_dual_fw, parse_serial_number, parse_single_battery, u8_parser,
     },
 };
+use crate::devices::a3029_features;
+use crate::parsers::{
+    parse_gender, parse_sound_mode, parse_stereo_eq_configuration, ParseError, TaggedData,
+    TaggedParseResult,
+};
+use crate::types::KnownProductCodes;
 
 use super::DeviceStateResponse;
 
@@ -75,7 +75,7 @@ pub fn parse_a3029_state_response<'a, E: ParseError<'a>>(
             Ok((
                 bytes,
                 TaggedData {
-                    tag: SupportedModels::A3029,
+                    tag: KnownProductCodes::A3029,
                     data: A3029StateResponse {
                         tws_status: TwsStatus(true),
                         battery,

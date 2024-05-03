@@ -6,6 +6,13 @@ export type CustomANCValue = number;
 
 export type CustomTransparencyValue = number;
 
+/**
+ * This u8 is a char which based on it fetches the apropriate image for the device (Reference: OtaBaseActivity/renderProductIcon).
+ * Perhaps this can be internally mapped to our product images.
+ * Further investigation is needed.
+ */
+export type DeviceColor = number;
+
 export type HearIDType = number;
 
 export type HearIDMusicType = number;
@@ -92,7 +99,7 @@ export type EQConfiguration =
   | { type: 'stereo'; value: StereoEQConfiguration }
   | { type: 'mono'; value: MonoEQConfiguration };
 
-export enum SupportedModels {
+export enum KnownProductCodes {
   A3027 = 'A3027',
   A3028 = 'A3028',
   A3029 = 'A3029',
@@ -100,12 +107,13 @@ export enum SupportedModels {
   A3930 = 'A3930',
   A3931 = 'A3931',
   A3935 = 'A3935',
-  A3951 = 'A3951'
+  A3951 = 'A3951',
+  A3947 = 'A3947'
 }
 
 export interface SerialNumber {
   value: string;
-  model?: SupportedModels;
+  model?: KnownProductCodes;
 }
 
 export interface FirmwareVer {
@@ -119,6 +127,22 @@ export type ButtonModel =
 
 export type HearID = { type: 'base'; value: BaseHearID } | { type: 'custom'; value: CustomHearID };
 
+export interface AutoPowerOff {
+  enabled: boolean;
+  index: number;
+}
+
+export enum PromptLanguage {
+  English = 'English',
+  Chinese = 'Chinese'
+}
+
+export interface HearingProtect {
+  enabled: boolean;
+  db: number;
+  freq: number;
+}
+
 /** This is a generalized version of the state for all devices */
 export interface SoundcoreDeviceState {
   featureSet: DeviceFeatureSet;
@@ -127,14 +151,28 @@ export interface SoundcoreDeviceState {
   eqConfiguration: EQConfiguration;
   serial?: SerialNumber;
   fw?: FirmwareVer;
-  hostDevice?: number;
-  twsStatus?: TwsStatus;
   buttonModel?: ButtonModel;
+  hostDevice?: number;
   sideTone?: SideTone;
-  hearidEqPreset?: number;
-  wearDetection?: WearDetection;
-  hearId?: HearID;
   ageRange?: AgeRange;
+  /** HearID */
+  hearidEqPreset?: number;
+  hearId?: HearID;
+  hearIdHasData?: boolean;
+  touchTone?: TouchTone;
+  twsStatus?: TwsStatus;
+  wearDetection?: WearDetection;
+  bassUp?: BassUp;
+  autoPowerOff?: AutoPowerOff;
+  supportTwoCnn?: SupportTwoCnn;
+  inEarBeep?: InEarBeep;
+  ambientSoundNotice?: AmbientSoundNotice;
+  powerOnBatteryNotice?: PowerOnBatteryNotice;
+  threeDimensionalEffect?: ThreeDimensionalEffect;
+  deviceColor?: DeviceColor;
+  ldac?: LDAC;
+  promptLanguage?: PromptLanguage;
+  hearingProtect?: HearingProtect;
 }
 
 export interface BluetoothAdrr {
@@ -151,7 +189,7 @@ export interface DiscoveredDevice {
   /** The BLE device descriptor. */
   descriptor: BLEDeviceDescriptor;
   /** The model of the device, resolved using the device's advertised name. */
-  model?: SupportedModels;
+  model?: KnownProductCodes;
 }
 
 export enum Action {
@@ -249,8 +287,7 @@ export enum EQProfile {
   Daya = 'Daya',
   CedricGervais = 'CedricGervais',
   TheInfamousStringdusters = 'TheInfamousStringdusters',
-  JohnPaulWhite = 'JohnPaulWhite',
-  SoundcoreSignatureBassUp = 'SoundcoreSignatureBassUp'
+  JohnPaulWhite = 'JohnPaulWhite'
 }
 
 export interface StereoEQConfiguration {
@@ -333,11 +370,6 @@ export enum SoundcoreFeatureFlags {
 export enum NonCustomizableTransparencyMode {
   FullyTransparent = 'fullyTransparent',
   Vocal = 'vocal'
-}
-
-export enum PromptLanguage {
-  English = 'English',
-  Chinese = 'Chinese'
 }
 
 export enum SceneBasedANCMode {

@@ -5,6 +5,7 @@ import A3028Img from '@assets/a3028_img_device.webp';
 import A3029Img from '@assets/a3029_img_device.webp';
 import A3040Img from '@assets/a3040_img_device.webp';
 import A3935Img from '@assets/a3935_img_device.webp';
+import A3947Img from '@assets/a3947_img_device.png';
 
 export type ImageData = {
   img: string;
@@ -19,7 +20,8 @@ const ModelSingleImageMap: {
   A3027: { img: A3027Img, height: 90 },
   A3028: { img: A3028Img, height: 90 },
   A3029: { img: A3029Img, height: 90 },
-  A3935: { img: A3935Img, height: 90 }
+  A3935: { img: A3935Img, height: 90 },
+  A3947: { img: A3947Img, height: 90 }
 };
 
 const ModelDoubleImageMap: {

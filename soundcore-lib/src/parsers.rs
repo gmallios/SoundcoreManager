@@ -21,7 +21,7 @@ pub use prompt_language::*;
 pub use serial::*;
 pub use sound_mode::*;
 
-use crate::types::SupportedModels;
+use crate::types::KnownProductCodes;
 
 mod a3040_button_model;
 mod a3909_button_model;
@@ -52,7 +52,7 @@ impl<'a> ParseError<'a> for nom::error::VerboseError<&'a [u8]> {}
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq, Hash)]
 pub struct TaggedData<T> {
     pub data: T,
-    pub tag: SupportedModels,
+    pub tag: KnownProductCodes,
 }
 
 #[cfg(test)]

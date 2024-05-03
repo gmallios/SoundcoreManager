@@ -20,7 +20,7 @@ use crate::parsers::{
     parse_auto_power_off_on, parse_fw, parse_hearing_protect, parse_prompt_language,
     parse_single_battery, parse_stereo_eq_configuration, TaggedData, TaggedParseResult, u8_parser,
 };
-use crate::types::SupportedModels;
+use crate::types::KnownProductCodes;
 
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq, Hash)]
 pub struct A3040StateResponse {
@@ -102,7 +102,7 @@ pub fn parse_a3040_state_response<'a, E: ParseError<'a>>(
         Ok((
             bytes,
             TaggedData {
-                tag: SupportedModels::A3040,
+                tag: KnownProductCodes::A3040,
                 data: A3040StateResponse {
                     battery,
                     fw,

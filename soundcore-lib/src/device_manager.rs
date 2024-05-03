@@ -1,25 +1,25 @@
+use std::{sync::Arc, time::Duration};
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
-use std::{sync::Arc, time::Duration};
 
-use crate::ble::BLEAdapterEvent;
-#[cfg(any(test, feature = "mock"))]
-use crate::mocks::*;
+use serde::{Deserialize, Serialize};
+use tokio::sync::RwLock;
+use typeshare::typeshare;
+
 use crate::{
     ble::{BLEConnectionManager, BLEDeviceDescriptor},
     btaddr::BluetoothAdrr,
     device::SoundcoreBLEDevice,
     error::SoundcoreLibResult,
-    types::{SupportedModels, SOUNDCORE_NAME_MODEL_MAP},
+    types::{KnownProductCodes, SOUNDCORE_NAME_PRODUCT_CODE_MAP},
 };
-use serde::{Deserialize, Serialize};
-use tokio::sync::RwLock;
-use typeshare::typeshare;
-
+use crate::ble::BLEAdapterEvent;
 // TODO: Specify clippy & fmt features
 #[allow(unused_imports)]
 #[cfg(all(feature = "btleplug-backend", not(feature = "mock")))]
 use crate::ble::btleplug::manager::BtlePlugBLEManager;
+#[cfg(any(test, feature = "mock"))]
+use crate::mocks::*;
 
 pub struct DeviceManager<B>
 where
@@ -111,7 +111,7 @@ where
     }
 
     fn resolve_model(discovered_device: DiscoveredDevice) -> DiscoveredDevice {
-        match SOUNDCORE_NAME_MODEL_MAP
+        match SOUNDCORE_NAME_PRODUCT_CODE_MAP
             .into_iter()
             .find(|(k, _v)| discovered_device.descriptor.name.contains(**k))
         {
@@ -132,7 +132,7 @@ pub struct DiscoveredDevice {
     /// The BLE device descriptor.
     pub descriptor: BLEDeviceDescriptor,
     /// The model of the device, resolved using the device's advertised name.
-    pub model: Option<SupportedModels>,
+    pub model: Option<KnownProductCodes>,
 }
 
 #[cfg(all(

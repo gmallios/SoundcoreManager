@@ -1,5 +1,5 @@
 use crate::packets::Packet;
-use crate::types::SupportedModels;
+use crate::types::KnownProductCodes;
 
 pub enum RequestPacketKind {
     State,
@@ -8,7 +8,7 @@ pub enum RequestPacketKind {
 
 pub struct RequestPacketBuilder {
     kind: RequestPacketKind,
-    model: Option<SupportedModels>,
+    model: Option<KnownProductCodes>,
 }
 
 // TODO: Add different packets for different models (if required)
@@ -17,7 +17,7 @@ impl RequestPacketBuilder {
         Self { kind, model: None }
     }
 
-    pub fn model(mut self, model: SupportedModels) -> Self {
+    pub fn model(mut self, model: KnownProductCodes) -> Self {
         self.model = Some(model);
         self
     }

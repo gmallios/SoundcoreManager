@@ -15,7 +15,7 @@ use crate::packets::{
     StateTransformationPacket,
 };
 use crate::parsers::TaggedData;
-use crate::types::SupportedModels;
+use crate::types::KnownProductCodes;
 
 pub struct SoundcoreBLEDevice<Connection>
 where
@@ -24,7 +24,7 @@ where
     connection: Arc<Connection>,
     state_channel: Arc<Mutex<watch::Sender<SoundcoreDeviceState>>>,
     state_channel_handle: JoinHandle<()>,
-    model: SupportedModels,
+    model: KnownProductCodes,
 }
 
 impl<Connection> SoundcoreBLEDevice<Connection>
@@ -117,7 +117,7 @@ where
         // TODO: Add test data to mocked device so initial state can be fetched
         if cfg!(test) || cfg!(feature = "mock") {
             return Ok(TaggedData {
-                tag: SupportedModels::A3951,
+                tag: KnownProductCodes::A3951,
                 data: SoundcoreDeviceState::default(),
             });
         }
