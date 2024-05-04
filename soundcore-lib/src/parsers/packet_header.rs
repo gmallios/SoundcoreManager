@@ -34,7 +34,7 @@ fn parse_packet_kind<'a, E: ParseError<'a>>(bytes: &'a [u8]) -> ParseResult<Resp
     context(
         "parse_packet_header",
         map_opt(take(2usize), |bytes: &[u8]| {
-            trace!("Parsing packet kind: {:?}", bytes);
+            trace!("Parsing packet kind: {:X?}", bytes);
             PACKET_KIND_MAP
                 .iter()
                 .find(|(map_bytes, _)| map_bytes == &bytes)

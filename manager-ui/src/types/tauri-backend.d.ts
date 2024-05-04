@@ -24,6 +24,11 @@ export type BridgeCommand =
   | { command: 'disconnectAll'; payload?: undefined }
   | { command: 'setSoundMode'; payload: SetSoundModePayload };
 
+export enum SetEqualizerPayload {
+  SetCustomEqualizer = 'setCustomEqualizer',
+  SetEqualizerPreset = 'setEqualizerPreset'
+}
+
 export type BridgeResponse =
   | { kind: 'scanResult'; payload: DiscoveredDevice[] }
   | { kind: 'connectionEstablished'; payload: TaggedStateResponse }

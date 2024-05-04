@@ -1,18 +1,19 @@
-import { ChartData } from 'chart.js';
+import {
+  CategoryScale,
+  Chart as ChartJS,
+  ChartData,
+  Filler,
+  Legend,
+  LinearScale,
+  LineElement,
+  PointElement,
+  Title,
+  Tooltip
+} from 'chart.js';
 import { useCallback, useState } from 'react';
 import { Line } from 'react-chartjs-2';
 import 'chartjs-plugin-dragdata';
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler
-} from 'chart.js';
+import { Button } from '@mui/material';
 
 ChartJS.register(
   CategoryScale,
@@ -66,6 +67,12 @@ export const Equalizer = ({ bands, input, onEqualizerChange }: EqualizerProps): 
     console.log('Equalizer output:', newDataSet);
   };
 
+  const onResetClick = () => {
+    const newDataSet = Array(bands).fill(0);
+    setDataSet(newDataSet);
+    onEqualizerChange(newDataSet);
+  };
+
   //@ts-expect-error: no type found for this event
   const onHover = useCallback((e) => {
     const point = e?.chart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, false);
@@ -111,6 +118,7 @@ export const Equalizer = ({ bands, input, onEqualizerChange }: EqualizerProps): 
   return (
     <>
       <Line data={data} options={options} />
+      <Button onClick={() => onResetClick()}>Reset</Button>
     </>
   );
 };

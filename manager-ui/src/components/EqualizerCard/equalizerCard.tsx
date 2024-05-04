@@ -1,6 +1,6 @@
-import { Paper } from '@mui/material';
+import { Collapse, MenuItem, Paper, Select, SelectChangeEvent, Stack } from '@mui/material';
 import { Equalizer } from './equalizer';
-import { SoundcoreDeviceState } from '@generated-types/soundcore-lib';
+import { EQProfile, SoundcoreDeviceState } from '@generated-types/soundcore-lib';
 import { useCallback } from 'react';
 
 export interface EqualizerCardProps {
@@ -8,10 +8,14 @@ export interface EqualizerCardProps {
 }
 
 export const EqualizerCard = ({ state }: EqualizerCardProps): JSX.Element => {
-  const onEqualizerChange = useCallback((output: number[]) => {
+  const onCustomEqualizerChange = useCallback((output: number[]) => {
     console.log('Equalizer output:', output);
     console.log('Equalizer output mapped:', mapRangeArray(output, -6, 6, 0, 240));
   }, []);
+
+  const onSelectedEqProfileChange = (e: SelectChangeEvent) => {
+    console.log('Selected EQ profile:', e.target.value);
+  };
 
   const mapRange = (
     value: number,
@@ -40,21 +44,35 @@ export const EqualizerCard = ({ state }: EqualizerCardProps): JSX.Element => {
     } else {
       valueArr = state.eqConfiguration.value.eq.values;
     }
-    console.log('EQ values:', valueArr);
     return mapRangeArray(valueArr, 0, 240, -6, 6);
   };
 
-  console.log('Mapped EQ values:', getMappedEqValues());
+  const eqProfiles = Object.keys(EQProfile).filter((item) => {
+    return isNaN(Number(item));
+  });
+
+  const isOnCustom = state.eqConfiguration.value.profile === EQProfile.Custom;
 
   return (
     <Paper sx={{ display: 'flex', margin: 3, justifyContent: 'center', alignItems: 'center' }}>
-      {state.featureSet.equalizerFeatures && (
-        <Equalizer
-          bands={state.featureSet.equalizerFeatures.bands}
-          input={[...getMappedEqValues()]}
-          onEqualizerChange={onEqualizerChange}
-        />
-      )}
+      <Stack sx={{ width: '100%' }}>
+        <Select value={state.eqConfiguration.value.profile} onChange={onSelectedEqProfileChange}>
+          {eqProfiles.map((profile) => (
+            <MenuItem key={profile} value={profile}>
+              {profile}
+            </MenuItem>
+          ))}
+        </Select>
+        {state.featureSet.equalizerFeatures && (
+          <Collapse in={isOnCustom} timeout="auto">
+            <Equalizer
+              bands={state.featureSet.equalizerFeatures.bands}
+              input={[...getMappedEqValues()]}
+              onEqualizerChange={onCustomEqualizerChange}
+            />
+          </Collapse>
+        )}
+      </Stack>
     </Paper>
   );
 };

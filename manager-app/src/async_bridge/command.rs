@@ -22,3 +22,11 @@ pub struct SetSoundModePayload {
     pub addr: BluetoothAdrr,
     pub sound_mode: SoundMode,
 }
+
+#[derive(Debug, Deserialize, Clone)]
+#[typeshare]
+#[serde(rename_all = "camelCase")]
+pub enum SetEqualizerPayload {
+    SetCustomEqualizer,
+    SetEqualizerPreset,
+}
