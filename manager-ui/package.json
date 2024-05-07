@@ -6,7 +6,7 @@
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
     "lint:fix-types": "eslint --fix ./src/types/*",
-    "format": "prettier --write './**/*.{js,jsx,ts,tsx,css,md,json}' --config ./.prettierrc",
+    "format": "prettier --write './**/*.{js,jsx,ts,tsx,css,md,json}' --config ../.prettierrc",
     "dev": "vite",
     "dev:force": "vite --force",
     "build": "tsc && vite build",
