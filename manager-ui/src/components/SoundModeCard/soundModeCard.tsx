@@ -133,7 +133,8 @@ export const SoundModeCard = ({ state }: SoundModeCardProps): JSX.Element => {
         minWidth: 275,
         justifyContent: 'center',
         alignItems: 'center'
-      }}>
+      }}
+    >
       <Grid sx={{ paddingLeft: 0, justifyContent: 'center' }}>
         <Grid item>
           <SliderSelectorWrapper>
@@ -224,12 +225,14 @@ const ModeGroupButtons: React.FC<{
           container
           direction="row"
           spacing={1}
-          sx={{ display: 'flex', justifyContent: 'space-evenly', pt: 2 }}>
+          sx={{ display: 'flex', justifyContent: 'space-evenly', pt: 2 }}
+        >
           {buttons.map((button) => (
             <ModeGroupButton
               key={button.value}
               active={selectedValue === button.value}
-              onClick={() => onClick(button.value)}>
+              onClick={() => onClick(button.value)}
+            >
               {button.title}
             </ModeGroupButton>
           ))}
@@ -332,7 +335,8 @@ const SliderButton: React.FC<{
       onClick={() => {
         setSliderPosition && setSliderPosition(position);
         setSliderIcon(icon);
-      }}>
+      }}
+    >
       <Icon sx={{ display: 'flex', width: 32, height: 32, zIndex: 0 }}>
         <img src={icon} height="32" />
       </Icon>

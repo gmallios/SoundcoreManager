@@ -23,7 +23,7 @@
       "@hooks/*": ["./hooks/*"],
       "@stores/*": ["./stores/*"],
       "@generated-types/*": ["./types/*"],
-      "@utils/*": ["./utils/*"],
+      "@utils/*": ["./utils/*"]
     },
     "types": ["vitest/globals"]
   },
