@@ -1,8 +1,8 @@
 use std::str::FromStr;
 
-use crate::{ble::WriteType, error::SoundcoreLibError};
 use btleplug::{api::BDAddr, platform::PeripheralId};
 
+use crate::{ble::WriteType, error::SoundcoreLibError};
 use crate::btaddr::BluetoothAdrr;
 
 impl TryFrom<BDAddr> for BluetoothAdrr {
@@ -16,13 +16,6 @@ impl TryFrom<BDAddr> for BluetoothAdrr {
 impl From<BluetoothAdrr> for BDAddr {
     fn from(value: BluetoothAdrr) -> Self {
         value.address.into()
-    }
-}
-
-impl From<BluetoothAdrr> for PeripheralId {
-    fn from(val: BluetoothAdrr) -> Self {
-        let bdaddr: BDAddr = val.into();
-        bdaddr.into()
     }
 }
 
