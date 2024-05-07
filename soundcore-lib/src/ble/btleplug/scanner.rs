@@ -1,14 +1,14 @@
+use std::time::Duration;
+
 use async_trait::async_trait;
 use btleplug::api::{Central, Peripheral as _, ScanFilter};
 use btleplug::platform::{Adapter, Peripheral};
 use futures::{stream, StreamExt};
-use log::warn;
+use log::{debug, info, warn};
 
-use std::time::Duration;
-
+use crate::{ble::BLEDeviceDescriptor, error::SoundcoreLibResult};
 use crate::ble::BLEDeviceScanner;
 use crate::btaddr::BluetoothAdrr;
-use crate::{ble::BLEDeviceDescriptor, error::SoundcoreLibResult};
 
 static DEFAULT_SCAN_DURATION: Duration = Duration::from_secs(5);
 
@@ -46,8 +46,8 @@ impl BtlePlugScanner {
 
             Ok(peripherals)
         })
-        .await
-        .unwrap()
+            .await
+            .unwrap()
     }
 
     // TODO: Remove this when https://github.com/deviceplug/btleplug/issues/267 is fixed
@@ -78,11 +78,18 @@ impl BtlePlugScanner {
     }
 
     async fn connected_peripherals(peripheral: Peripheral) -> Option<Peripheral> {
-        match peripheral.connect().await {
-            Ok(_) => Some(peripheral),
+        match tokio::time::timeout(tokio::time::Duration::from_secs(5), peripheral.connect()).await {
+            Ok(Ok(_)) => Some(peripheral),
+            Ok(Err(err)) => {
+                warn!(
+                    "Errored out determining if peripheral {:?} is connected, err: {err}",
+                    peripheral
+                );
+                None
+            }
             Err(err) => {
                 warn!(
-                    "Error determining if peripheral {:?} is connected, err: {err}",
+                    "Timed out determining if peripheral {:?} is connected, err: {err}",
                     peripheral
                 );
                 None
@@ -112,7 +119,7 @@ impl BtlePlugScanner {
 
     async fn extract_peripherals(
         adapter: Adapter,
-    ) -> Option<impl stream::Stream<Item = (Adapter, Peripheral)>> {
+    ) -> Option<impl stream::Stream<Item=(Adapter, Peripheral)>> {
         match adapter.peripherals().await {
             Ok(peripherals) => {
                 Some(stream::iter(peripherals).map(move |p| (adapter.to_owned(), p)))
