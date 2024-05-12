@@ -1,6 +1,10 @@
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
+use crate::models::{
+    AmbientSoundNotice, AutoPowerOff, BassUp, DeviceColor, HearingProtect, InEarBeep,
+    PowerOnBatteryNotice, PromptLanguage, SupportTwoCnn, ThreeDimensionalEffect, TouchTone, LDAC,
+};
 use crate::{
     api::DeviceFeatureSet,
     models::{
@@ -8,7 +12,6 @@ use crate::{
         SideTone, SoundMode, TwsStatus, WearDetection,
     },
 };
-use crate::models::{AmbientSoundNotice, AutoPowerOff, BassUp, DeviceColor, HearingProtect, InEarBeep, LDAC, PowerOnBatteryNotice, PromptLanguage, SupportTwoCnn, ThreeDimensionalEffect, TouchTone};
 
 /// This is a generalized version of the state for all devices
 #[derive(Debug, Serialize, Deserialize, Eq, PartialEq, Clone, Hash, Default)]

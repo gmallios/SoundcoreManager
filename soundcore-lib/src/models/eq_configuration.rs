@@ -50,4 +50,3 @@ impl From<MonoEQConfiguration> for EQConfiguration {
         EQConfiguration::Mono(config)
     }
 }
-

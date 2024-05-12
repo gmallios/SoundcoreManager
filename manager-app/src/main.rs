@@ -8,8 +8,8 @@ use std::sync::Arc;
 
 use log::trace;
 use mpsc::channel;
-use tauri::{AppHandle, Manager};
 use tauri::async_runtime::{Mutex, RwLock};
+use tauri::{AppHandle, Manager};
 use tauri_plugin_log::LogTarget;
 use tokio::sync::mpsc;
 

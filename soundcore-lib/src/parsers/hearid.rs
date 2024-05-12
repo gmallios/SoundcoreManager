@@ -1,10 +1,10 @@
+use nom::number::complete::le_u16;
 use nom::{
     combinator::map,
     error::context,
     number::complete::{le_i32, le_u8},
     sequence::tuple,
 };
-use nom::number::complete::le_u16;
 
 use crate::models::{BaseHearID, CustomHearID, HearIDMusicType, HearIDType};
 
@@ -41,7 +41,7 @@ pub fn parse_custom_hear_id<'a, E: ParseError<'a>>(
                     parse_stereo_eq(eq_bands),
                 )),
                 |(base, hearid_type, hearid_music_type, eq)| {
-                    let has_set_custom_values = *eq.left.values.get(0).unwrap() == 255;
+                    let has_set_custom_values = *eq.left.values.first().unwrap() == 255;
                     CustomHearID {
                         base,
                         hearid_type,

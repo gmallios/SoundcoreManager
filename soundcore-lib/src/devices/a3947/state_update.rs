@@ -6,15 +6,15 @@ use serde::{Deserialize, Serialize};
 
 use crate::models::{
     AgeRange, AutoPowerOff, ChargingCaseBattery, CustomButtonWearEnable, DeviceColor, DualBattery,
-    FirmwareVer, HearingProtect, InEarBeep, LDAC, LeakyCompensation, MediaTone, SerialNumber,
-    SideTone, SoundMode, StereoEQConfiguration, SupportTwoCnn, TouchTone, TwsStatus, WearDetection,
+    FirmwareVer, HearingProtect, InEarBeep, LeakyCompensation, MediaTone, SerialNumber, SideTone,
+    SoundMode, StereoEQConfiguration, SupportTwoCnn, TouchTone, TwsStatus, WearDetection, LDAC,
 };
 use crate::packets::DeviceStateResponse;
 use crate::parsers::{
     bool_parser, parse_adaptive_sound_mode_customizable_trans, parse_auto_power_off_on,
     parse_custom_hear_id_with_eq_index, parse_dual_battery, parse_dual_fw, parse_fw,
-    parse_hearing_protect, parse_serial_number, parse_stereo_eq_configuration, ParseError,
-    TaggedData, TaggedParseResult, u8_parser,
+    parse_hearing_protect, parse_serial_number, parse_stereo_eq_configuration, u8_parser,
+    ParseError, TaggedData, TaggedParseResult,
 };
 use crate::types::KnownProductCodes;
 

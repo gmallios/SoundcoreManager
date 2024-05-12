@@ -6,13 +6,13 @@ pub use info::*;
 pub use sound_mode::*;
 pub use state::*;
 
+use crate::api::SoundcoreDeviceState;
+use crate::packets::response::eq_info_update::{parse_eq_info_update, EqInfoUpdate};
+use crate::parsers::TaggedData;
 use crate::{
     models::ResponsePacketKind,
     parsers::{parse_and_check_checksum, parse_packet_header},
 };
-use crate::api::SoundcoreDeviceState;
-use crate::packets::response::eq_info_update::{EqInfoUpdate, parse_eq_info_update};
-use crate::parsers::TaggedData;
 
 mod bass_up;
 mod battery;

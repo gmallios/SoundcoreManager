@@ -5,6 +5,11 @@ use nom::{
 };
 use serde::{Deserialize, Serialize};
 
+use crate::parsers::{
+    bool_parser, parse_gender, parse_sound_mode, parse_stereo_eq_configuration, ParseError,
+    TaggedData, TaggedParseResult,
+};
+use crate::types::KnownProductCodes;
 use crate::{
     devices::a3027_features,
     models::{
@@ -16,11 +21,6 @@ use crate::{
         u8_parser,
     },
 };
-use crate::parsers::{
-    bool_parser, parse_gender, parse_sound_mode, parse_stereo_eq_configuration, ParseError,
-    TaggedData, TaggedParseResult,
-};
-use crate::types::KnownProductCodes;
 
 use super::DeviceStateResponse;
 

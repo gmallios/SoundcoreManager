@@ -64,7 +64,10 @@ impl WindowsBLEDeviceScanner {
 impl BLEDeviceScanner for WindowsBLEDeviceScanner {
     // type Descriptor = WindowsBLEDescriptor;
 
-    async fn scan(&self, duration: Option<Duration>) -> SoundcoreLibResult<Vec<BLEDeviceDescriptor>> {
+    async fn scan(
+        &self,
+        duration: Option<Duration>,
+    ) -> SoundcoreLibResult<Vec<BLEDeviceDescriptor>> {
         spawn_blocking(move || {
             let addr_swap_map =
                 Arc::new(Mutex::new(HashMap::<BluetoothAdrr, BluetoothAdrr>::new()));

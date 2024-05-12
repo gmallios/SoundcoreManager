@@ -2,12 +2,12 @@ use async_trait::async_trait;
 use btleplug::api::{Central, Peripheral as _};
 use btleplug::platform::{Adapter, Manager, Peripheral, PeripheralId};
 
-use crate::{
-    ble::{BLEConnectionUuidSet, btleplug::connection::BtlePlugConnection},
-    error::SoundcoreLibResult,
-};
 use crate::ble::{BLEConnectionFactory, BLEDeviceDescriptor};
 use crate::error::SoundcoreLibError;
+use crate::{
+    ble::{btleplug::connection::BtlePlugConnection, BLEConnectionUuidSet},
+    error::SoundcoreLibResult,
+};
 
 pub struct BtlePlugConnectionFactory {
     _manager: Manager,
@@ -16,7 +16,10 @@ pub struct BtlePlugConnectionFactory {
 
 impl BtlePlugConnectionFactory {
     pub fn new(manager: Manager, adapters: Vec<Adapter>) -> SoundcoreLibResult<Self> {
-        Ok(Self { _manager: manager, adapters })
+        Ok(Self {
+            _manager: manager,
+            adapters,
+        })
     }
 
     async fn find_peripheral(

@@ -1,11 +1,12 @@
-use std::{sync::Arc, time::Duration};
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
+use std::{sync::Arc, time::Duration};
 
 use serde::{Deserialize, Serialize};
 use tokio::sync::RwLock;
 use typeshare::typeshare;
 
+use crate::ble::BLEAdapterEvent;
 use crate::{
     ble::{BLEConnectionManager, BLEDeviceDescriptor},
     btaddr::BluetoothAdrr,
@@ -13,7 +14,6 @@ use crate::{
     error::SoundcoreLibResult,
     types::{KnownProductCodes, SOUNDCORE_NAME_PRODUCT_CODE_MAP},
 };
-use crate::ble::BLEAdapterEvent;
 // TODO: Specify clippy & fmt features
 #[allow(unused_imports)]
 #[cfg(all(feature = "btleplug-backend", not(feature = "mock")))]

@@ -10,4 +10,3 @@ mod eq_update_command;
 mod features;
 mod sound_mode_update_command;
 
-pub use eq_info_update::*;

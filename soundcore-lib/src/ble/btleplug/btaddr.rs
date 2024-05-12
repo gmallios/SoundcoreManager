@@ -2,8 +2,8 @@ use std::str::FromStr;
 
 use btleplug::{api::BDAddr, platform::PeripheralId};
 
-use crate::{ble::WriteType, error::SoundcoreLibError};
 use crate::btaddr::BluetoothAdrr;
+use crate::{ble::WriteType, error::SoundcoreLibError};
 
 impl TryFrom<BDAddr> for BluetoothAdrr {
     type Error = SoundcoreLibError;

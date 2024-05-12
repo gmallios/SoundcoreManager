@@ -1,7 +1,6 @@
 use std::str::FromStr;
 
 use async_trait::async_trait;
-use btleplug::platform::PeripheralId;
 use tokio::sync::Mutex;
 
 use crate::btaddr::BluetoothAdrr;

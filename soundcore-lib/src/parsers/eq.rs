@@ -23,9 +23,7 @@ pub fn parse_stereo_eq<'a, E: ParseError<'a>>(
             "parse_stereo_eq",
             map(
                 tuple((parse_mono_eq(bands), parse_mono_eq(bands))),
-                |(left, right)| {
-                    StereoEQ { left, right }
-                },
+                |(left, right)| StereoEQ { left, right },
             ),
         )(bytes)
     }

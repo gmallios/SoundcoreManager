@@ -2,14 +2,6 @@ use nom::{bytes::complete::take, number::complete::le_u8};
 use nom::{error::context, sequence::tuple};
 use serde::{Deserialize, Serialize};
 
-use crate::{
-    models::{
-        AmbientSoundNotice, AutoPowerOff, BassUp, DeviceColor, FirmwareVer, HearingProtect,
-        InEarBeep, LDAC, PowerOnBatteryNotice, SerialNumber, SingleBattery,
-        SupportTwoCnn, ThreeDimensionalEffect, TouchTone, WearDetection,
-    },
-    parsers::{parse_serial_number, ParseError},
-};
 use crate::devices::a3040_features;
 use crate::models::{
     A3040ButtonModel, ButtonModel, ChargingCaseBattery, PromptLanguage, SoundMode,
@@ -19,9 +11,17 @@ use crate::packets::DeviceStateResponse;
 use crate::parsers::{
     bool_parser, parse_a3040_button_model, parse_adaptive_sound_mode_customizable_trans,
     parse_auto_power_off_on, parse_fw, parse_hearing_protect, parse_prompt_language,
-    parse_single_battery, parse_stereo_eq_configuration, TaggedData, TaggedParseResult, u8_parser,
+    parse_single_battery, parse_stereo_eq_configuration, u8_parser, TaggedData, TaggedParseResult,
 };
 use crate::types::KnownProductCodes;
+use crate::{
+    models::{
+        AmbientSoundNotice, AutoPowerOff, BassUp, DeviceColor, FirmwareVer, HearingProtect,
+        InEarBeep, PowerOnBatteryNotice, SerialNumber, SingleBattery, SupportTwoCnn,
+        ThreeDimensionalEffect, TouchTone, WearDetection, LDAC,
+    },
+    parsers::{parse_serial_number, ParseError},
+};
 
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq, Hash)]
 pub struct A3040StateResponse {

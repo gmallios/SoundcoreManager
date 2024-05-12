@@ -9,6 +9,7 @@ use a3930::*;
 use a3951::*;
 
 use crate::api::SoundcoreDeviceState;
+use crate::devices::parse_a3947_state_update;
 use crate::models::{
     AmbientSoundNotice, AutoPowerOff, BassUp, DeviceColor, FirmwareVer, HearingProtect, InEarBeep,
     PowerOnBatteryNotice, PromptLanguage, SerialNumber, SupportTwoCnn, ThreeDimensionalEffect,
@@ -24,7 +25,6 @@ use crate::{
     },
     parsers::ParseError,
 };
-use crate::devices::parse_a3947_state_update;
 
 /// This is a generalized version of the state responses for all devices
 /// All device-specific state responses should be able to be converted to this type
