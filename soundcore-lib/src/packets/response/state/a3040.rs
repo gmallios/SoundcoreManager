@@ -12,7 +12,8 @@ use crate::{
 };
 use crate::devices::a3040_features;
 use crate::models::{
-    A3040ButtonModel, ButtonModel, PromptLanguage, SoundMode, StereoEQConfiguration, TwsStatus,
+    A3040ButtonModel, ButtonModel, ChargingCaseBattery, PromptLanguage, SoundMode,
+    StereoEQConfiguration, TwsStatus,
 };
 use crate::packets::DeviceStateResponse;
 use crate::parsers::{
@@ -33,8 +34,7 @@ pub struct A3040StateResponse {
     pub wear_detection: WearDetection,
     pub three_dimensional_effect: ThreeDimensionalEffect,
     pub button_model: A3040ButtonModel,
-    // TODO: Extract type?
-    pub charging_case_battery: u8,
+    pub charging_case_battery: ChargingCaseBattery,
     pub bass_up: BassUp,
     pub device_color: DeviceColor,
     pub ldac: LDAC,
@@ -86,7 +86,7 @@ pub fn parse_a3040_state_response<'a, E: ParseError<'a>>(
             bool_parser::<TouchTone, E>,
             bool_parser::<WearDetection, E>,
             bool_parser::<ThreeDimensionalEffect, E>,
-            le_u8,
+            u8_parser::<ChargingCaseBattery, E>,
             bool_parser::<BassUp, E>,
             u8_parser::<DeviceColor, E>,
             bool_parser::<LDAC, E>,

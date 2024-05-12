@@ -33,5 +33,7 @@ pub struct CustomHearID {
     pub base: BaseHearID,
     pub hearid_type: HearIDType,
     pub hearid_music_type: HearIDMusicType,
-    pub custom_values: Option<StereoEQ>,
+    pub custom_values: StereoEQ,
+    pub has_set_custom_values: bool,
+    pub hear_id_eq_index: Option<u16>,
 }

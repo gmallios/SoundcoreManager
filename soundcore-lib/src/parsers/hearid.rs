@@ -1,14 +1,14 @@
 use nom::{
-    bytes::complete::take,
     combinator::map,
     error::context,
     number::complete::{le_i32, le_u8},
     sequence::tuple,
 };
+use nom::number::complete::le_u16;
 
-use crate::models::{BaseHearID, CustomHearID, HearIDMusicType, HearIDType, MonoEQ, StereoEQ};
+use crate::models::{BaseHearID, CustomHearID, HearIDMusicType, HearIDType};
 
-use super::{parse_bool, parse_mono_eq, parse_stereo_eq, ParseError, ParseResult};
+use super::{parse_bool, parse_stereo_eq, ParseError, ParseResult};
 
 pub fn parse_base_hear_id<'a, E: ParseError<'a>>(
     eq_bands: usize,
@@ -38,23 +38,35 @@ pub fn parse_custom_hear_id<'a, E: ParseError<'a>>(
                     parse_base_hear_id(eq_bands),
                     parse_type,
                     parse_music_type,
-                    take(8usize),
-                    parse_mono_eq(eq_bands),
+                    parse_stereo_eq(eq_bands),
                 )),
-                |(base, hearid_type, hearid_music_type, l_eq, r_eq)| {
-                    let eq = match l_eq[0] {
-                        255 => None,
-                        _ => Some(StereoEQ {
-                            left: MonoEQ::from_bytes(l_eq.try_into().unwrap()),
-                            right: r_eq,
-                        }),
-                    };
+                |(base, hearid_type, hearid_music_type, eq)| {
+                    let has_set_custom_values = *eq.left.values.get(0).unwrap() == 255;
                     CustomHearID {
                         base,
                         hearid_type,
                         hearid_music_type,
                         custom_values: eq,
+                        has_set_custom_values,
+                        hear_id_eq_index: None,
                     }
+                },
+            ),
+        )(bytes)
+    }
+}
+
+pub fn parse_custom_hear_id_with_eq_index<'a, E: ParseError<'a>>(
+    eq_bands: usize,
+) -> impl Fn(&'a [u8]) -> ParseResult<CustomHearID, E> {
+    move |bytes| {
+        context(
+            "parse_custom_hear_id_with_eq_index",
+            map(
+                tuple((parse_custom_hear_id(eq_bands), le_u16)),
+                |(mut custom_hear_id, hear_id_eq_index)| {
+                    custom_hear_id.hear_id_eq_index = Some(hear_id_eq_index);
+                    custom_hear_id
                 },
             ),
         )(bytes)

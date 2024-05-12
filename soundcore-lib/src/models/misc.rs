@@ -83,3 +83,27 @@ pub struct AgeRange(pub u8);
 )]
 #[typeshare]
 pub struct AmbientSoundNotice(pub bool);
+
+#[derive(
+    Debug, Serialize, Deserialize, Eq, PartialEq, Ord, PartialOrd, Clone, Copy, Default, Hash, From,
+)]
+#[typeshare]
+pub struct LeakyCompensation(pub bool);
+
+#[derive(
+    Debug, Serialize, Deserialize, Eq, PartialEq, Ord, PartialOrd, Clone, Copy, Default, Hash, From,
+)]
+#[typeshare]
+pub struct MediaTone(pub bool);
+
+#[derive(
+    Debug, Serialize, Deserialize, Eq, PartialEq, Ord, PartialOrd, Clone, Copy, Default, Hash, From,
+)]
+#[typeshare]
+pub struct CustomButtonWearEnable(pub bool);
+
+#[derive(
+    Debug, Serialize, Deserialize, Eq, PartialEq, Ord, PartialOrd, Clone, Copy, Default, Hash, From,
+)]
+#[typeshare]
+pub struct ChargingCaseBattery(pub u8);

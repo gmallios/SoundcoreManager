@@ -24,6 +24,7 @@ use crate::{
     },
     parsers::ParseError,
 };
+use crate::devices::parse_a3947_state_update;
 
 /// This is a generalized version of the state responses for all devices
 /// All device-specific state responses should be able to be converted to this type
@@ -90,6 +91,10 @@ pub fn parse_state_update_packet<'a, E: ParseError<'a>>(
                 tag: result.tag,
             }),
             map(parse_a3951_state_response::<'a, E>, |result| TaggedData {
+                data: DeviceStateResponse::from(result.data),
+                tag: result.tag,
+            }),
+            map(parse_a3947_state_update::<'a, E>, |result| TaggedData {
                 data: DeviceStateResponse::from(result.data),
                 tag: result.tag,
             }),

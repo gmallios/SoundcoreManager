@@ -11,7 +11,6 @@ use crate::{
         parse_base_hear_id, parse_dual_fw, parse_serial_number, parse_single_battery, u8_parser,
     },
 };
-
 use crate::parsers::{
     parse_gender, parse_sound_mode, parse_stereo_eq_configuration, ParseError, TaggedData,
     TaggedParseResult,
