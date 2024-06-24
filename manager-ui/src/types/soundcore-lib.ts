@@ -48,9 +48,18 @@ export type AgeRange = number;
 
 export type AmbientSoundNotice = boolean;
 
+export type LeakyCompensation = boolean;
+
+export type MediaTone = boolean;
+
+export type CustomButtonWearEnable = boolean;
+
+export type ChargingCaseBattery = number;
+
 export interface EqualizerFeatures {
   bands: number;
   channels: number;
+  has_bass_up: boolean;
 }
 
 export interface SoundModeFeatures {
@@ -310,7 +319,9 @@ export interface CustomHearID {
   base: BaseHearID;
   hearid_type: HearIDType;
   hearid_music_type: HearIDMusicType;
-  custom_values?: StereoEQ;
+  custom_values: StereoEQ;
+  has_set_custom_values: boolean;
+  hear_id_eq_index?: number;
 }
 
 export enum FeatureFlags {

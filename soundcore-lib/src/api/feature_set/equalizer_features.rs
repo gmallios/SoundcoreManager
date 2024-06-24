@@ -6,4 +6,5 @@ use typeshare::typeshare;
 pub struct EqualizerFeatures {
     pub bands: u8,
     pub channels: u8,
+    pub has_bass_up: bool, // We want to hide Bass Booster EQ Profile is this is true
 }

@@ -1,4 +1,5 @@
-use soundcore_lib::{packets::ResponsePacket, types::SupportedModels};
+use soundcore_lib::packets::ResponsePacket;
+use soundcore_lib::types::KnownProductCodes;
 
 #[test]
 fn should_parse_state_update() {
@@ -6,7 +7,7 @@ fn should_parse_state_update() {
     match packet {
         Ok(ResponsePacket::DeviceState(state)) => {
             // TODO: Assert state
-            assert_eq!(state.tag, SupportedModels::A3040);
+            assert_eq!(state.tag, KnownProductCodes::A3040);
             println!("{:?}", state.data);
         }
         Err(err) => panic!("Failed to parse state update packet, error: {:X?}", err),

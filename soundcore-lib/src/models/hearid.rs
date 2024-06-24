@@ -3,11 +3,11 @@ use typeshare::typeshare;
 
 use super::StereoEQ;
 
-#[derive(Debug, Serialize, Deserialize, Eq, PartialEq, Ord, PartialOrd, Clone, Hash)]
+#[derive(Debug, Serialize, Deserialize, Eq, PartialEq, Ord, PartialOrd, Clone, Hash, Default)]
 #[typeshare]
 pub struct HearIDType(pub u8); // TODO: Move to enum?
 
-#[derive(Debug, Serialize, Deserialize, Eq, PartialEq, Ord, PartialOrd, Clone, Hash)]
+#[derive(Debug, Serialize, Deserialize, Eq, PartialEq, Ord, PartialOrd, Clone, Hash, Default)]
 #[typeshare]
 pub struct HearIDMusicType(pub u8); // TODO: Move to enum?
 
@@ -19,7 +19,7 @@ pub enum HearID {
     Custom(CustomHearID),
 }
 
-#[derive(Debug, Serialize, Deserialize, Eq, PartialEq, Ord, PartialOrd, Clone, Hash)]
+#[derive(Debug, Serialize, Deserialize, Eq, PartialEq, Ord, PartialOrd, Clone, Hash, Default)]
 #[typeshare]
 pub struct BaseHearID {
     pub enabled: bool,
@@ -27,7 +27,7 @@ pub struct BaseHearID {
     pub time: i32,
 }
 
-#[derive(Debug, Serialize, Deserialize, Eq, PartialEq, Ord, PartialOrd, Clone, Hash)]
+#[derive(Debug, Serialize, Deserialize, Eq, PartialEq, Ord, PartialOrd, Clone, Hash, Default)]
 #[typeshare]
 pub struct CustomHearID {
     pub base: BaseHearID,

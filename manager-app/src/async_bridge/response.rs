@@ -20,6 +20,7 @@ pub enum BridgeResponse {
     GenericError(String),
     DeviceNotFound(BluetoothAdrr),
     SoundModeUpdated(BluetoothAdrr),
+    EqualizerUpdated(BluetoothAdrr),
 }
 
 #[derive(Debug, Serialize, Clone)]

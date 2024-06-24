@@ -2,12 +2,17 @@ import { Collapse, MenuItem, Paper, Select, SelectChangeEvent, Stack } from '@mu
 import { Equalizer } from './equalizer';
 import { EQProfile, SoundcoreDeviceState } from '@generated-types/soundcore-lib';
 import { useCallback } from 'react';
+import { useUpdatePresetEqualizer } from '@hooks/useDeviceCommand';
+import { useSoundcoreStore } from '@stores/useSoundcoreStore';
 
 export interface EqualizerCardProps {
   state: SoundcoreDeviceState;
 }
 
 export const EqualizerCard = ({ state }: EqualizerCardProps): JSX.Element => {
+  const isOnCustom = state.eqConfiguration.value.profile === EQProfile.Custom;
+  const deviceAddr = useSoundcoreStore((state) => state.currentViewedDevice);
+
   const onCustomEqualizerChange = useCallback((output: number[]) => {
     console.log('Equalizer output:', output);
     console.log('Equalizer output mapped:', mapRangeArray(output, -6, 6, 0, 240));
@@ -15,6 +20,7 @@ export const EqualizerCard = ({ state }: EqualizerCardProps): JSX.Element => {
 
   const onSelectedEqProfileChange = (e: SelectChangeEvent) => {
     console.log('Selected EQ profile:', e.target.value);
+    useUpdatePresetEqualizer(deviceAddr!, e.target.value as EQProfile);
   };
 
   const mapRange = (
@@ -50,8 +56,6 @@ export const EqualizerCard = ({ state }: EqualizerCardProps): JSX.Element => {
   const eqProfiles = Object.keys(EQProfile).filter((item) => {
     return isNaN(Number(item));
   });
-
-  const isOnCustom = state.eqConfiguration.value.profile === EQProfile.Custom;
 
   return (
     <Paper sx={{ display: 'flex', margin: 3, justifyContent: 'center', alignItems: 'center' }}>

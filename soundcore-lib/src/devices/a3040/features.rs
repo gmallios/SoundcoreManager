@@ -10,6 +10,7 @@ pub fn a3040_features() -> DeviceFeatureSet {
         equalizer_features: Some(EqualizerFeatures {
             bands: 8,
             channels: 2,
+            has_bass_up: true,
         }),
         flags: Arc::new([
             FeatureFlags::CUSTOM_BUTTONS,

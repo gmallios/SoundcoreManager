@@ -5,11 +5,16 @@ use log::{debug, info, trace};
 use tokio::sync::{mpsc, Mutex};
 
 use soundcore_lib::{
-    ble::BLEConnectionManager,
+    ble::{BLEConnection, BLEConnectionManager},
+    device::SoundcoreBLEDevice,
     device_manager::{create_device_manager, DeviceManager},
+    error::SoundcoreLibError, models::EQConfiguration,
 };
 
-use super::{BridgeCommand, BridgeResponse, ConnectionFailedResponse, TaggedStateResponse};
+use super::{
+    AddrWrappedPayload, BridgeCommand, BridgeResponse, ConnectionFailedResponse,
+    SetEqualizerPayload, TaggedStateResponse,
+};
 
 struct CommandLoopState<B: BLEConnectionManager> {
     manager: DeviceManager<B>,
@@ -140,7 +145,7 @@ async fn handle_command<B: BLEConnectionManager>(
 
             if let Some(device) = device {
                 trace!("Setting sound mode for {:?}", addr_clone);
-                let res = device.set_sound_mode(payload.sound_mode).await;
+                let res = device.set_sound_mode(payload.payload).await;
                 if res.is_ok() {
                     Ok(BridgeResponse::SoundModeUpdated(addr_clone))
                 } else {
@@ -150,9 +155,42 @@ async fn handle_command<B: BLEConnectionManager>(
                 Ok(BridgeResponse::DeviceNotFound(addr_clone))
             }
         }
+        BridgeCommand::SetEqualizer(payload) => {
+            let device = command_loop_state
+                .lock()
+                .await
+                .manager
+                .get_device(payload.addr.clone())
+                .await;
+
+            if let Some(device) = device {
+                trace!("Setting equalizer for {:?}", payload.addr);
+                return handle_set_eq::<B>(device, payload).await;
+            } else {
+                Ok(BridgeResponse::DeviceNotFound(payload.addr))
+            }
+        }
     }
     .map_err(|e| BridgeResponse::GenericError(e.to_string()))
     .unwrap_or_else(|e| e)
+}
+
+async fn handle_set_eq<B: BLEConnectionManager>(
+    device: Arc<SoundcoreBLEDevice<<B as BLEConnectionManager>::Connection>>,
+    wrapped_payload: AddrWrappedPayload<SetEqualizerPayload>,
+) -> BridgeResponse {
+    let eq_configuration = match wrapped_payload.payload {
+        SetEqualizerPayload::SetCustomEqualizer(eq) => EQConfiguration::mono_custom(eq),
+        SetEqualizerPayload::SetEqualizerPreset(profile) => {
+            EQConfiguration::stereo_with_profile(profile)
+        },
+    };
+
+    match device.set_eq(eq_configuration).await {
+        Ok(_) => BridgeResponse::EqualizerUpdated(wrapped_payload.addr),
+        Err(e) => BridgeResponse::GenericError(e.to_string()),
+    
+    }
 }
 
 #[cfg(test)]

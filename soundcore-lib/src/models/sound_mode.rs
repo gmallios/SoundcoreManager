@@ -10,6 +10,7 @@ use super::{ANCMode, CurrentSoundMode, CustomANCValue, TransparencyMode};
 )]
 #[typeshare]
 #[serde(rename_all = "camelCase", tag = "type")]
+#[typeshare]
 pub struct SoundMode {
     pub current: CurrentSoundMode,
     pub anc_mode: ANCMode,

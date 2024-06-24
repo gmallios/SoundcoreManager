@@ -9,6 +9,7 @@ pub fn a3930_features() -> DeviceFeatureSet {
         equalizer_features: Some(EqualizerFeatures {
             bands: 8,
             channels: 1,
+            has_bass_up: false,
         }),
         flags: Arc::new([]),
     }

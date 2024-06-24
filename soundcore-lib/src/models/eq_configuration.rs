@@ -1,6 +1,7 @@
-use super::{EQProfile, MonoEQ, StereoEQ};
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
+
+use super::{EQProfile, MonoEQ, StereoEQ};
 
 #[derive(Debug, Serialize, Deserialize, Eq, PartialEq, Ord, PartialOrd, Clone, Hash)]
 #[typeshare]
@@ -13,9 +14,33 @@ pub enum EQConfiguration {
 impl EQConfiguration {
     pub fn set_profile(&mut self, profile: EQProfile) {
         match self {
-            EQConfiguration::Stereo(config) => config.profile = profile,
-            EQConfiguration::Mono(config) => config.profile = profile,
+            EQConfiguration::Stereo(config) => {
+                config.profile = profile;
+                config.eq.left = profile.eq();
+                config.eq.right = profile.eq();
+            },
+            EQConfiguration::Mono(config) => {
+                config.profile = profile;
+                config.eq = profile.eq();
+            },
         }
+    }
+
+    pub fn stereo_with_profile(profile: EQProfile) -> Self {
+        EQConfiguration::Stereo(StereoEQConfiguration {
+            eq: StereoEQ {
+                left: profile.eq(),
+                right: profile.eq(),
+            },
+            profile,
+        })
+    }
+
+    pub fn mono_custom(eq: MonoEQ) -> Self {
+        EQConfiguration::Mono(MonoEQConfiguration {
+            eq,
+            profile: EQProfile::Custom,
+        })
     }
 }
 
@@ -48,5 +73,41 @@ impl From<StereoEQConfiguration> for EQConfiguration {
 impl From<MonoEQConfiguration> for EQConfiguration {
     fn from(config: MonoEQConfiguration) -> Self {
         EQConfiguration::Mono(config)
+    }
+}
+
+impl From<MonoEQConfiguration> for StereoEQConfiguration {
+    fn from(config: MonoEQConfiguration) -> Self {
+        Self {
+            eq: config.eq.into(),
+            profile: config.profile,
+        }
+    }
+}
+
+impl From<StereoEQConfiguration> for MonoEQConfiguration {
+    fn from(config: StereoEQConfiguration) -> Self {
+        Self {
+            eq: config.eq.into(),
+            profile: config.profile,
+        }
+    }
+}
+
+impl From<EQConfiguration> for StereoEQConfiguration {
+    fn from(config: EQConfiguration) -> Self {
+        match config {
+            EQConfiguration::Stereo(config) => config,
+            EQConfiguration::Mono(config) => config.into(),
+        }
+    }
+}
+
+impl From<EQConfiguration> for MonoEQConfiguration {
+    fn from(config: EQConfiguration) -> Self {
+        match config {
+            EQConfiguration::Stereo(config) => config.into(),
+            EQConfiguration::Mono(config) => config,
+        }
     }
 }

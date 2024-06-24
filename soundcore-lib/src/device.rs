@@ -11,8 +11,8 @@ use crate::ble::{BLEConnection, WriteType};
 use crate::error::{SoundcoreLibError, SoundcoreLibResult};
 use crate::models::{EQConfiguration, SoundMode};
 use crate::packets::{
-    RequestPacketBuilder, RequestPacketKind, ResponsePacket, SoundModeCommandBuilder,
-    StateTransformationPacket,
+    EqCommandBuilder, RequestPacketBuilder, RequestPacketKind, ResponsePacket,
+    SoundModeCommandBuilder, StateTransformationPacket,
 };
 use crate::parsers::TaggedData;
 use crate::types::KnownProductCodes;
@@ -191,7 +191,18 @@ where
         Ok(())
     }
 
-    pub async fn set_eq(&self, _eq: EQConfiguration) -> SoundcoreLibResult<()> {
-        todo!()
+    pub async fn set_eq(&self, eq: EQConfiguration) -> SoundcoreLibResult<()> {
+        let command = EqCommandBuilder::new(eq.clone(), self.model).build();
+
+        self.connection
+            .write(&command, WriteType::WithoutResponse)
+            .await?;
+
+        let state_sender = self.state_channel.lock().await;
+        let mut new_state = state_sender.borrow().clone();
+        new_state.eq_configuration = eq;
+        state_sender.send_replace(new_state);
+
+        Ok(())
     }
 }
