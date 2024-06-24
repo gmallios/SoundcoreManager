@@ -1,8 +1,8 @@
 import { Collapse, MenuItem, Paper, Select, SelectChangeEvent, Stack } from '@mui/material';
 import { Equalizer } from './equalizer';
-import { EQProfile, SoundcoreDeviceState } from '@generated-types/soundcore-lib';
+import { EQProfile, MonoEQ, SoundcoreDeviceState } from '@generated-types/soundcore-lib';
 import { useCallback } from 'react';
-import { useUpdatePresetEqualizer } from '@hooks/useDeviceCommand';
+import { useUpdateCustomEqualizer, useUpdatePresetEqualizer } from '@hooks/useDeviceCommand';
 import { useSoundcoreStore } from '@stores/useSoundcoreStore';
 
 export interface EqualizerCardProps {
@@ -10,12 +10,15 @@ export interface EqualizerCardProps {
 }
 
 export const EqualizerCard = ({ state }: EqualizerCardProps): JSX.Element => {
-  const isOnCustom = state.eqConfiguration.value.profile === EQProfile.Custom;
   const deviceAddr = useSoundcoreStore((state) => state.currentViewedDevice);
+  const isOnCustom = state.eqConfiguration.value.profile === EQProfile.Custom;
+  const hasBassUp = state.featureSet.equalizerFeatures?.has_bass_up ?? false;
 
   const onCustomEqualizerChange = useCallback((output: number[]) => {
-    console.log('Equalizer output:', output);
-    console.log('Equalizer output mapped:', mapRangeArray(output, -6, 6, 0, 240));
+    if (isOnCustom) {
+      const new_eq: MonoEQ = { values: mapRangeArray(output, -6, 6, 0, 240) };
+      useUpdateCustomEqualizer(deviceAddr!, new_eq);
+    }
   }, []);
 
   const onSelectedEqProfileChange = (e: SelectChangeEvent) => {
@@ -61,11 +64,17 @@ export const EqualizerCard = ({ state }: EqualizerCardProps): JSX.Element => {
     <Paper sx={{ display: 'flex', margin: 3, justifyContent: 'center', alignItems: 'center' }}>
       <Stack sx={{ width: '100%' }}>
         <Select value={state.eqConfiguration.value.profile} onChange={onSelectedEqProfileChange}>
-          {eqProfiles.map((profile) => (
-            <MenuItem key={profile} value={profile}>
-              {profile}
-            </MenuItem>
-          ))}
+          {eqProfiles
+            .filter((prof) => {
+              if (hasBassUp) {
+                prof.toLowerCase() !== 'bassbooster';
+              }
+            })
+            .map((profile) => (
+              <MenuItem key={profile} value={profile}>
+                {profile}
+              </MenuItem>
+            ))}
         </Select>
         {state.featureSet.equalizerFeatures && (
           <Collapse in={isOnCustom} timeout="auto">

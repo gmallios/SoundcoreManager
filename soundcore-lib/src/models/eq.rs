@@ -53,6 +53,10 @@ impl MonoEQ {
         bytes
     }
 
+    pub fn to_8band_bytes(&self) -> Vec<u8> {
+        self.values.iter().take(8).map(|&v| Self::to_byte(&v)).collect()
+    }
+
     pub fn to_drc_bytes(&self) -> Vec<u8> {
         Self::calculate_drc_adjustments(
             self.values
