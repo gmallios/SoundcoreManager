@@ -9,10 +9,10 @@ use tokio::time::timeout;
 use crate::api::SoundcoreDeviceState;
 use crate::ble::{BLEConnection, WriteType};
 use crate::error::{SoundcoreLibError, SoundcoreLibResult};
-use crate::models::{EQConfiguration, SoundMode};
+use crate::models::{BassUp, EQConfiguration, EQProfile, SoundMode};
 use crate::packets::{
-    EqCommandBuilder, RequestPacketBuilder, RequestPacketKind, ResponsePacket,
-    SoundModeCommandBuilder, StateTransformationPacket,
+    BassUpCommandBuilder, EqCommandBuilder, RequestPacketBuilder, RequestPacketKind,
+    ResponsePacket, SoundModeCommandBuilder, StateTransformationPacket,
 };
 use crate::parsers::TaggedData;
 use crate::types::KnownProductCodes;
@@ -192,14 +192,60 @@ where
     }
 
     pub async fn set_eq(&self, eq: EQConfiguration) -> SoundcoreLibResult<()> {
+        let latest_state = self.latest_state().await;
+        let state_sender = self.state_channel.lock().await;
+        let mut new_state = state_sender.borrow().clone();
+        // If the device supports bass up, the transition from
+        // SoundcoreSignature<->BassBooster should be mapped to
+        // a BassUp command. Additionally, if the transition is
+        // from BassBooster->SoundcoreSignature send the eq command
+        // after the BassUp.
+        if let Some(features) = latest_state.feature_set.equalizer_features {
+            let latest_eq_profile = latest_state.eq_configuration.get_profile();
+            let new_eq_profile = eq.get_profile();
+            if features.has_bass_up {
+                trace!(
+                    "Device {:?} supports BassUp, building and sending the appropriate command...",
+                    self.model
+                );
+                if latest_eq_profile == EQProfile::SoundcoreSignature
+                    && new_eq_profile == EQProfile::BassBooster
+                {
+                    self.connection
+                        .write(
+                            &BassUpCommandBuilder::new(self.model, true).build(),
+                            WriteType::WithoutResponse,
+                        )
+                        .await?;
+                    new_state.bass_up = Some(BassUp(true));
+                    let mut new_eq = new_state.eq_configuration.clone();
+                    new_eq.set_profile(EQProfile::BassBooster);
+                    new_state.eq_configuration = new_eq;
+                    state_sender.send_replace(new_state);
+                    return Ok(());
+                } else if latest_eq_profile == EQProfile::BassBooster
+                    && new_eq_profile == EQProfile::SoundcoreSignature
+                {
+                    self.connection
+                        .write(
+                            &BassUpCommandBuilder::new(self.model, false).build(),
+                            WriteType::WithoutResponse,
+                        )
+                        .await?;
+                    new_state.bass_up = match new_state.bass_up {
+                        None => None,
+                        Some(_) => Some(BassUp(false)),
+                    };
+                }
+            }
+        }
+
         let command = EqCommandBuilder::new(eq.clone(), self.model).build();
 
         self.connection
             .write(&command, WriteType::WithoutResponse)
             .await?;
 
-        let state_sender = self.state_channel.lock().await;
-        let mut new_state = state_sender.borrow().clone();
         new_state.eq_configuration = eq;
         state_sender.send_replace(new_state);
 

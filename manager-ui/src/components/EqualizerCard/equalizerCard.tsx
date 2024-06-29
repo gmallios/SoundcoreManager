@@ -65,11 +65,6 @@ export const EqualizerCard = ({ state }: EqualizerCardProps): JSX.Element => {
       <Stack sx={{ width: '100%' }}>
         <Select value={state.eqConfiguration.value.profile} onChange={onSelectedEqProfileChange}>
           {eqProfiles
-            .filter((prof) => {
-              if (hasBassUp) {
-                prof.toLowerCase() !== 'bassbooster';
-              }
-            })
             .map((profile) => (
               <MenuItem key={profile} value={profile}>
                 {profile}

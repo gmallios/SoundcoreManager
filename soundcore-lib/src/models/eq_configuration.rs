@@ -18,11 +18,11 @@ impl EQConfiguration {
                 config.profile = profile;
                 config.eq.left = profile.eq();
                 config.eq.right = profile.eq();
-            },
+            }
             EQConfiguration::Mono(config) => {
                 config.profile = profile;
                 config.eq = profile.eq();
-            },
+            }
         }
     }
 
@@ -41,6 +41,13 @@ impl EQConfiguration {
             eq,
             profile: EQProfile::Custom,
         })
+    }
+
+    pub fn get_profile(&self) -> EQProfile {
+        match self {
+            EQConfiguration::Stereo(config) => config.profile,
+            EQConfiguration::Mono(config) => config.profile,
+        }
     }
 }
 
