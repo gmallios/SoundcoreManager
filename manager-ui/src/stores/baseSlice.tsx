@@ -82,5 +82,8 @@ const bridgeResponseHandlers: BridgeResponseHandlers = {
   },
   soundModeUpdated: (_payload, _set, _get) => {
     throw new Error('Function not implemented.');
+  },
+  equalizerUpdated: (_e: BluetoothAdrr, _set, _get) => {
+    throw new Error('Function not implemented.');
   }
 };
