@@ -2,6 +2,7 @@
 resolver = "2"
 members = [
     "manager-app",
+    "manager-wasm",
     "soundcore-lib",
     "test_data"
 ]
