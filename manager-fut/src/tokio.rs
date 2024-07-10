@@ -38,7 +38,10 @@ impl ManagerFuture for TokioFuture {
     where
         F: Future<Output = T>,
     {
-        tokio::time::timeout(dur, fut)
+        match tokio::time::timeout(dur, fut).await {
+            Ok(res) => Ok(res),
+            Err(_) => Err(()),
+        }
     }
 }
 
