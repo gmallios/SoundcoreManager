@@ -8,6 +8,8 @@ use typeshare::typeshare;
 use crate::btaddr::BluetoothAdrr;
 use crate::error::SoundcoreLibResult;
 
+pub mod characteristic_resolver;
+
 #[cfg(all(feature = "btleplug-backend", not(feature = "mock")))]
 pub mod btleplug;
 #[cfg(all(feature = "winrt-backend", not(feature = "mock")))]
@@ -45,7 +47,6 @@ pub enum BLEAdapterEvent {
     DeviceDisconnected(BluetoothAdrr),
 }
 
-#[async_trait]
 pub trait BLEConnection {
     fn descriptor(&self) -> BLEDeviceDescriptor;
     async fn byte_channel(&self) -> SoundcoreLibResult<tokio::sync::mpsc::Receiver<Vec<u8>>>;

@@ -2,12 +2,14 @@
 resolver = "2"
 members = [
     "manager-app",
+    "manager-fut",
     "manager-wasm",
     "soundcore-lib",
-    "test_data"
+    "test_data",
 ]
 
 [workspace.package]
+authors = ["Grigoris Mallios <gregmallios@gmail.com>"]
 license = "GPL-3.0-or-later"
 edition = "2021"
 
@@ -20,9 +22,18 @@ env_logger = { version = "0.11" }
 thiserror = { version = "1.0.40" }
 tokio = { version = "1" }
 serde = { version = "1" }
+serde_json = { version = "1.0" }
 async-trait = { version = "0.1" }
 futures = { version = "0.3" }
+wasm-bindgen-futures = { version = "0.4" }
+js-sys = { version = "0.3" }
+web-sys = { version = "0.3" }
+console_error_panic_hook = { version = "0.1.7" }
+serde-wasm-bindgen = { version = "0.6" }
+uuid = { version = "1.6.1" }
 soundcore-lib = { path = "./soundcore-lib", default-features = false }
+manager-fut = { path = "./manager-fut" }
 
 [profile.release]
 lto = true
+opt-level = "s"

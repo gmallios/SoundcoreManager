@@ -1,5 +1,5 @@
 import React from 'react';
-import { useSoundcoreStore } from '../stores/useSoundcoreStore';
+import { useTauriManagerStore } from '@stores/tauri/useTauriManagerStore';
 import Stack from '@mui/material/Stack/Stack';
 import {
   Container,
@@ -26,7 +26,7 @@ export const BluetoothSearchScreen: React.FC = () => {
     connectedAddresses,
     failedConnectionMap,
     removeFailedConnection
-  } = useSoundcoreStore(
+  } = useTauriManagerStore(
     useShallow((state) => ({
       isLoading: state.isScanLoading,
       startScan: state.startScan,

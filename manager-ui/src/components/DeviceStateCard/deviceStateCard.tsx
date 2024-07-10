@@ -1,11 +1,12 @@
-import { Battery } from '@generated-types/soundcore-lib';
+import { Battery, SoundcoreDeviceState } from '@generated-types/soundcore-lib';
 import { Box, Grid, Paper } from '@mui/material';
-import { useSoundcoreStore } from '@stores/useSoundcoreStore';
 import { getImageForModel } from '@utils/modelToImgMap';
 import { BatteryIcon } from './batteryIcon';
+import React from 'react';
 
-export const DeviceStateCard: React.FC = () => {
-  const currentState = useSoundcoreStore((state) => state.currentViewedDeviceState());
+export const DeviceStateCard: React.FC<{
+  state: SoundcoreDeviceState | null;
+}> = ({ state }) => {
 
   return (
     <>
@@ -15,8 +16,8 @@ export const DeviceStateCard: React.FC = () => {
           elevation={0}
         >
           <ProductImageWithBattery
-            model={currentState?.serial?.model}
-            battery={currentState?.battery}
+            model={state?.serial?.model}
+            battery={state?.battery}
           />
         </Paper>
       </Box>

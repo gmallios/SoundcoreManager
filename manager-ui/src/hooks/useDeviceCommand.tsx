@@ -1,40 +1,51 @@
 import { BluetoothAdrr, EQProfile, MonoEQ, SoundMode } from '@generated-types/soundcore-lib';
 import { useAsyncBridgeRequest } from './useAsyncBridge';
+import { BLEDevice } from '../ble/bleDevice';
 
 // TODO: Implement using promise, waiting for the Ack response from the async bridge
 // We can generate a UUID which comes back to track the flow
-export const useUpdateDeviceSoundMode = (addr: BluetoothAdrr, mode: SoundMode) => {
-  useAsyncBridgeRequest({
-    command: 'setSoundMode',
-    payload: {
-      addr: addr,
-      payload: mode
-    }
-  });
+export const useUpdateDeviceSoundMode = (ref: BluetoothAdrr | BLEDevice, mode: SoundMode) => {
+  if (window.isTauri && 'address' in ref) {
+    useAsyncBridgeRequest({
+      command: 'setSoundMode',
+      payload: {
+        addr: ref,
+        payload: mode
+      }
+    });
+  } else if (ref instanceof BLEDevice) {
+  }
 };
 
-export const useUpdatePresetEqualizer = (addr: BluetoothAdrr, preset: EQProfile) => {
-  useAsyncBridgeRequest({
-    command: 'setEqualizer',
-    payload: {
-      addr,
+export const useUpdatePresetEqualizer = (ref: BluetoothAdrr | BLEDevice, preset: EQProfile) => {
+  if (window.isTauri && 'address' in ref) {
+    useAsyncBridgeRequest({
+      command: 'setEqualizer',
       payload: {
-        command: 'setEqualizerPreset',
-        payload: preset
+        addr: ref,
+        payload: {
+          command: 'setEqualizerPreset',
+          payload: preset
+        }
       }
-    }
-  });
+    });
+  } else if (ref instanceof BLEDevice) {
+  }
 };
 
-export const useUpdateCustomEqualizer = (addr: BluetoothAdrr, eq: MonoEQ) => {
-  useAsyncBridgeRequest({
-    command: 'setEqualizer',
-    payload: {
-      addr,
+export const useUpdateCustomEqualizer = (ref: BluetoothAdrr | BLEDevice, eq: MonoEQ) => {
+  if (window.isTauri) {
+    useAsyncBridgeRequest({
+      command: 'setEqualizer',
       payload: {
-        command: 'setCustomEqualizer',
-        payload: eq
+        addr: ref,
+        payload: {
+          command: 'setCustomEqualizer',
+          payload: eq
+        }
       }
-    }
-  });
+    });
+  } else if (ref instanceof BLEDevice) {
+    const a = ref;
+  }
 };

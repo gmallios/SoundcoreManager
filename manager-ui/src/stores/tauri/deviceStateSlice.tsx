@@ -1,6 +1,6 @@
 import { StateCreator } from 'zustand';
-import { SoundcoreDeviceState } from '../types/soundcore-lib';
-import { TaggedStateResponse } from '../types/tauri-backend';
+import { SoundcoreDeviceState } from '@generated-types/soundcore-lib';
+import { TaggedStateResponse } from '@generated-types/tauri-backend';
 import { BluetoothAddrKeyedMap } from '@utils/addrMap';
 
 export const createDeviceStateSlice: StateCreator<DeviceStateSlice> = (set, _get) => ({

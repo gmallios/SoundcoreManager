@@ -2,9 +2,10 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use log::{debug, error, trace};
-use tokio::sync::{mpsc, watch, Mutex};
+use tokio::sync::{mpsc, Mutex, watch};
 use tokio::task::JoinHandle;
-use tokio::time::timeout;
+
+use manager_fut::ManagerFuture;
 
 use crate::api::SoundcoreDeviceState;
 use crate::ble::{BLEConnection, WriteType};
@@ -17,21 +18,23 @@ use crate::packets::{
 use crate::parsers::TaggedData;
 use crate::types::KnownProductCodes;
 
-pub struct SoundcoreBLEDevice<Connection>
+pub struct SoundcoreBLEDevice<C, F>
 where
-    Connection: BLEConnection,
+    C: BLEConnection,
+    F: ManagerFuture,
 {
-    connection: Arc<Connection>,
+    connection: Arc<C>,
     state_channel: Arc<Mutex<watch::Sender<SoundcoreDeviceState>>>,
-    state_channel_handle: JoinHandle<()>,
+    state_channel_handle: F::JoinHandle,
     model: KnownProductCodes,
 }
 
-impl<Connection> SoundcoreBLEDevice<Connection>
+impl<C, F> SoundcoreBLEDevice<C, F>
 where
-    Connection: BLEConnection + Send + Sync,
+    C: BLEConnection,
+    F: ManagerFuture,
 {
-    pub async fn new(connection: Arc<Connection>) -> SoundcoreLibResult<Self> {
+    pub async fn new(connection: Arc<C>) -> SoundcoreLibResult<Self> {
         let mut byte_channel = connection.byte_channel().await?;
         let initial_state = Self::init_state(&connection, &mut byte_channel).await?;
         debug!(
@@ -57,7 +60,7 @@ where
     }
 
     async fn init_state(
-        connection: &Connection,
+        connection: &C,
         byte_channel: &mut mpsc::Receiver<Vec<u8>>,
     ) -> SoundcoreLibResult<TaggedData<SoundcoreDeviceState>> {
         let initial_state = Self::fetch_initial_state(connection, byte_channel).await?;
@@ -72,7 +75,7 @@ where
     // 4. If not send a SN request packet
     // 5. Resolve the state and the model
     async fn fetch_initial_state(
-        connection: &Connection,
+        connection: &C,
         byte_channel: &mut mpsc::Receiver<Vec<u8>>,
     ) -> SoundcoreLibResult<TaggedData<SoundcoreDeviceState>> {
         let packet = RequestPacketBuilder::new(RequestPacketKind::State).build();
@@ -102,7 +105,7 @@ where
             };
 
             if let Ok(_) = state_send_fut.await {
-                match timeout(Duration::from_millis(1000), state_receive_fut).await {
+                match F::timeout(Duration::from_millis(1000), state_receive_fut).await {
                     Ok(Some(packet)) => {
                         return Ok(packet);
                     }
@@ -110,7 +113,7 @@ where
                 };
             }
 
-            tokio::time::sleep(Duration::from_millis(500)).await;
+            F::sleep(Duration::from_millis(500)).await;
             retry_count += 1;
         }
 
@@ -130,8 +133,8 @@ where
     fn spawn_packet_handler(
         state_sender: Arc<Mutex<watch::Sender<SoundcoreDeviceState>>>,
         mut byte_channel: mpsc::Receiver<Vec<u8>>,
-    ) -> JoinHandle<()> {
-        tokio::task::spawn(async move {
+    ) -> F::JoinHandle {
+        F::spawn(async move {
             while let Some(bytes) = byte_channel.recv().await {
                 trace!("Received bytes: {:?}", bytes);
                 if bytes.is_empty() {

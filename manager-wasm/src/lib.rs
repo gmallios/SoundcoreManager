@@ -1,13 +1,10 @@
-mod utils;
-
 use wasm_bindgen::prelude::*;
 
-#[wasm_bindgen]
-extern "C" {
-    fn alert(s: &str);
-}
+mod connection;
+mod utils;
+mod web_ble_device;
 
-#[wasm_bindgen]
-pub fn greet() {
-    alert("Hello, manager-wasm!");
+#[wasm_bindgen(start)]
+pub fn wasm_init() {
+    console_error_panic_hook::set_once();
 }

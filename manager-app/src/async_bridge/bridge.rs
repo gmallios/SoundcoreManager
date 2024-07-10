@@ -2,13 +2,14 @@ use std::sync::Arc;
 
 use log::{debug, info, trace};
 
+use manager_fut::TokioFuture;
 use tokio::sync::{mpsc, Mutex};
 
 use soundcore_lib::{
-    ble::{BLEConnection, BLEConnectionManager},
+    ble::BLEConnectionManager,
     device::SoundcoreBLEDevice,
     device_manager::{create_device_manager, DeviceManager},
-    error::SoundcoreLibError, models::EQConfiguration,
+    models::EQConfiguration,
 };
 
 use super::{
@@ -17,11 +18,11 @@ use super::{
 };
 
 struct CommandLoopState<B: BLEConnectionManager> {
-    manager: DeviceManager<B>,
+    manager: DeviceManager<B, TokioFuture>,
 }
 
 impl<B: BLEConnectionManager> CommandLoopState<B> {
-    fn new(manager: DeviceManager<B>) -> Self {
+    fn new(manager: DeviceManager<B, TokioFuture>) -> Self {
         Self { manager }
     }
 }
@@ -176,20 +177,19 @@ async fn handle_command<B: BLEConnectionManager>(
 }
 
 async fn handle_set_eq<B: BLEConnectionManager>(
-    device: Arc<SoundcoreBLEDevice<<B as BLEConnectionManager>::Connection>>,
+    device: Arc<SoundcoreBLEDevice<<B as BLEConnectionManager>::Connection, TokioFuture>>,
     wrapped_payload: AddrWrappedPayload<SetEqualizerPayload>,
 ) -> BridgeResponse {
     let eq_configuration = match wrapped_payload.payload {
         SetEqualizerPayload::SetCustomEqualizer(eq) => EQConfiguration::mono_custom(eq),
         SetEqualizerPayload::SetEqualizerPreset(profile) => {
             EQConfiguration::stereo_with_profile(profile)
-        },
+        }
     };
 
     match device.set_eq(eq_configuration).await {
         Ok(_) => BridgeResponse::EqualizerUpdated(wrapped_payload.addr),
         Err(e) => BridgeResponse::GenericError(e.to_string()),
-    
     }
 }
 

@@ -1,12 +1,16 @@
+use std::{sync::Arc, time::Duration};
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
-use std::{sync::Arc, time::Duration};
 
 use serde::{Deserialize, Serialize};
 use tokio::sync::RwLock;
 use typeshare::typeshare;
 
-use crate::ble::BLEAdapterEvent;
+use manager_fut::ManagerFuture;
+/// default-features shall be set to false
+#[cfg(feature = "mock")]
+use manager_fut::TokioFuture;
+
 use crate::{
     ble::{BLEConnectionManager, BLEDeviceDescriptor},
     btaddr::BluetoothAdrr,
@@ -14,6 +18,7 @@ use crate::{
     error::SoundcoreLibResult,
     types::{KnownProductCodes, SOUNDCORE_NAME_PRODUCT_CODE_MAP},
 };
+use crate::ble::BLEAdapterEvent;
 // TODO: Specify clippy & fmt features
 #[allow(unused_imports)]
 #[cfg(all(feature = "btleplug-backend", not(feature = "mock")))]
@@ -21,17 +26,19 @@ use crate::ble::btleplug::manager::BtlePlugBLEManager;
 #[cfg(any(test, feature = "mock"))]
 use crate::mocks::*;
 
-pub struct DeviceManager<B>
+pub struct DeviceManager<B, F>
 where
     B: BLEConnectionManager,
+    F: ManagerFuture,
 {
     ble_manager: B,
-    ble_devices: RwLock<HashMap<BluetoothAdrr, Arc<SoundcoreBLEDevice<B::Connection>>>>,
+    ble_devices: RwLock<HashMap<BluetoothAdrr, Arc<SoundcoreBLEDevice<B::Connection, F>>>>,
 }
 
-impl<B> DeviceManager<B>
+impl<B, F> DeviceManager<B, F>
 where
     B: BLEConnectionManager,
+    F: ManagerFuture,
 {
     pub async fn new(ble_manager: B) -> Self {
         Self {
@@ -43,7 +50,7 @@ where
     pub async fn connect(
         &self,
         device: DiscoveredDevice,
-    ) -> SoundcoreLibResult<Arc<SoundcoreBLEDevice<B::Connection>>> {
+    ) -> SoundcoreLibResult<Arc<SoundcoreBLEDevice<B::Connection, F>>> {
         match self
             .ble_devices
             .write()
@@ -64,7 +71,7 @@ where
     pub async fn get_device(
         &self,
         addr: BluetoothAdrr,
-    ) -> Option<Arc<SoundcoreBLEDevice<B::Connection>>> {
+    ) -> Option<Arc<SoundcoreBLEDevice<B::Connection, F>>> {
         self.ble_devices.read().await.get(&addr).cloned()
     }
 
@@ -145,8 +152,7 @@ pub async fn create_device_manager() -> DeviceManager<BtlePlugBLEManager> {
     DeviceManager::new(manager).await
 }
 
-/// default-features shall be set to false
 #[cfg(feature = "mock")]
-pub async fn create_device_manager() -> DeviceManager<MockBLEConnectionManager> {
+pub async fn create_device_manager() -> DeviceManager<MockBLEConnectionManager, TokioFuture> {
     DeviceManager::new(MockBLEConnectionManager::new()).await
 }

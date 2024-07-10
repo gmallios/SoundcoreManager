@@ -147,7 +147,6 @@ impl WindowsBLEConnection {
     }
 }
 
-#[async_trait]
 impl BLEConnection for WindowsBLEConnection {
     async fn byte_channel(&self) -> SoundcoreLibResult<Receiver<Vec<u8>>> {
         self.read_charateristic

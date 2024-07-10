@@ -1,11 +1,13 @@
 import { Button, Collapse, Grid, Icon, Paper, Slider, Stack, styled } from '@mui/material';
-import { useSoundcoreStore } from '@stores/useSoundcoreStore';
+import { useTauriManagerStore } from '@stores/tauri/useTauriManagerStore';
 import ANCIcon from '@assets/ambient_icon_anc.png';
 import NormalIcon from '@assets/ambient_icon_off.png';
 import TransIcon from '@assets/ambient_icon_trans.png';
 import React, { useCallback, useEffect, useState } from 'react';
-import { CurrentSoundMode, SoundcoreDeviceState, SoundMode } from '@generated-types/soundcore-lib';
+import { BluetoothAdrr, CurrentSoundMode, SoundcoreDeviceState, SoundMode } from '@generated-types/soundcore-lib';
 import { useUpdateDeviceSoundMode } from '@hooks/useDeviceCommand';
+import { useWebManagerStore } from '@stores/web/useWebManagerStore';
+import { BLEDevice } from '../../ble/bleDevice';
 
 export interface SoundModeCardProps {
   state: SoundcoreDeviceState;
@@ -18,9 +20,11 @@ export const SoundModeCard = ({ state }: SoundModeCardProps): JSX.Element => {
   const hasNormalMode = state.featureSet.soundModeFeatures?.hasNormal;
   const maxCustomAncValue = state.featureSet.soundModeFeatures?.maxCustomAnc;
   const maxCustomTransValue = state.featureSet.soundModeFeatures?.maxCustomTransparency;
-  const deviceAddr = useSoundcoreStore((state) => state.currentViewedDevice);
+  const deviceAddrOrDevice: BluetoothAdrr | BLEDevice | null = window.isTauri ?
+    useTauriManagerStore((state) => state.currentViewedDevice) :
+    useWebManagerStore((state) => state.device);
 
-  if (!soundModeState || !deviceAddr || !ancFeatures || !transparencyFeatures || !hasNormalMode) {
+  if (!soundModeState || !deviceAddrOrDevice || !ancFeatures || !transparencyFeatures || !hasNormalMode) {
     return <></>;
   }
 
@@ -88,14 +92,21 @@ export const SoundModeCard = ({ state }: SoundModeCardProps): JSX.Element => {
       return 0;
     });
 
+  const handleCurrentSoundModeChange = (soundMode: CurrentSoundMode) => {
+    useUpdateDeviceSoundMode(deviceAddrOrDevice, {
+      ...selectedSoundMode,
+      current: soundMode
+    });
+  };
+
   const handleCustomValueChange = (value: number) => {
     if (selectedSoundMode.current === CurrentSoundMode.ANC) {
-      useUpdateDeviceSoundMode(deviceAddr, {
+      useUpdateDeviceSoundMode(deviceAddrOrDevice, {
         ...selectedSoundMode,
         customAnc: value
       });
     } else if (selectedSoundMode.current === CurrentSoundMode.Transparency) {
-      useUpdateDeviceSoundMode(deviceAddr, {
+      useUpdateDeviceSoundMode(deviceAddrOrDevice, {
         ...selectedSoundMode,
         customTrans: value
       });
@@ -149,10 +160,7 @@ export const SoundModeCard = ({ state }: SoundModeCardProps): JSX.Element => {
                 icon={ANCIcon}
                 setSliderIcon={setIcon}
                 setSliderPosition={() =>
-                  useUpdateDeviceSoundMode(deviceAddr, {
-                    ...selectedSoundMode,
-                    current: CurrentSoundMode.ANC
-                  })
+                  handleCurrentSoundModeChange(CurrentSoundMode.ANC)
                 }
               />
             )}
@@ -162,10 +170,7 @@ export const SoundModeCard = ({ state }: SoundModeCardProps): JSX.Element => {
                 icon={NormalIcon}
                 setSliderIcon={setIcon}
                 setSliderPosition={() =>
-                  useUpdateDeviceSoundMode(deviceAddr, {
-                    ...selectedSoundMode,
-                    current: CurrentSoundMode.Normal
-                  })
+                  handleCurrentSoundModeChange(CurrentSoundMode.Normal)
                 }
               />
             )}
@@ -175,10 +180,7 @@ export const SoundModeCard = ({ state }: SoundModeCardProps): JSX.Element => {
                 icon={TransIcon}
                 setSliderIcon={setIcon}
                 setSliderPosition={() =>
-                  useUpdateDeviceSoundMode(deviceAddr, {
-                    ...selectedSoundMode,
-                    current: CurrentSoundMode.Transparency
-                  })
+                  handleCurrentSoundModeChange(CurrentSoundMode.Transparency)
                 }
               />
             )}
@@ -190,7 +192,7 @@ export const SoundModeCard = ({ state }: SoundModeCardProps): JSX.Element => {
             buttons={modeButtons}
             onClick={(value) => {
               if (currentNonNormalSoundModeKey) {
-                useUpdateDeviceSoundMode(deviceAddr, {
+                useUpdateDeviceSoundMode(deviceAddrOrDevice, {
                   ...selectedSoundMode,
                   [currentNonNormalSoundModeKey]: { type: currentSoundModeType, value }
                 });

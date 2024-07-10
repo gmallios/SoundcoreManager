@@ -1,28 +1,37 @@
 [package]
 name = "manager-wasm"
 version = "0.1.0"
-authors = ["Grigoris Mallios <gregmallios@gmail.com>"]
-edition = "2018"
+edition.workspace = true
+authors.workspace = true
+
 
 [lib]
 crate-type = ["cdylib", "rlib"]
 
-[features]
-default = ["console_error_panic_hook"]
-
 [dependencies]
 wasm-bindgen = "0.2.84"
-soundcore-lib={ workspace = true, default-features = false}
-
-# The `console_error_panic_hook` crate provides better debugging of panics by
-# logging them with `console.error`. This is great for development, but requires
-# all the `std::fmt` and `std::panicking` infrastructure, so isn't great for
-# code size when deploying.
-console_error_panic_hook = { version = "0.1.7", optional = true }
+wasm-bindgen-futures = { workspace = true }
+web-sys = { workspace = true, features = [
+    "Bluetooth",
+    "BluetoothDevice",
+    "BluetoothRemoteGattServer",
+    "BluetoothRemoteGattService",
+    "BluetoothRemoteGattCharacteristic",
+    "console"
+] }
+js-sys = { workspace = true }
+manager-fut = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+serde-wasm-bindgen = { workspace = true }
+tokio = { workspace = true, features = ["sync", "rt", "macros"] }
+soundcore-lib = { workspace = true, default-features = false }
+async-trait = { workspace = true }
+console_error_panic_hook = { workspace = true }
+uuid = { workspace = true, features = ["v4"] }
 
 
 [dev-dependencies]
 wasm-bindgen-test = "0.3.34"
 
-[profile.release]
-opt-level = "s"
+

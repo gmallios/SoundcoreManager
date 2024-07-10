@@ -92,7 +92,7 @@ pub static SOUNDCORE_NAME_PRODUCT_CODE_MAP: phf::Map<&'static str, KnownProductC
 //     }
 
 //     fn apply_drc(mut input_wave: EQWave) -> EQWave {
-//         /* Spaghetti code, ported straight from Soundcore App */
+//         /* Spaghetti code, ported straight from Soundcore TauriApp */
 //         const EQCONST_A: f32 = 0.85;
 //         const EQCONST_B: f32 = 0.95;
 //         let (d, d2, d3, d4, d5, d6, d7, d8, d9, d10, d11, d12) = (

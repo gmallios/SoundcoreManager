@@ -1,13 +1,12 @@
 use std::str::FromStr;
 
-use async_trait::async_trait;
 use tokio::sync::Mutex;
 
-use crate::btaddr::BluetoothAdrr;
 use crate::{
     ble::{BLEConnection, BLEDeviceDescriptor, WriteType},
     error::SoundcoreLibResult,
 };
+use crate::btaddr::BluetoothAdrr;
 
 pub struct MockBLEConnection {
     read_channel_loop: Mutex<Option<tokio::sync::mpsc::Receiver<Vec<u8>>>>,
@@ -38,7 +37,6 @@ impl MockBLEConnection {
     }
 }
 
-#[async_trait]
 impl BLEConnection for MockBLEConnection {
     fn descriptor(&self) -> BLEDeviceDescriptor {
         BLEDeviceDescriptor {

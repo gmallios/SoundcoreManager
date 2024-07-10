@@ -1,7 +1,7 @@
 import { Event } from '@tauri-apps/api/event';
 import { StateCreator, StoreApi } from 'zustand';
-import { SoundcoreStoreSlices } from './useSoundcoreStore';
-import { BridgeResponse } from '../types/tauri-backend';
+import { TauriManagerStoreSlices } from './useTauriManagerStore';
+import { BridgeResponse } from '@generated-types/tauri-backend';
 import { BluetoothAdrr, SoundcoreDeviceState } from '@generated-types/soundcore-lib';
 
 export interface BaseSlice {
@@ -11,7 +11,7 @@ export interface BaseSlice {
   currentViewedDeviceState: () => SoundcoreDeviceState | null;
 }
 
-export const createBaseSlice: StateCreator<SoundcoreStoreSlices, [], [], BaseSlice> = (
+export const createBaseSlice: StateCreator<TauriManagerStoreSlices, [], [], BaseSlice> = (
   set,
   get
 ) => ({
@@ -42,8 +42,8 @@ export const createBaseSlice: StateCreator<SoundcoreStoreSlices, [], [], BaseSli
 type BridgeResponseHandlers = {
   [K in BridgeResponse['kind']]: (
     e: Extract<BridgeResponse, { kind: K }>['payload'],
-    set: StoreApi<SoundcoreStoreSlices>['setState'],
-    get: StoreApi<SoundcoreStoreSlices>['getState']
+    set: StoreApi<TauriManagerStoreSlices>['setState'],
+    get: StoreApi<TauriManagerStoreSlices>['getState']
   ) => void;
 };
 

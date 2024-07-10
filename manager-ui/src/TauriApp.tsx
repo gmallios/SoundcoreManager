@@ -1,18 +1,18 @@
 import React, { useEffect } from 'react';
 import './App.css';
-import { useSoundcoreStore } from './stores/useSoundcoreStore';
+import { useTauriManagerStore } from '@stores/tauri/useTauriManagerStore';
 import { BluetoothSearchScreen } from './screens/bluetoothSearch';
 import { useAsyncBridgeEvent, useAsyncBridgeRequest } from './hooks/useAsyncBridge';
 import { useShallow } from 'zustand/react/shallow';
 import { DeviceStateScreen } from '@screens/deviceState';
 
-export const App: React.FC = () => {
+export const TauriApp: React.FC = () => {
   const [isFirstRender, setFirstRender] = React.useState(true);
-  const [handleAsyncBridgeEvent, connectedAddresses] = useSoundcoreStore(
+  const [handleAsyncBridgeEvent, connectedAddresses] = useTauriManagerStore(
     useShallow((state) => [state.handleAsyncBridgeEvent, state.connectedAddresses])
   );
 
-  const state = useSoundcoreStore((state) => state);
+  const state = useTauriManagerStore((state) => state);
   console.log('state', state);
 
   // Add the event listener to the bridge, which listener is
@@ -36,4 +36,4 @@ export const App: React.FC = () => {
   );
 };
 
-export default App;
+export default TauriApp;

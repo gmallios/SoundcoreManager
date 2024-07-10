@@ -3,14 +3,14 @@ import { Equalizer } from './equalizer';
 import { EQProfile, MonoEQ, SoundcoreDeviceState } from '@generated-types/soundcore-lib';
 import { useCallback } from 'react';
 import { useUpdateCustomEqualizer, useUpdatePresetEqualizer } from '@hooks/useDeviceCommand';
-import { useSoundcoreStore } from '@stores/useSoundcoreStore';
+import { useTauriManagerStore } from '@stores/tauri/useTauriManagerStore';
 
 export interface EqualizerCardProps {
   state: SoundcoreDeviceState;
 }
 
 export const EqualizerCard = ({ state }: EqualizerCardProps): JSX.Element => {
-  const deviceAddr = useSoundcoreStore((state) => state.currentViewedDevice);
+  const deviceAddr = useTauriManagerStore((state) => state.currentViewedDevice);
   const isOnCustom = state.eqConfiguration.value.profile === EQProfile.Custom;
   const hasBassUp = state.featureSet.equalizerFeatures?.has_bass_up ?? false;
 
