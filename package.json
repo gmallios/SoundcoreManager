@@ -3,9 +3,10 @@
   "private": true,
   "scripts": {
     "dev": "yarn workspace manager-ui dev",
+    "dev:wasm": "cargo watch -w ./manager-wasm/src -i .gitignore -i '../manager-ui/wasm/*' -s 'yarn build:wasm && yarn dev'",
     "dev:force": "yarn workspace manager-ui dev:force",
     "build": "yarn workspace manager-ui build",
-    "build:wasm": "RUSTFLAGS=\"--cfg=web_sys_unstable_apis\" wasm-pack build ./manager-wasm --out-dir ../manager-ui/wasm --no-pack",
+    "build:wasm": "cross-env RUSTFLAGS=--cfg=web_sys_unstable_apis wasm-pack build ./manager-wasm --out-dir ../manager-ui/wasm --no-pack",
     "lint": "yarn workspace manager-ui lint",
     "lint:fix": "yarn workspace manager-ui lint:fix",
     "format": "yarn workspace manager-ui format",
@@ -21,7 +22,8 @@
     "bump:major": "yarn bump-ui:major && yarn version --no-git-tag-version --major && cargo set-version --bump major"
   },
   "devDependencies": {
-    "@tauri-apps/cli": "^1.5.10"
+    "@tauri-apps/cli": "^1.5.10",
+    "cross-env": "^7.0.3"
   },
   "workspaces": [
     "manager-ui"
