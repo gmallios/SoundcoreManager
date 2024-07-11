@@ -8,7 +8,7 @@ use typeshare::typeshare;
 
 use manager_fut::ManagerFuture;
 /// default-features shall be set to false
-#[cfg(feature = "mock")]
+#[cfg(any(feature = "mock", feature = "btleplug-backend", feature = "winrt-backend"))]
 use manager_fut::TokioFuture;
 
 use crate::{
@@ -147,7 +147,7 @@ pub struct DiscoveredDevice {
     not(feature = "winrt-backend"),
     not(feature = "mock")
 ))]
-pub async fn create_device_manager() -> DeviceManager<BtlePlugBLEManager> {
+pub async fn create_device_manager() -> DeviceManager<BtlePlugBLEManager, TokioFuture> {
     let manager = BtlePlugBLEManager::new().await.unwrap();
     DeviceManager::new(manager).await
 }
