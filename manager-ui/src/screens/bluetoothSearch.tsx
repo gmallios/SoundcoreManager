@@ -80,8 +80,7 @@ export const BluetoothSearchScreen: React.FC = () => {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center'
-          }}
-        >
+          }}>
           <Container
             sx={{
               display: 'flex',
@@ -89,8 +88,7 @@ export const BluetoothSearchScreen: React.FC = () => {
               justifyContent: 'center',
               flexDirection: 'column',
               gap: '0.5rem'
-            }}
-          >
+            }}>
             <Typography color="text.secondary">Connecting...</Typography>
             <LinearProgress sx={{ width: '100vw', height: '0.15rem' }} />
           </Container>
@@ -113,8 +111,7 @@ export const BluetoothSearchScreen: React.FC = () => {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center'
-        }}
-      >
+        }}>
         <Container
           sx={{
             display: 'flex',
@@ -122,8 +119,7 @@ export const BluetoothSearchScreen: React.FC = () => {
             justifyContent: 'center',
             flexDirection: 'column',
             gap: '0.5rem'
-          }}
-        >
+          }}>
           <Typography color="text.secondary">Select a connected device...</Typography>
           {isScanLoading && <LinearProgress sx={{ width: '100vw', height: '0.15rem' }} />}
           {!isScanLoading && <div style={{ width: '100vw', height: '0.15rem' }}></div>}
@@ -138,8 +134,7 @@ export const BluetoothSearchScreen: React.FC = () => {
           color="primary"
           aria-label="add"
           disabled={!selectedDevice || isConnecting}
-          sx={{ position: 'absolute', bottom: 16, right: 16 }}
-        >
+          sx={{ position: 'absolute', bottom: 16, right: 16 }}>
           Connect
           <ArrowForwardIcon sx={{ ml: 1 }} />
         </Fab>
@@ -150,8 +145,7 @@ export const BluetoothSearchScreen: React.FC = () => {
           color="primary"
           aria-label="add"
           disabled={isScanLoading}
-          sx={{ position: 'absolute', bottom: 16, left: 16 }}
-        >
+          sx={{ position: 'absolute', bottom: 16, left: 16 }}>
           Refresh List
         </Fab>
       </Stack>

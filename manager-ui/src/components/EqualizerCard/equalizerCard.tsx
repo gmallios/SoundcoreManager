@@ -12,9 +12,9 @@ export interface EqualizerCardProps {
 }
 
 export const EqualizerCard = ({ state }: EqualizerCardProps): JSX.Element => {
-  const deviceAddrOrDevice: BluetoothAdrr | BLEDevice | null = window.isTauri ?
-    useTauriManagerStore((state) => state.currentViewedDevice) :
-    useWebManagerStore((state) => state.device);
+  const deviceAddrOrDevice: BluetoothAdrr | BLEDevice | null = window.isTauri
+    ? useTauriManagerStore((state) => state.currentViewedDevice)
+    : useWebManagerStore((state) => state.device);
 
   if (!deviceAddrOrDevice) {
     return <></>;
@@ -25,7 +25,7 @@ export const EqualizerCard = ({ state }: EqualizerCardProps): JSX.Element => {
 
   const onCustomEqualizerChange = useCallback((output: number[]) => {
     if (isOnCustom) {
-      const new_eq = output.map(v => v * 10);
+      const new_eq = output.map((v) => v * 10);
       useUpdateCustomEqualizer(deviceAddrOrDevice, new_eq);
     }
   }, []);
@@ -73,12 +73,11 @@ export const EqualizerCard = ({ state }: EqualizerCardProps): JSX.Element => {
     <Paper sx={{ display: 'flex', margin: 3, justifyContent: 'center', alignItems: 'center' }}>
       <Stack sx={{ width: '100%' }}>
         <Select value={state.eqConfiguration.value.profile} onChange={onSelectedEqProfileChange}>
-          {eqProfiles
-            .map((profile) => (
-              <MenuItem key={profile} value={profile}>
-                {profile}
-              </MenuItem>
-            ))}
+          {eqProfiles.map((profile) => (
+            <MenuItem key={profile} value={profile}>
+              {profile}
+            </MenuItem>
+          ))}
         </Select>
         {state.featureSet.equalizerFeatures && (
           <Collapse in={isOnCustom} timeout="auto">

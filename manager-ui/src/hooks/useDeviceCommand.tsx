@@ -18,7 +18,10 @@ export const useUpdateDeviceSoundMode = async (ref: BluetoothAdrr | BLEDevice, m
   }
 };
 
-export const useUpdatePresetEqualizer = async (ref: BluetoothAdrr | BLEDevice, preset: EQProfile) => {
+export const useUpdatePresetEqualizer = async (
+  ref: BluetoothAdrr | BLEDevice,
+  preset: EQProfile
+) => {
   if (window.isTauri && 'address' in ref) {
     return useAsyncBridgeRequest({
       command: 'setEqualizer',
@@ -39,7 +42,10 @@ export const useUpdatePresetEqualizer = async (ref: BluetoothAdrr | BLEDevice, p
  * Set custom EQ values
  * @param values The values should be in range -60..=60
  */
-export const useUpdateCustomEqualizer = async (ref: BluetoothAdrr | BLEDevice, values: number[]) => {
+export const useUpdateCustomEqualizer = async (
+  ref: BluetoothAdrr | BLEDevice,
+  values: number[]
+) => {
   if (window.isTauri) {
     return useAsyncBridgeRequest({
       command: 'setEqualizer',

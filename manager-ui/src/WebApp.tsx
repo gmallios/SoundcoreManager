@@ -1,7 +1,11 @@
 /// <reference types="web-bluetooth" />
 
 import React, { useState } from 'react';
-import { generate_soundcore_service_uuids, getSoundcoreMacPrefixes, WebBLEDevice } from '@wasm/manager_wasm';
+import {
+  generate_soundcore_service_uuids,
+  getSoundcoreMacPrefixes,
+  WebBLEDevice
+} from '@wasm/manager_wasm';
 import { useWebManagerStore } from '@stores/web/useWebManagerStore';
 import { DeviceStateCard } from '@components/DeviceStateCard/deviceStateCard';
 import { SoundModeCard } from '@components/SoundModeCard/soundModeCard';
@@ -10,7 +14,6 @@ import { Box } from '@mui/material';
 import { EqualizerCard } from '@components/EqualizerCard/equalizerCard';
 
 export const WebApp: React.FC = () => {
-
   const state = useWebManagerStore((state) => state.currentState);
   const setDevice = useWebManagerStore((state) => state.setDevice);
   const [isConnecting, setIsConnecting] = useState(false);
@@ -21,7 +24,6 @@ export const WebApp: React.FC = () => {
     const soundcoreServiceUuids = generate_soundcore_service_uuids();
     const companyIdentifiers = getSoundcoreMacPrefixes();
     try {
-
       const device = await navigator.bluetooth.requestDevice({
         filters: companyIdentifiers.map((prefix) => ({
           manufacturerData: [

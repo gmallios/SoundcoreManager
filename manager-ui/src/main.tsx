@@ -30,10 +30,9 @@ const queryClient = new QueryClient({
   }
 });
 
-
 if (window.isTauri) {
   // Tauri-specific setup
-  let _ = attachConsole();
+  const _ = attachConsole();
   (async () => {
     const logDir = await appLogDir();
     console.log(
@@ -41,7 +40,6 @@ if (window.isTauri) {
     );
   })();
 }
-
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <ThemeProvider theme={darkTheme}>

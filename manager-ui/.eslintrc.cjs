@@ -37,5 +37,6 @@ module.exports = {
     react: {
       version: 'detect'
     }
-  }
+  },
+  ignorePatterns: ['wasm/', 'dist/']
 };

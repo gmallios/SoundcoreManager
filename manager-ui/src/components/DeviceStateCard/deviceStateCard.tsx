@@ -7,18 +7,13 @@ import React from 'react';
 export const DeviceStateCard: React.FC<{
   state: SoundcoreDeviceState | null;
 }> = ({ state }) => {
-
   return (
     <>
       <Box sx={{ display: 'block', maxWidth: '300px', margin: 'auto', mb: 0 }}>
         <Paper
           sx={{ display: 'flex', margin: 1.5, justifyContent: 'center', alignItems: 'center' }}
-          elevation={0}
-        >
-          <ProductImageWithBattery
-            model={state?.serial?.model}
-            battery={state?.battery}
-          />
+          elevation={0}>
+          <ProductImageWithBattery model={state?.serial?.model} battery={state?.battery} />
         </Paper>
       </Box>
     </>

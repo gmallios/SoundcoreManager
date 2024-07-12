@@ -4,7 +4,12 @@ import ANCIcon from '@assets/ambient_icon_anc.png';
 import NormalIcon from '@assets/ambient_icon_off.png';
 import TransIcon from '@assets/ambient_icon_trans.png';
 import React, { useCallback, useEffect, useState } from 'react';
-import { BluetoothAdrr, CurrentSoundMode, SoundcoreDeviceState, SoundMode } from '@generated-types/soundcore-lib';
+import {
+  BluetoothAdrr,
+  CurrentSoundMode,
+  SoundcoreDeviceState,
+  SoundMode
+} from '@generated-types/soundcore-lib';
 import { useUpdateDeviceSoundMode } from '@hooks/useDeviceCommand';
 import { useWebManagerStore } from '@stores/web/useWebManagerStore';
 import { BLEDevice } from '../../ble/bleDevice';
@@ -27,11 +32,17 @@ export const SoundModeCard = ({ state }: SoundModeCardProps): JSX.Element => {
     }
   } = state;
 
-  const deviceAddrOrDevice: BluetoothAdrr | BLEDevice | null = window.isTauri ?
-    useTauriManagerStore((state) => state.currentViewedDevice) :
-    useWebManagerStore((state) => state.device);
+  const deviceAddrOrDevice: BluetoothAdrr | BLEDevice | null = window.isTauri
+    ? useTauriManagerStore((state) => state.currentViewedDevice)
+    : useWebManagerStore((state) => state.device);
 
-  if (!soundModeState || !deviceAddrOrDevice || !ancFeatures || !transparencyFeatures || !hasNormalMode) {
+  if (
+    !soundModeState ||
+    !deviceAddrOrDevice ||
+    !ancFeatures ||
+    !transparencyFeatures ||
+    !hasNormalMode
+  ) {
     return <></>;
   }
 
@@ -151,8 +162,7 @@ export const SoundModeCard = ({ state }: SoundModeCardProps): JSX.Element => {
         minWidth: 275,
         justifyContent: 'center',
         alignItems: 'center'
-      }}
-    >
+      }}>
       <Grid sx={{ paddingLeft: 0, justifyContent: 'center' }}>
         <Grid item>
           <SliderSelectorWrapper>
@@ -166,9 +176,7 @@ export const SoundModeCard = ({ state }: SoundModeCardProps): JSX.Element => {
                 position="left"
                 icon={ANCIcon}
                 setSliderIcon={setIcon}
-                setSliderPosition={() =>
-                  handleCurrentSoundModeChange(CurrentSoundMode.ANC)
-                }
+                setSliderPosition={() => handleCurrentSoundModeChange(CurrentSoundMode.ANC)}
               />
             )}
             {hasNormalMode && (
@@ -176,9 +184,7 @@ export const SoundModeCard = ({ state }: SoundModeCardProps): JSX.Element => {
                 position="center"
                 icon={NormalIcon}
                 setSliderIcon={setIcon}
-                setSliderPosition={() =>
-                  handleCurrentSoundModeChange(CurrentSoundMode.Normal)
-                }
+                setSliderPosition={() => handleCurrentSoundModeChange(CurrentSoundMode.Normal)}
               />
             )}
             {transparencyFeatures.length > 0 && (
@@ -234,14 +240,12 @@ const ModeGroupButtons: React.FC<{
           container
           direction="row"
           spacing={1}
-          sx={{ display: 'flex', justifyContent: 'space-evenly', pt: 2 }}
-        >
+          sx={{ display: 'flex', justifyContent: 'space-evenly', pt: 2 }}>
           {buttons.map((button) => (
             <ModeGroupButton
               key={button.value}
               active={selectedValue === button.value}
-              onClick={() => onClick(button.value)}
-            >
+              onClick={() => onClick(button.value)}>
               {button.title}
             </ModeGroupButton>
           ))}
@@ -261,7 +265,7 @@ const ModeGroupButton = styled(Button, {
 export type AllowedSliderPositions = 'left' | 'right' | 'center';
 
 const SliderSelectorWrapper = styled('div')(({ theme }) => ({
-  width: (window.innerWidth - 35) - (window.innerWidth - 35) / 3,
+  width: window.innerWidth - 35 - (window.innerWidth - 35) / 3,
   height: 55,
   display: 'flex',
   flexDirection: 'row',
@@ -285,17 +289,17 @@ const SliderSelector = styled('div', {
   height: 53,
   alignItems: 'center',
   justifyContent: 'center',
-  width: ((window.innerWidth - 35) - (window.innerWidth - 35) / 3) / 3,
+  width: (window.innerWidth - 35 - (window.innerWidth - 35) / 3) / 3,
   elevation: 4,
   shadowColor: 'black',
   shadowRadius: 10,
   shadowOpacity: 0.31,
   transition: 'transform 0.32s cubic-bezier(0.87, 0, 0.13, 1)',
   ...(position == 'left' && {
-    transform: `translateX(-${((window.innerWidth - 35) - (window.innerWidth - 35) / 3) / 3}px)`
+    transform: `translateX(-${(window.innerWidth - 35 - (window.innerWidth - 35) / 3) / 3}px)`
   }),
   ...(position == 'right' && {
-    transform: `translateX(${(((window.innerWidth - 35) - (window.innerWidth - 35) / 3) / 3)}px)`
+    transform: `translateX(${(window.innerWidth - 35 - (window.innerWidth - 35) / 3) / 3}px)`
   }),
   ...(position == 'center' && {
     transform: 'translateX(0)'
@@ -307,7 +311,7 @@ const SliderButtonInner = styled(Button, {
 })<{ position: AllowedSliderPositions }>(({ position }) => ({
   display: 'flex',
   flex: 1,
-  width: ((window.innerWidth - 35) - (window.innerWidth - 35) / 3) / 3,
+  width: (window.innerWidth - 35 - (window.innerWidth - 35) / 3) / 3,
   height: 54,
   justifyContent: 'center',
   alignItems: 'center',
@@ -335,8 +339,7 @@ const SliderButton: React.FC<{
       onClick={() => {
         setSliderPosition && setSliderPosition(position);
         setSliderIcon(icon);
-      }}
-    >
+      }}>
       <Icon sx={{ display: 'flex', width: 32, height: 32, zIndex: 0 }}>
         <img src={icon} height="32" />
       </Icon>
