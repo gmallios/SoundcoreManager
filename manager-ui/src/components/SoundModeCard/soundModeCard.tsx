@@ -14,12 +14,19 @@ export interface SoundModeCardProps {
 }
 
 export const SoundModeCard = ({ state }: SoundModeCardProps): JSX.Element => {
-  const soundModeState = state.soundMode;
-  const ancFeatures = state.featureSet.soundModeFeatures?.allowedAncModes;
-  const transparencyFeatures = state.featureSet.soundModeFeatures?.allowedTransparencyModes;
-  const hasNormalMode = state.featureSet.soundModeFeatures?.hasNormal;
-  const maxCustomAncValue = state.featureSet.soundModeFeatures?.maxCustomAnc;
-  const maxCustomTransValue = state.featureSet.soundModeFeatures?.maxCustomTransparency;
+  const {
+    soundMode: soundModeState,
+    featureSet: {
+      soundModeFeatures: {
+        allowedAncModes: ancFeatures,
+        allowedTransparencyModes: transparencyFeatures,
+        hasNormal: hasNormalMode,
+        maxCustomAnc: maxCustomAncValue,
+        maxCustomTransparency: maxCustomTransValue
+      } = {}
+    }
+  } = state;
+
   const deviceAddrOrDevice: BluetoothAdrr | BLEDevice | null = window.isTauri ?
     useTauriManagerStore((state) => state.currentViewedDevice) :
     useWebManagerStore((state) => state.device);
@@ -247,22 +254,14 @@ const ModeGroupButtons: React.FC<{
 const ModeGroupButton = styled(Button, {
   shouldForwardProp: (prop) => prop !== 'active'
 })<{ active?: boolean }>(({ theme, active }) => ({
-  //width: "100px",
   backgroundColor: active ? theme.palette.primary.dark : 'transparent',
   color: active ? theme.palette.text.primary : theme.palette.text.secondary
 }));
 
-const width = window.innerWidth - 35;
-
-const Metrics = {
-  containerWidth: width - 30,
-  switchWidth: width / 2.7
-};
-
 export type AllowedSliderPositions = 'left' | 'right' | 'center';
 
 const SliderSelectorWrapper = styled('div')(({ theme }) => ({
-  width: Metrics.containerWidth,
+  width: (window.innerWidth - 35) - (window.innerWidth - 35) / 3,
   height: 55,
   display: 'flex',
   flexDirection: 'row',
@@ -277,7 +276,6 @@ const SliderSelectorWrapper = styled('div')(({ theme }) => ({
 const SliderSelector = styled('div', {
   shouldForwardProp: (prop) => prop !== 'position'
 })<{ position: AllowedSliderPositions }>(({ position, theme }) => ({
-  /* Remove border radius for miiddle item and animate it */
   zIndex: 2,
   display: 'flex',
   flexDirection: 'row',
@@ -287,17 +285,17 @@ const SliderSelector = styled('div', {
   height: 53,
   alignItems: 'center',
   justifyContent: 'center',
-  width: Metrics.switchWidth,
+  width: ((window.innerWidth - 35) - (window.innerWidth - 35) / 3) / 3,
   elevation: 4,
   shadowColor: 'black',
   shadowRadius: 10,
   shadowOpacity: 0.31,
   transition: 'transform 0.32s cubic-bezier(0.87, 0, 0.13, 1)',
   ...(position == 'left' && {
-    transform: 'translateX(-78%)'
+    transform: `translateX(-${((window.innerWidth - 35) - (window.innerWidth - 35) / 3) / 3}px)`
   }),
   ...(position == 'right' && {
-    transform: 'translateX(78%)'
+    transform: `translateX(${(((window.innerWidth - 35) - (window.innerWidth - 35) / 3) / 3)}px)`
   }),
   ...(position == 'center' && {
     transform: 'translateX(0)'
@@ -309,7 +307,7 @@ const SliderButtonInner = styled(Button, {
 })<{ position: AllowedSliderPositions }>(({ position }) => ({
   display: 'flex',
   flex: 1,
-  width: Metrics.containerWidth / 3,
+  width: ((window.innerWidth - 35) - (window.innerWidth - 35) / 3) / 3,
   height: 54,
   justifyContent: 'center',
   alignItems: 'center',

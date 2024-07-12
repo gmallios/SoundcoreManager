@@ -6,6 +6,8 @@ import { useWebManagerStore } from '@stores/web/useWebManagerStore';
 import { DeviceStateCard } from '@components/DeviceStateCard/deviceStateCard';
 import { SoundModeCard } from '@components/SoundModeCard/soundModeCard';
 import { BLEDevice } from './ble/bleDevice';
+import { Box } from '@mui/material';
+import { EqualizerCard } from '@components/EqualizerCard/equalizerCard';
 
 export const WebApp: React.FC = () => {
 
@@ -39,15 +41,19 @@ export const WebApp: React.FC = () => {
   };
 
   return (
-    <>
-      <button onClick={scan}>Connect</button>
-      {isConnecting && <a>Connecting...</a>}
-      {state && (
+    <Box>
+      {state ? (
         <>
           <DeviceStateCard state={state} />
           <SoundModeCard state={state} />
+          <EqualizerCard state={state} />
+        </>
+      ) : (
+        <>
+          <button onClick={scan}>Connect</button>
+          {isConnecting && <a>Connecting...</a>}
         </>
       )}
-    </>
+    </Box>
   );
 };

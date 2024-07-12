@@ -57,7 +57,6 @@ impl MonoEQ {
     }
 
     pub fn to_drc_bytes(&self) -> Vec<u8> {
-        log::debug!("Pre-drc {:?}", self.values);
         Self::calculate_drc_adjustments(
             self.values
                 .iter()
@@ -114,7 +113,6 @@ impl MonoEQ {
     }
 
     fn calculate_drc_adjustments(values: Vec<f32>) -> Vec<f32> {
-        log::debug!("DRC Input values: {:?}", values);
         // Input floats should be in the range ((MIN_FLOAT - MIN_FLOAT)  - (MAX_FLOAT - MIN_FLOAT)) and length >= 8
         assert!(values.len() >= 8);
         assert!(values.iter().all(|&v| v >= (-6.0) && v <= 6.0));
@@ -242,7 +240,6 @@ mod eq_model {
     fn drc_acoustic_bytes_check() {
         let expected_bytes = vec![125, 118, 123, 120, 124, 122, 124, 121, 120, 0];
         let eq = EQProfile::Acoustic.eq().to_drc_bytes();
-        print!("{:?}", EQProfile::Acoustic.eq().to_8band_bytes());
         assert_eq!(expected_bytes, eq);
     }
 }
