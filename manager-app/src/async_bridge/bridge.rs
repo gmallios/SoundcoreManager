@@ -5,16 +5,16 @@ use log::{debug, info, trace};
 use manager_fut::TokioFuture;
 use tokio::sync::{mpsc, Mutex};
 
+use super::{
+    AddrWrappedPayload, BridgeCommand, BridgeResponse, ConnectionFailedResponse,
+    SetEqualizerPayload, TaggedStateResponse,
+};
+use soundcore_lib::models::MonoEQ;
 use soundcore_lib::{
     ble::BLEConnectionManager,
     device::SoundcoreBLEDevice,
     device_manager::{create_device_manager, DeviceManager},
     models::EQConfiguration,
-};
-
-use super::{
-    AddrWrappedPayload, BridgeCommand, BridgeResponse, ConnectionFailedResponse,
-    SetEqualizerPayload, TaggedStateResponse,
 };
 
 struct CommandLoopState<B: BLEConnectionManager> {
@@ -181,7 +181,9 @@ async fn handle_set_eq<B: BLEConnectionManager>(
     wrapped_payload: AddrWrappedPayload<SetEqualizerPayload>,
 ) -> BridgeResponse {
     let eq_configuration = match wrapped_payload.payload {
-        SetEqualizerPayload::SetCustomEqualizer(eq) => EQConfiguration::mono_custom(eq),
+        SetEqualizerPayload::SetCustomEqualizer(values) => {
+            EQConfiguration::mono_custom(MonoEQ::from_signed_bytes(values))
+        }
         SetEqualizerPayload::SetEqualizerPreset(profile) => {
             EQConfiguration::stereo_with_profile(profile)
         }

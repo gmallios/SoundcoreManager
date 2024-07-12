@@ -28,6 +28,6 @@ pub struct AddrWrappedPayload<T> {
 #[typeshare]
 #[serde(rename_all = "camelCase", tag = "command", content = "payload")]
 pub enum SetEqualizerPayload {
-    SetCustomEqualizer(MonoEQ),
+    SetCustomEqualizer(Vec<i8>),
     SetEqualizerPreset(EQProfile),
 }

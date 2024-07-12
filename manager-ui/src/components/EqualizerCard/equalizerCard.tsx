@@ -1,29 +1,38 @@
 import { Collapse, MenuItem, Paper, Select, SelectChangeEvent, Stack } from '@mui/material';
 import { Equalizer } from './equalizer';
-import { EQProfile, MonoEQ, SoundcoreDeviceState } from '@generated-types/soundcore-lib';
+import { BluetoothAdrr, EQProfile, SoundcoreDeviceState } from '@generated-types/soundcore-lib';
 import { useCallback } from 'react';
 import { useUpdateCustomEqualizer, useUpdatePresetEqualizer } from '@hooks/useDeviceCommand';
 import { useTauriManagerStore } from '@stores/tauri/useTauriManagerStore';
+import { BLEDevice } from '../../ble/bleDevice';
+import { useWebManagerStore } from '@stores/web/useWebManagerStore';
 
 export interface EqualizerCardProps {
   state: SoundcoreDeviceState;
 }
 
 export const EqualizerCard = ({ state }: EqualizerCardProps): JSX.Element => {
-  const deviceAddr = useTauriManagerStore((state) => state.currentViewedDevice);
+  const deviceAddrOrDevice: BluetoothAdrr | BLEDevice | null = window.isTauri ?
+    useTauriManagerStore((state) => state.currentViewedDevice) :
+    useWebManagerStore((state) => state.device);
+
+  if (!deviceAddrOrDevice) {
+    return <></>;
+  }
+
   const isOnCustom = state.eqConfiguration.value.profile === EQProfile.Custom;
   const hasBassUp = state.featureSet.equalizerFeatures?.has_bass_up ?? false;
 
   const onCustomEqualizerChange = useCallback((output: number[]) => {
     if (isOnCustom) {
-      const new_eq: MonoEQ = { values: mapRangeArray(output, -6, 6, 0, 240) };
-      useUpdateCustomEqualizer(deviceAddr!, new_eq);
+      const new_eq = output.map(v => v * 10);
+      useUpdateCustomEqualizer(deviceAddrOrDevice, new_eq);
     }
   }, []);
 
   const onSelectedEqProfileChange = (e: SelectChangeEvent) => {
     console.log('Selected EQ profile:', e.target.value);
-    useUpdatePresetEqualizer(deviceAddr!, e.target.value as EQProfile);
+    useUpdatePresetEqualizer(deviceAddrOrDevice, e.target.value as EQProfile);
   };
 
   const mapRange = (

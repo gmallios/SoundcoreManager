@@ -1,3 +1,4 @@
+use log::trace;
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
@@ -27,12 +28,6 @@ impl MonoEQ {
     pub const MIN_FLOAT: f32 = 6.0;
     pub const DRC_ADJUSTMENT: f32 = 10.0;
 
-    pub fn from_bytes(bytes: &[u8]) -> Self {
-        Self {
-            values: bytes.iter().map(|&v| Self::from_byte(&v)).collect(),
-        }
-    }
-
     pub fn to_bytes(&self, bands: usize) -> Vec<u8> {
         self.values
             .iter()
@@ -54,10 +49,15 @@ impl MonoEQ {
     }
 
     pub fn to_8band_bytes(&self) -> Vec<u8> {
-        self.values.iter().take(8).map(|&v| Self::to_byte(&v)).collect()
+        self.values
+            .iter()
+            .take(8)
+            .map(|&v| Self::to_byte(&v))
+            .collect()
     }
 
     pub fn to_drc_bytes(&self) -> Vec<u8> {
+        log::debug!("Pre-drc {:?}", self.values);
         Self::calculate_drc_adjustments(
             self.values
                 .iter()
@@ -78,12 +78,6 @@ impl MonoEQ {
     pub fn from_vec(bytes: Vec<u8>) -> Self {
         Self {
             values: bytes.iter().map(Self::from_byte).collect(),
-        }
-    }
-
-    pub fn from_floats(floats: Vec<f32>) -> Self {
-        Self {
-            values: floats.iter().map(Self::from_small_range_float).collect(),
         }
     }
 
@@ -120,6 +114,7 @@ impl MonoEQ {
     }
 
     fn calculate_drc_adjustments(values: Vec<f32>) -> Vec<f32> {
+        log::debug!("DRC Input values: {:?}", values);
         // Input floats should be in the range ((MIN_FLOAT - MIN_FLOAT)  - (MAX_FLOAT - MIN_FLOAT)) and length >= 8
         assert!(values.len() >= 8);
         assert!(values.iter().all(|&v| v >= (-6.0) && v <= 6.0));
@@ -247,6 +242,7 @@ mod eq_model {
     fn drc_acoustic_bytes_check() {
         let expected_bytes = vec![125, 118, 123, 120, 124, 122, 124, 121, 120, 0];
         let eq = EQProfile::Acoustic.eq().to_drc_bytes();
+        print!("{:?}", EQProfile::Acoustic.eq().to_8band_bytes());
         assert_eq!(expected_bytes, eq);
     }
 }
