@@ -58,7 +58,10 @@ impl WebBLEConnection {
 
 impl BLEConnection for WebBLEConnection {
     fn descriptor(&self) -> BLEDeviceDescriptor {
-        todo!()
+        BLEDeviceDescriptor {
+            addr: Default::default(),
+            name: self.gatt_server.device().name().unwrap_or(String::default())
+        }
     }
     async fn byte_channel(&self) -> SoundcoreLibResult<Receiver<Vec<u8>>> {
         let (tx, rx) = tokio::sync::mpsc::channel(255);
