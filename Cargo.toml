@@ -31,6 +31,7 @@ web-sys = { version = "0.3" }
 console_error_panic_hook = { version = "0.1.7" }
 serde-wasm-bindgen = { version = "0.6" }
 uuid = { version = "1.6.1" }
+console_log = { version = "1" }
 soundcore-lib = { path = "./soundcore-lib", default-features = false }
 manager-fut = { path = "./manager-fut" }
 
