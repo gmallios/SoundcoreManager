@@ -83,5 +83,6 @@ test_video.mp4
 /tooling/cli.js
 /tooling/cli.rs
 
-# dist
-manager-ui/dist/
+# keep dist dir for tauri macro
+manager-ui/dist/*
+!manager-ui/dist/.gitkeep
