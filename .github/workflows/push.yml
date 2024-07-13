@@ -11,7 +11,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        platform: [windows-latest]
+        platform: [ windows-latest ]
 
     runs-on: ${{ matrix.platform }}
     steps:
@@ -49,6 +49,11 @@ jobs:
 
       - name: 📥 Install Node Dependencies
         run: yarn --frozen-lockfile
+
+      - name: ⏬ Install wasm-pack
+        uses: jetli/wasm-pack-action@v0.4.0
+        with:
+          version: 'latest'
 
       - name: 🔨 Build
         uses: tauri-apps/tauri-action@v0
