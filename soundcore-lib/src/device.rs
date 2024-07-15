@@ -2,8 +2,7 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use log::{debug, error, trace};
-use tokio::sync::{mpsc, Mutex, watch};
-use tokio::task::JoinHandle;
+use tokio::sync::{mpsc, watch, Mutex};
 
 use manager_fut::ManagerFuture;
 
@@ -235,10 +234,7 @@ where
                             WriteType::WithoutResponse,
                         )
                         .await?;
-                    new_state.bass_up = match new_state.bass_up {
-                        None => None,
-                        Some(_) => Some(BassUp(false)),
-                    };
+                    new_state.bass_up = new_state.bass_up.map(|_| BassUp(false));
                 }
             }
         }

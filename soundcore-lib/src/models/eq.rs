@@ -1,4 +1,3 @@
-use log::trace;
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
@@ -115,7 +114,7 @@ impl MonoEQ {
     fn calculate_drc_adjustments(values: Vec<f32>) -> Vec<f32> {
         // Input floats should be in the range ((MIN_FLOAT - MIN_FLOAT)  - (MAX_FLOAT - MIN_FLOAT)) and length >= 8
         assert!(values.len() >= 8);
-        assert!(values.iter().all(|&v| v >= (-6.0) && v <= 6.0));
+        assert!(values.iter().all(|&v| ((-6.0)..=6.0).contains(&v)));
 
         // f64s is required to match the original implementation
         let d = values[0] as f64;
@@ -135,8 +134,7 @@ impl MonoEQ {
         let d15 = d4 * 0.81f64 * d3;
         let d16 = d9 * 0.81f64 * d3;
 
-        vec![
-            (d11 - (0.00217f64 * d12)) as f32,
+        [(d11 - (0.00217f64 * d12)) as f32,
             (((((((d13 + ((d2 * 1.73f64) * d14)) - d15) + (d6 * 0.204f64)) - (d7 * 0.068f64))
                 + (d9 * 0.045f64))
                 - (d10 * 0.0235f64))
@@ -175,8 +173,7 @@ impl MonoEQ {
                 - ((d10 * 0.71f64) * d3))
                 + (d12 * 1.5f64)) as f32,
             0f32,
-            -120f32,
-        ]
+            -120f32]
         .iter()
         .map(|v| v / 10.0)
         .collect()
@@ -220,13 +217,13 @@ mod eq_model {
 
         // Extracted values from the original implementation
         let expected_post_drc_floats = vec![
-            1.19351225,
+            1.193_512_2,
             -1.61997,
-            1.23241205,
+            1.232_412_1,
             -1.0682,
             0.9448091,
             -0.735985,
-            0.58319497,
+            0.583_195,
             -0.13796605,
             0.0,
             -12.0,

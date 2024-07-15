@@ -2,8 +2,8 @@ use std::cell::RefCell;
 
 use js_sys::{Array, Uint8Array};
 use tokio::sync::mpsc::Receiver;
-use wasm_bindgen::{JsCast, JsValue};
 use wasm_bindgen::prelude::Closure;
+use wasm_bindgen::{JsCast, JsValue};
 use wasm_bindgen_futures::JsFuture;
 use web_sys::{
     BluetoothDevice, BluetoothRemoteGattCharacteristic, BluetoothRemoteGattServer,
@@ -60,7 +60,11 @@ impl BLEConnection for WebBLEConnection {
     fn descriptor(&self) -> BLEDeviceDescriptor {
         BLEDeviceDescriptor {
             addr: Default::default(),
-            name: self.gatt_server.device().name().unwrap_or(String::default())
+            name: self
+                .gatt_server
+                .device()
+                .name()
+                .unwrap_or(String::default()),
         }
     }
     async fn byte_channel(&self) -> SoundcoreLibResult<Receiver<Vec<u8>>> {

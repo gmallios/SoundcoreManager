@@ -2,11 +2,11 @@ use std::str::FromStr;
 
 use tokio::sync::Mutex;
 
+use crate::btaddr::BluetoothAdrr;
 use crate::{
     ble::{BLEConnection, BLEDeviceDescriptor, WriteType},
     error::SoundcoreLibResult,
 };
-use crate::btaddr::BluetoothAdrr;
 
 pub struct MockBLEConnection {
     read_channel_loop: Mutex<Option<tokio::sync::mpsc::Receiver<Vec<u8>>>>,

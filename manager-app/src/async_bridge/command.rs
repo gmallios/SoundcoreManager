@@ -3,7 +3,7 @@ use typeshare::typeshare;
 
 use soundcore_lib::btaddr::BluetoothAdrr;
 use soundcore_lib::device_manager::DiscoveredDevice;
-use soundcore_lib::models::{EQProfile, MonoEQ, SoundMode};
+use soundcore_lib::models::{EQProfile, SoundMode};
 
 #[typeshare]
 #[derive(Debug, Deserialize, Clone)]

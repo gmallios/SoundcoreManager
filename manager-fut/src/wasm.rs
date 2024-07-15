@@ -1,6 +1,6 @@
-use std::{future::Future, rc::Rc, time::Duration};
 use futures::pin_mut;
 use js_sys::Promise;
+use std::{future::Future, rc::Rc, time::Duration};
 use tokio::{select, sync::Notify};
 use wasm_bindgen_futures::JsFuture;
 use web_sys::window;

@@ -10,6 +10,7 @@ use crate::error::{SoundcoreLibError, SoundcoreLibResult};
 
 #[derive(Serialize, Deserialize, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
 #[typeshare]
+#[derive(Default)]
 pub struct BluetoothAdrr {
     pub address: [u8; 6],
 }
@@ -110,13 +111,6 @@ impl From<BluetoothAdrr> for u64 {
     }
 }
 
-impl Default for BluetoothAdrr {
-    fn default() -> Self {
-        BluetoothAdrr {
-            address: [0, 0, 0, 0, 0, 0],
-        }
-    }
-}
 
 impl Display for BluetoothAdrr {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {

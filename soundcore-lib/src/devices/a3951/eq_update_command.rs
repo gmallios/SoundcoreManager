@@ -1,5 +1,5 @@
 use crate::{
-    models::{CustomHearID, EQConfiguration, HearID, StereoEQConfiguration},
+    models::{CustomHearID, EQConfiguration, StereoEQConfiguration},
     packets::Packet,
 };
 
@@ -9,8 +9,7 @@ pub struct A3951EqUpdateCommand {
 }
 
 impl A3951EqUpdateCommand {
-    const DEFAULT_HEAR_ID_EQ: [u8; 8] =
-        [0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF];
+    const DEFAULT_HEAR_ID_EQ: [u8; 8] = [0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF];
     pub fn new(eq_configuration: EQConfiguration) -> Self {
         Self {
             eq_configuration: eq_configuration.into(),
@@ -88,7 +87,6 @@ impl Packet for A3951EqUpdateCommand {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
     use crate::models::EQProfile;
@@ -100,6 +98,9 @@ mod tests {
     fn test_deep_eq_update_command() {
         let eq_configuration = EQConfiguration::stereo_with_profile(EQProfile::Deep);
         let command = A3951EqUpdateCommand::new(eq_configuration);
-        assert_eq!(test_data::a3951::A3951_EQ_UPDATE_DEEP_NO_HEAR_ID.to_vec(), command.bytes());
+        assert_eq!(
+            test_data::a3951::A3951_EQ_UPDATE_DEEP_NO_HEAR_ID.to_vec(),
+            command.bytes()
+        );
     }
 }

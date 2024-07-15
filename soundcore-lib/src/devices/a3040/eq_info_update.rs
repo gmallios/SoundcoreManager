@@ -13,8 +13,7 @@ pub fn parse_a3040_eq_info_update<'a, E: ParseError<'a>>(
     context(
         "parse_a3040_eq_info_update",
         map(tuple((le_u8, le_u8)), |(b1, b2)| {
-            let eq_idx = (b1 as u16)
-                | ((b2 as u16) << 8).clamp(0, EQProfile::COUNT as u16);
+            let eq_idx = (b1 as u16) | ((b2 as u16) << 8).clamp(0, EQProfile::COUNT as u16);
             match EQProfile::from_id_le(eq_idx) {
                 Some(eq) => eq,
                 None => {

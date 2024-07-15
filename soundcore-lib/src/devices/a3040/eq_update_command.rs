@@ -30,7 +30,6 @@ impl Packet for A3040EqUpdateCommand {
             return vec![0x01];
         }
 
-
         // 2 bytes profile - FEFE - Custom
         let profile_bytes = [
             self.eq_configuration.profile.id() as u8,
@@ -106,7 +105,9 @@ mod tests {
             eq: EQProfile::Acoustic.eq(),
         };
         let command = A3040EqUpdateCommand::new(EQConfiguration::Mono(eq_configuration));
-        assert_eq!(test_data::a3040::SET_EQ_ACOUSTIC_NO_HEAR_ID.to_vec(), command.bytes());
+        assert_eq!(
+            test_data::a3040::SET_EQ_ACOUSTIC_NO_HEAR_ID.to_vec(),
+            command.bytes()
+        );
     }
-
 }

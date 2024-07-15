@@ -27,12 +27,18 @@ mod tests {
     #[test]
     pub fn enable_bass_up() {
         let command = super::A3040BassUpCommand::new(true);
-        assert_eq!(command.bytes(), test_data::a3040::BASS_UP_UPDATE_ENABLE.to_vec());
+        assert_eq!(
+            command.bytes(),
+            test_data::a3040::BASS_UP_UPDATE_ENABLE.to_vec()
+        );
     }
 
     #[test]
     pub fn disable_bass_up() {
         let command = super::A3040BassUpCommand::new(false);
-        assert_eq!(command.bytes(), test_data::a3040::BASS_UP_UPDATE_DISABLE.to_vec());
+        assert_eq!(
+            command.bytes(),
+            test_data::a3040::BASS_UP_UPDATE_DISABLE.to_vec()
+        );
     }
 }

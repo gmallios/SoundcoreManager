@@ -1,5 +1,5 @@
 use async_trait::async_trait;
-use btleplug::api::{Characteristic, CharPropFlags, Peripheral as _, Service};
+use btleplug::api::{CharPropFlags, Characteristic, Peripheral as _, Service};
 use btleplug::platform::Peripheral;
 use futures::StreamExt;
 use log::{error, trace, warn};

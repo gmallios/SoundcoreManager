@@ -10,7 +10,7 @@ pub fn a3951_features() -> DeviceFeatureSet {
         equalizer_features: Some(EqualizerFeatures {
             bands: 8,
             channels: 2,
-            has_bass_up: false
+            has_bass_up: false,
         }),
         flags: Arc::new([
             FeatureFlags::CUSTOM_BUTTONS,
