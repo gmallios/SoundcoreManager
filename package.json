@@ -2,9 +2,10 @@
   "name": "soundcoremanager-tauri",
   "private": true,
   "scripts": {
-    "dev": "yarn build:wasm && yarn workspace manager-ui dev",
-    "dev:wasm": "cargo watch -w ./manager-wasm/src -w ./soundcore-lib/src -i .gitignore -i '../manager-ui/wasm/*' -s 'yarn build:wasm && yarn dev'",
+    "dev": "yarn build:wasm && yarn dev:ui",
+    "dev:wasm": "cargo watch -w ./manager-wasm/src -w ./soundcore-lib/src -i .gitignore -i '../manager-ui/wasm/*' -s 'yarn build:wasm && yarn dev:ui'",
     "dev:force": "yarn workspace manager-ui dev:force",
+    "dev:ui": "yarn workspace manager-ui dev",
     "build": "yarn build:wasm && yarn workspace manager-ui build",
     "build:wasm": "cross-env RUSTFLAGS=--cfg=web_sys_unstable_apis wasm-pack build ./manager-wasm --out-dir ../manager-ui/wasm --no-pack",
     "lint": "yarn workspace manager-ui lint",

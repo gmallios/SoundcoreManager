@@ -4,12 +4,13 @@ import { useWebManagerStore } from '@stores/web/useWebManagerStore';
 
 export class BLEDevice {
   private readonly webBLEDevice: WebBLEDevice;
+  private readonly device: BluetoothDevice;
 
-  constructor(webBLEDevice: WebBLEDevice) {
+  constructor(webBLEDevice: WebBLEDevice, device: BluetoothDevice) {
     this.webBLEDevice = webBLEDevice;
+    this.device = device;
 
     void webBLEDevice.setOnStateChange((state: SoundcoreDeviceState) => {
-      console.log('onStateChange');
       useWebManagerStore.getState().setCurrentState(state);
     });
 
@@ -30,3 +31,8 @@ export class BLEDevice {
     return this.webBLEDevice.setEqualizerPreset(JSON.stringify(profile));
   }
 }
+
+export const BLEDeviceFactory = async (device: BluetoothDevice): Promise<BLEDevice> => {
+  const webBleDevice = await WebBLEDevice.new(device);
+  return new BLEDevice(webBleDevice, device);
+};

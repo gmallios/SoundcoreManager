@@ -10,10 +10,9 @@ import {
   Title,
   Tooltip
 } from 'chart.js';
-import { useCallback, useState } from 'react';
+import React, { forwardRef, useCallback, useImperativeHandle, useState } from 'react';
 import { Line } from 'react-chartjs-2';
 import 'chartjs-plugin-dragdata';
-import { Button } from '@mui/material';
 
 ChartJS.register(
   CategoryScale,
@@ -32,10 +31,20 @@ export interface EqualizerProps {
   onEqualizerChange: (output: number[]) => void;
 }
 
+export interface EqualizerRef {
+  onReset: () => void;
+}
+
 export const MIN_VALUE = -6;
 export const MAX_VALUE = 6;
 
-export const Equalizer = ({ bands, input, onEqualizerChange }: EqualizerProps): JSX.Element => {
+export const Equalizer = forwardRef<EqualizerRef, EqualizerProps>((props, ref) => {
+  const { bands, input, onEqualizerChange } = props;
+
+  useImperativeHandle(ref, () => ({
+    onReset: onResetClick
+  }));
+
   // The 9th and 10th bands are not verified to have that frequency
   const labels = ['100', '200', '400', '800', '1.6k', '3.2k', '6.4k', '12.8k', '16k', '20k'];
   const [dataSet, setDataSet] = useState<number[]>(input.slice(0, bands));
@@ -47,7 +56,7 @@ export const Equalizer = ({ bands, input, onEqualizerChange }: EqualizerProps): 
         data: dataSet,
         borderColor: '9B9B9B',
         borderWidth: 1,
-        pointRadius: 2,
+        pointRadius: 2.5,
         pointHoverRadius: 3,
         pointBackgroundColor: '#609ACF',
         pointBorderWidth: 0,
@@ -110,15 +119,17 @@ export const Equalizer = ({ bands, input, onEqualizerChange }: EqualizerProps): 
       },
       title: {
         display: true,
-        text: 'EQ'
+        text: 'Custom EQ'
       }
     }
   };
 
   return (
-    <>
+    <div className={'mt-3'}>
       <Line data={data} options={options} />
-      <Button onClick={() => onResetClick()}>Reset</Button>
-    </>
+      {/*<Button onClick={() => onResetClick()}>Reset</Button>*/}
+    </div>
   );
-};
+});
+
+Equalizer.displayName = 'Equalizer';

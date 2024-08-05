@@ -1,64 +1,77 @@
 import { Battery, SoundcoreDeviceState } from '@generated-types/soundcore-lib';
-import { Box, Grid, Paper } from '@mui/material';
 import { getImageForModel } from '@utils/modelToImgMap';
 import { BatteryIcon } from './batteryIcon';
 import React from 'react';
+import { Card, CardBody, Image } from '@nextui-org/react';
+import { getDeviceName } from '@utils/getDeviceName';
+import { SoundModeTabs } from '@components/DeviceStateCard/soundModeTabs';
 
 export const DeviceStateCard: React.FC<{
   state: SoundcoreDeviceState | null;
 }> = ({ state }) => {
+  if (!state) {
+    return <></>;
+  }
+
   return (
     <>
-      <Box sx={{ display: 'block', maxWidth: '300px', margin: 'auto', mb: 0 }}>
-        <Paper
-          sx={{ display: 'flex', margin: 1.5, justifyContent: 'center', alignItems: 'center' }}
-          elevation={0}>
-          <ProductImageWithBattery model={state?.serial?.model} battery={state?.battery} />
-        </Paper>
-      </Box>
+      <Card
+        isBlurred
+        className="border-none bg-background/60 dark:bg-default-100/50 m-5 w-max flex"
+        shadow="sm">
+        <CardBody>
+          <div className="grid grid-cols-6 md:grid-cols-12 gap-8 md:gap-4 items-center justify-center">
+            <div className="relative col-span-6 md:col-span-3">
+              <ProductImage model={state?.serial?.model} />
+            </div>
+
+            <div className="flex flex-col col-span-6 md:col-span-9 ml-2 mt-4 self-start">
+              <div className="flex justify-between items-start">
+                <div className="flex flex-col gap-0">
+                  <h3 className="font-semibold text-foreground/90">
+                    {getDeviceName(state?.serial?.model)}
+                  </h3>
+                  <BatteryRow battery={state?.battery} />
+                </div>
+              </div>
+
+              <div className="flex w-full items-center justify-center">
+                <SoundModeTabs state={state} />
+              </div>
+            </div>
+          </div>
+        </CardBody>
+      </Card>
     </>
   );
 };
 
-const ProductImageWithBattery: React.FC<{
-  model: string | null | undefined;
+const BatteryRow: React.FC<{
   battery: Battery | undefined;
-}> = ({ model, battery }) => {
+}> = ({ battery }) => {
   if (!battery) {
-    // TODO: Handle unknown battery state, shouldn't ever happen
+    // TODO: Handle unknown battery state
     return <></>;
   }
 
   if (battery?.type == 'single') {
     return (
-      <Grid>
-        <Grid container spacing={1} justifyContent="center" alignItems="center">
-          <ProductImage model={model} />
-          <BatteryIcon battery={battery.value} />
-        </Grid>
-      </Grid>
+      <div className={'flex items-center'}>
+        <BatteryIcon battery={battery.value} />
+      </div>
     );
   }
 
   if (battery?.type == 'dual') {
     return (
-      <Grid>
-        <Grid container spacing={1} justifyContent="center" alignItems="center">
-          <BatteryIcon battery={battery.value.left} />
-          <ProductImage model={model} />
-          <BatteryIcon battery={battery.value.right} />
-        </Grid>
-      </Grid>
+      <div className={'flex items-center'}>
+        <BatteryIcon battery={battery.value.left} />
+        <BatteryIcon battery={battery.value.right} />
+      </div>
     );
   }
 
-  return (
-    <Grid>
-      <Grid container spacing={1} justifyContent="center" alignItems="center">
-        <ProductImage model={model} />
-      </Grid>
-    </Grid>
-  );
+  return <></>;
 };
 
 const ProductImage: React.FC<{ model: string | null | undefined }> = ({ model }) => {
@@ -68,27 +81,24 @@ const ProductImage: React.FC<{ model: string | null | undefined }> = ({ model })
     return <></>;
   }
 
+  const imageProps: React.ComponentProps<typeof Image> = {
+    isBlurred: true,
+    width: '100%',
+    className: 'object-cover',
+    shadow: 'sm',
+    style: {
+      height: '190px'
+    }
+  };
+
   return (
     <>
       {imageResult && imageResult.kind === 'single' ? (
-        <img
-          src={imageResult.data.img}
-          width={imageResult.data.width}
-          height={imageResult.data.height}
-        />
+        <Image src={imageResult.data.img} {...imageProps} />
       ) : (
         <>
-          <img
-            src={imageResult.data.left.img}
-            width={imageResult.data.left.width}
-            height={imageResult.data.left.height}
-            draggable={false}
-          />
-          <img
-            src={imageResult.data.right.img}
-            width={imageResult.data.right.width}
-            height={imageResult.data.right.height}
-          />
+          <Image src={imageResult.data.left.img} {...imageProps} />
+          <Image src={imageResult.data.right.img} {...imageProps} />
         </>
       )}
     </>
