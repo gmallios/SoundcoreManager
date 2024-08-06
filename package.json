@@ -24,7 +24,8 @@
   },
   "devDependencies": {
     "@tauri-apps/cli": "^1.5.10",
-    "cross-env": "^7.0.3"
+    "cross-env": "^7.0.3",
+    "netlify-cli": "^17.33.6"
   },
   "workspaces": [
     "manager-ui"

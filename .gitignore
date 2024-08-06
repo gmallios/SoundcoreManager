@@ -86,3 +86,5 @@ test_video.mp4
 # keep dist dir for tauri macro
 manager-ui/dist/*
 !manager-ui/dist/.gitkeep
+# Local Netlify folder
+.netlify
