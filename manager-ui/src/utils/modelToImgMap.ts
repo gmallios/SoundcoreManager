@@ -1,11 +1,12 @@
-import A3951ImgLeft from '@assets/a3951_img_device_left.webp';
-import A3951ImgRight from '@assets/a3951_img_device_right_edited.webp';
+// import A3951ImgLeft from '@assets/a3951_img_device_left.webp';
+// import A3951ImgRight from '@assets/a3951_img_device_right_edited.webp';
 import A3027Img from '@assets/a3027_img_device.webp';
 import A3028Img from '@assets/a3028_img_device.webp';
 import A3029Img from '@assets/a3029_img_device.webp';
 import A3040Img from '@assets/a3040_img_device.webp';
 import A3935Img from '@assets/a3935_img_device.webp';
 import A3947Img from '@assets/a3947_img_device.png';
+import A3951Img from '@assets/a3951_img_device.webp';
 
 export type ImageData = {
   img: string;
@@ -21,7 +22,8 @@ const ModelSingleImageMap: {
   A3028: { img: A3028Img, height: 90 },
   A3029: { img: A3029Img, height: 90 },
   A3935: { img: A3935Img, height: 90 },
-  A3947: { img: A3947Img, height: 90 }
+  A3947: { img: A3947Img, height: 90 },
+  A3951: { img: A3951Img, height: 90 }
 };
 
 const ModelDoubleImageMap: {
@@ -30,10 +32,10 @@ const ModelDoubleImageMap: {
     right: ImageData;
   };
 } = {
-  A3951: {
-    left: { img: A3951ImgLeft, height: 80 },
-    right: { img: A3951ImgRight, height: 80 }
-  }
+  // A3951: {
+  //   left: { img: A3951ImgLeft, height: 80 },
+  //   right: { img: A3951ImgRight, height: 80 }
+  // }
 };
 
 export type ModelImageMapResult =

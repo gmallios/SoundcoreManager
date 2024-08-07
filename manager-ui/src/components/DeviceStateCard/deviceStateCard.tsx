@@ -17,7 +17,7 @@ export const DeviceStateCard: React.FC<{
     <>
       <Card
         isBlurred
-        className="border-none bg-background/60 dark:bg-default-100/50 m-5 w-max flex"
+        className="border-none bg-background/60 dark:bg-default-100/50 m-5 flex"
         shadow="sm">
         <CardBody>
           <div className="grid grid-cols-6 md:grid-cols-12 gap-8 md:gap-4 items-center justify-center">
@@ -64,9 +64,15 @@ const BatteryRow: React.FC<{
 
   if (battery?.type == 'dual') {
     return (
-      <div className={'flex items-center'}>
-        <BatteryIcon battery={battery.value.left} />
-        <BatteryIcon battery={battery.value.right} />
+      <div className={'flex items-center gap-3'}>
+        <div className={'flex items-center gap-0.5'}>
+          <p className={'text-small text-foreground/80'}>Left:</p>
+          <BatteryIcon battery={battery.value.left} />
+        </div>
+        <div className={'flex items-center gap-0.5'}>
+          <p className={'text-small text-foreground/80'}>Right:</p>
+          <BatteryIcon battery={battery.value.right} />
+        </div>
       </div>
     );
   }
@@ -83,12 +89,12 @@ const ProductImage: React.FC<{ model: string | null | undefined }> = ({ model })
 
   const imageProps: React.ComponentProps<typeof Image> = {
     isBlurred: true,
-    width: '100%',
-    className: 'object-cover',
-    shadow: 'sm',
-    style: {
-      height: '190px'
-    }
+    // width: '100%',
+    className: 'object-scale-down'
+    // shadow: 'sm',
+    // style: {
+    //   height: '190px'
+    // }
   };
 
   return (

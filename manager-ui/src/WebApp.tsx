@@ -63,7 +63,7 @@ export const WebApp: React.FC = () => {
       </Navbar>
       <div className={'min-h-fit flex flex-col items-center justify-start p-4'}>
         {state ? (
-          <div className={'flex flex-col items-stretch'}>
+          <div className={'flex flex-col items-stretch w-2/3 2xl:w-1/2'}>
             <DeviceStateCard state={state} />
             <EqualizerCard state={state} />
           </div>
