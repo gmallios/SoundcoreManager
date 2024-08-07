@@ -1,4 +1,4 @@
-use log::error;
+use log::{debug, error};
 use nom::error::VerboseError;
 
 pub use bass_up::*;
@@ -82,7 +82,29 @@ impl ResponsePacket {
             }
             _ => {
                 error!(
-                    "Unexpected or unhandled packet kind: {:?}",
+                    "Unexpected or unhandled packet kind for initial state: {:?}",
+                    packet_header.kind
+                );
+                None
+            }
+        })
+    }
+
+    pub fn from_bytes_for_initial_info<'a>(
+        bytes: &'a [u8],
+        initial_state: &SoundcoreDeviceState,
+    ) -> Result<Option<SoundcoreDeviceState>, nom::Err<VerboseError<&'a [u8]>>> {
+        let bytes = parse_and_check_checksum(bytes)?.0;
+        let (bytes, packet_header) = parse_packet_header(bytes)?;
+
+        Ok(match packet_header.kind {
+            ResponsePacketKind::InfoUpdate => Some(
+                ResponsePacket::DeviceInfo(parse_device_info_packet(bytes)?.1)
+                    .transform_state(initial_state),
+            ),
+            _ => {
+                error!(
+                    "Unexpected or unhandled packet kind for initial info: {:?}",
                     packet_header.kind
                 );
                 None
@@ -100,8 +122,12 @@ impl StateTransformationPacket for ResponsePacket {
             ResponsePacket::DeviceState(state_update) => state_update.data.transform_state(state),
             ResponsePacket::BassUpUpdate(packet) => packet.transform_state(state),
             ResponsePacket::EqInfoUpdate(packet) => packet.transform_state(state),
+            ResponsePacket::DeviceInfo(packet) => packet.transform_state(state),
             // No-op
-            _ => state.clone(),
+            _ => {
+                debug!("No state transformation implementation!");
+                state.clone()
+            },
         }
     }
 }

@@ -2,13 +2,14 @@ use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
 use crate::models::{
-    AmbientSoundNotice, AutoPowerOff, BassUp, DeviceColor, HearingProtect, InEarBeep,
-    PowerOnBatteryNotice, PromptLanguage, SupportTwoCnn, ThreeDimensionalEffect, TouchTone, LDAC,
+    AmbientSoundNotice, AutoPowerOff, BassUp, DeviceColor, DeviceFirmware, HearingProtect,
+    InEarBeep, PowerOnBatteryNotice, PromptLanguage, SupportTwoCnn, ThreeDimensionalEffect,
+    TouchTone, LDAC,
 };
 use crate::{
     api::DeviceFeatureSet,
     models::{
-        AgeRange, Battery, ButtonModel, EQConfiguration, FirmwareVer, HearID, SerialNumber,
+        AgeRange, Battery, ButtonModel, EQConfiguration, HearID, SerialNumber,
         SideTone, SoundMode, TwsStatus, WearDetection,
     },
 };
@@ -23,7 +24,7 @@ pub struct SoundcoreDeviceState {
     pub sound_mode: SoundMode,
     pub eq_configuration: EQConfiguration,
     pub serial: Option<SerialNumber>,
-    pub fw: Option<FirmwareVer>,
+    pub fw: Option<DeviceFirmware>,
     pub button_model: Option<ButtonModel>,
     pub host_device: Option<u8>,
     pub side_tone: Option<SideTone>,

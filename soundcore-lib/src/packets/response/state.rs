@@ -10,11 +10,7 @@ use a3951::*;
 
 use crate::api::SoundcoreDeviceState;
 use crate::devices::parse_a3947_state_update;
-use crate::models::{
-    AmbientSoundNotice, AutoPowerOff, BassUp, DeviceColor, FirmwareVer, HearingProtect, InEarBeep,
-    PowerOnBatteryNotice, PromptLanguage, SerialNumber, SupportTwoCnn, ThreeDimensionalEffect,
-    LDAC,
-};
+use crate::models::{AmbientSoundNotice, AutoPowerOff, BassUp, DeviceColor, DeviceFirmware, FirmwareVer, HearingProtect, InEarBeep, PowerOnBatteryNotice, PromptLanguage, SerialNumber, SupportTwoCnn, ThreeDimensionalEffect, LDAC};
 use crate::packets::StateTransformationPacket;
 use crate::parsers::{TaggedData, TaggedParseResult};
 use crate::{
@@ -37,7 +33,7 @@ pub struct DeviceStateResponse {
     pub sound_mode: SoundMode,
     pub eq: EQConfiguration,
     pub sn: Option<SerialNumber>,
-    pub fw: Option<FirmwareVer>,
+    pub fw: Option<DeviceFirmware>,
     pub button_model: Option<ButtonModel>,
     pub host_device: Option<u8>,
     pub side_tone: Option<SideTone>,

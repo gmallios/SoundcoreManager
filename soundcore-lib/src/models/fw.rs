@@ -37,6 +37,12 @@ impl ToString for FirmwareVer {
     }
 }
 
+impl Into<Option<DeviceFirmware>> for FirmwareVer {
+    fn into(self) -> Option<DeviceFirmware> {
+        Some(DeviceFirmware::SINGLE(self))
+    }
+}
+
 #[cfg(test)]
 mod fw_tests {
     use super::*;

@@ -151,7 +151,7 @@ impl From<A3947StateResponse> for DeviceStateResponse {
             sound_mode: value.sound_mode,
             eq: value.eq.into(),
             sn: Some(value.sn),
-            fw: Some(value.fw),
+            fw: value.fw.into(),
             button_model: None,
             host_device: Some(value.host_device),
             side_tone: Some(value.side_tone),

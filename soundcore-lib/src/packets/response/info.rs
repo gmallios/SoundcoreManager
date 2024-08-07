@@ -1,5 +1,6 @@
 mod a3951;
 
+use log::{debug, warn};
 pub use a3951::*;
 use nom::{combinator::map, error::context};
 use serde::{Deserialize, Serialize};
@@ -8,6 +9,8 @@ use crate::{
     models::{DeviceFirmware, SerialNumber},
     parsers::{ParseError, ParseResult},
 };
+use crate::api::SoundcoreDeviceState;
+use crate::packets::{BassUpUpdateResponse, StateTransformationPacket};
 
 #[derive(Debug, Serialize, Deserialize, Eq, PartialEq, Clone, Hash)]
 pub struct DeviceInfoResponse {
@@ -25,4 +28,13 @@ pub fn parse_device_info_packet<'a, E: ParseError<'a>>(
             DeviceInfoResponse::from,
         )(bytes)
     })(bytes)
+}
+
+impl StateTransformationPacket for DeviceInfoResponse {
+    fn transform_state(self, state: &SoundcoreDeviceState) -> SoundcoreDeviceState {
+        let mut state = state.to_owned();
+        state.serial = self.sn;
+        state.fw = self.fw;
+        state
+    }
 }

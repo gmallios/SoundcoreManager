@@ -62,32 +62,33 @@ where
         connection: &C,
         byte_channel: &mut mpsc::Receiver<Vec<u8>>,
     ) -> SoundcoreLibResult<TaggedData<SoundcoreDeviceState>> {
-        let initial_state = Self::fetch_initial_state(connection, byte_channel).await?;
-        // Todo: If something is missing (e.g. Firmware Version or Serial Number) fetch it
+        let mut initial_state = Self::fetch_initial_state(connection, byte_channel).await?;
+
+        if initial_state.data.serial.is_none() || initial_state.data.fw.is_none() {
+            debug!("Missing device info in initial state, fetching additional info...");
+            initial_state.data =
+                Self::fetch_info(connection, byte_channel, &initial_state.data).await?;
+        }
+        
         Ok(initial_state)
     }
-
-    // TODO: Change the strategy to:
-    // 1. Send the state request packet
-    // 2. Check if the state is received within a certain time frame and retry if not
-    // 3. If the state is received, check if we have a SN
-    // 4. If not send a SN request packet
-    // 5. Resolve the state and the model
+    
     async fn fetch_initial_state(
         connection: &C,
         byte_channel: &mut mpsc::Receiver<Vec<u8>>,
     ) -> SoundcoreLibResult<TaggedData<SoundcoreDeviceState>> {
-        let packet = RequestPacketBuilder::new(RequestPacketKind::State).build();
         let mut retry_count = 0;
         let retry_limit = 3;
         while retry_count < retry_limit {
-            let state_send_fut = async {
+            let state_req_fut = async {
                 connection
-                    .write(&packet, WriteType::WithoutResponse)
+                    .write(
+                        &RequestPacketBuilder::new(RequestPacketKind::State).build(),
+                        WriteType::WithoutResponse,
+                    )
                     .await?;
                 Ok::<(), SoundcoreLibError>(())
             };
-
             let state_receive_fut = async {
                 while let Some(bytes) = byte_channel.recv().await {
                     match ResponsePacket::from_bytes_for_initial_state(&bytes) {
@@ -103,7 +104,7 @@ where
                 None
             };
 
-            if let Ok(_) = state_send_fut.await {
+            if let Ok(_) = state_req_fut.await {
                 match F::timeout(Duration::from_millis(1000), state_receive_fut).await {
                     Ok(Some(packet)) => {
                         return Ok(packet);
@@ -122,6 +123,55 @@ where
                 tag: KnownProductCodes::A3951,
                 data: SoundcoreDeviceState::default(),
             });
+        }
+
+        Err(SoundcoreLibError::MissingInitialState(
+            connection.descriptor().addr.to_string(),
+        ))
+    }
+
+    async fn fetch_info(
+        connection: &C,
+        byte_channel: &mut mpsc::Receiver<Vec<u8>>,
+        initial_state: &SoundcoreDeviceState,
+    ) -> SoundcoreLibResult<SoundcoreDeviceState> {
+        let mut retry_count = 0;
+        let retry_limit = 3;
+        while retry_count < retry_limit {
+            let state_req_fut = async {
+                connection
+                    .write(
+                        &RequestPacketBuilder::new(RequestPacketKind::Info).build(),
+                        WriteType::WithoutResponse,
+                    )
+                    .await?;
+                Ok::<(), SoundcoreLibError>(())
+            };
+            let state_receive_fut = async {
+                while let Some(bytes) = byte_channel.recv().await {
+                    match ResponsePacket::from_bytes_for_initial_info(&bytes, initial_state) {
+                        Ok(Some(packet)) => {
+                            return Some(packet);
+                        }
+                        Err(e) => {
+                            error!("Failed to parse info packet: {:?}", e);
+                        }
+                        _ => {}
+                    }
+                }
+                None
+            };
+
+            if let Ok(_) = state_req_fut.await {
+                match F::timeout(Duration::from_millis(1000), state_receive_fut).await {
+                    Ok(Some(packet)) => {
+                        return Ok(packet);
+                    }
+                    _ => {}
+                };
+            }
+            F::sleep(Duration::from_millis(500)).await;
+            retry_count += 1;
         }
 
         Err(SoundcoreLibError::MissingInitialState(
