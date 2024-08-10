@@ -55,9 +55,9 @@
       {
         "fullscreen": false,
         "height": 640,
-        "resizable": false,
+        "resizable": true,
         "title": "Soundcore Manager",
-        "width": 640
+        "width": 980
       }
     ],
     "systemTray": {

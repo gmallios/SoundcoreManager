@@ -5,9 +5,9 @@ import { generate_soundcore_service_uuids, getSoundcoreMacPrefixes } from '@wasm
 import { useWebManagerStore } from '@stores/web/useWebManagerStore';
 import { DeviceStateCard } from '@components/DeviceStateCard/deviceStateCard';
 import { BLEDeviceFactory } from './ble/bleDevice';
-import { Box } from '@mui/material';
 import { Button, Navbar, NavbarBrand, NavbarContent, NavbarItem, Spinner } from '@nextui-org/react';
 import { EqualizerCard } from '@components/EqualizerCard/equalizerCard';
+import { BlurredOverlay } from '@components/atoms/BlurredOverlay';
 
 enum ConnectionDialogStatus {
   DIALOG_OPEN,
@@ -50,7 +50,7 @@ export const WebApp: React.FC = () => {
   };
 
   return (
-    <Box>
+    <>
       <Navbar>
         <NavbarBrand>Soundcore Manager</NavbarBrand>
         <NavbarContent justify="end">
@@ -70,15 +70,15 @@ export const WebApp: React.FC = () => {
         ) : (
           <>
             {isConnecting != ConnectionDialogStatus.CLOSED && (
-              <div className="fixed inset-0 z-50 flex items-center justify-center bg-opacity-75 backdrop-blur-sm transition-all">
+              <BlurredOverlay>
                 {isConnecting === ConnectionDialogStatus.CONNECTING && (
                   <Spinner size={'lg'} label={'Connecting...'} />
                 )}
-              </div>
+              </BlurredOverlay>
             )}
           </>
         )}
       </div>
-    </Box>
+    </>
   );
 };

@@ -89,12 +89,8 @@ const ProductImage: React.FC<{ model: string | null | undefined }> = ({ model })
 
   const imageProps: React.ComponentProps<typeof Image> = {
     isBlurred: true,
-    // width: '100%',
-    className: 'object-scale-down'
-    // shadow: 'sm',
-    // style: {
-    //   height: '190px'
-    // }
+    className: 'object-scale-down sm:max-h-48',
+    shadow: 'sm'
   };
 
   return (

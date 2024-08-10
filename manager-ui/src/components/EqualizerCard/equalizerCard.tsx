@@ -6,7 +6,7 @@ import { BLEDevice } from '../../ble/bleDevice';
 import { useWebManagerStore } from '@stores/web/useWebManagerStore';
 import { Button, Card, CardBody, CardFooter, Select, SelectItem, Switch } from '@nextui-org/react';
 import { Equalizer, EqualizerRef } from '@components/EqualizerCard/equalizer';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+// import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 
 export interface EqualizerCardProps {
   state: SoundcoreDeviceState;
@@ -178,7 +178,7 @@ const EQModeCard: React.FC<EQModeCardProps> = ({
               </Switch>
             )}
           </div>
-          {isSelected && <CheckCircleIcon fontSize={'medium'} />}
+          {/* {isSelected && <CheckCircleIcon fontSize={'medium'} />} */}
         </div>
       </div>
       <CardFooter className={'p-0'}>

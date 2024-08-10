@@ -1,8 +1,6 @@
 import ReactDOM from 'react-dom/client';
 import TauriApp from './TauriApp';
 import './style.css';
-import { createTheme, ThemeProvider } from '@mui/material/styles';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { appLogDir } from '@tauri-apps/api/path';
 import { WebApp } from './WebApp';
 import { attachConsole } from 'tauri-plugin-log-api';
@@ -14,21 +12,6 @@ declare global {
   }
 }
 window.isTauri = typeof window !== 'undefined' && window.__TAURI__ !== undefined;
-
-const darkTheme = createTheme({
-  palette: {
-    mode: 'dark'
-  }
-});
-
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      refetchOnWindowFocus: 'always',
-      refetchIntervalInBackground: true
-    }
-  }
-});
 
 if (window.isTauri) {
   // Tauri-specific setup
@@ -43,11 +26,12 @@ if (window.isTauri) {
 
 if (window.isTauri) {
   ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
-    <ThemeProvider theme={darkTheme}>
-      <QueryClientProvider client={queryClient}>
+    <NextUIProvider>
+      <main className="dark text-foreground default-bg h-screen overflow-auto">
         <TauriApp />
-      </QueryClientProvider>
-    </ThemeProvider>);
+      </main>
+    </NextUIProvider>
+  );
 } else {
   ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
     <NextUIProvider>
@@ -57,4 +41,3 @@ if (window.isTauri) {
     </NextUIProvider>
   );
 }
-

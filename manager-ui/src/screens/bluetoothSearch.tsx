@@ -1,21 +1,10 @@
 import React from 'react';
 import { useTauriManagerStore } from '@stores/tauri/useTauriManagerStore';
-import Stack from '@mui/material/Stack/Stack';
-import {
-  Container,
-  Fab,
-  LinearProgress,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemIcon,
-  ListItemText,
-  Typography
-} from '@mui/material';
 import { useShallow } from 'zustand/react/shallow';
-import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { DiscoveredDevice } from '../types/soundcore-lib';
-import BluetoothIcon from '@mui/icons-material/Bluetooth';
+import { Button, Listbox, ListboxItem, Progress, Spinner } from '@nextui-org/react';
+import { ArrowRight, RefreshCcw } from 'lucide-react';
+import { BlurredOverlay } from '@components/atoms/BlurredOverlay';
 
 export const BluetoothSearchScreen: React.FC = () => {
   const {
@@ -71,29 +60,9 @@ export const BluetoothSearchScreen: React.FC = () => {
 
   if (isConnecting) {
     return (
-      <div>
-        <Stack
-          sx={{
-            mb: 2,
-            mt: 2,
-            width: '100vw',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}>
-          <Container
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexDirection: 'column',
-              gap: '0.5rem'
-            }}>
-            <Typography color="text.secondary">Connecting...</Typography>
-            <LinearProgress sx={{ width: '100vw', height: '0.15rem' }} />
-          </Container>
-        </Stack>
-      </div>
+      <BlurredOverlay>
+        <Spinner size={'lg'} label={'Connecting...'} />
+      </BlurredOverlay>
     );
   }
 
@@ -103,52 +72,29 @@ export const BluetoothSearchScreen: React.FC = () => {
 
   return (
     <div>
-      <Stack
-        sx={{
-          mb: 2,
-          mt: 2,
-          width: '100vw',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center'
-        }}>
-        <Container
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            flexDirection: 'column',
-            gap: '0.5rem'
-          }}>
-          <Typography color="text.secondary">Select a connected device...</Typography>
-          {isScanLoading && <LinearProgress sx={{ width: '100vw', height: '0.15rem' }} />}
+      <div className="flex items-center flex-col">
+        <div className="w-full flex items-center flex-col gap-2 pt-2">
+          <div color="text.secondary">Select a connected device...</div>
+          {isScanLoading && <Progress size="sm" isIndeterminate className="w-full" />}
           {!isScanLoading && <div style={{ width: '100vw', height: '0.15rem' }}></div>}
-        </Container>
+        </div>
         {latestScanResults && (
           <BluetoothDeviceList devices={latestScanResults} setSelectedDevice={setSelectedDevice} />
         )}
-        <Fab
-          onClick={() => connectFabClick()}
-          variant="extended"
-          size="medium"
+        <Button
+          isDisabled={!selectedDevice || isConnecting}
           color="primary"
-          aria-label="add"
-          disabled={!selectedDevice || isConnecting}
-          sx={{ position: 'absolute', bottom: 16, right: 16 }}>
-          Connect
-          <ArrowForwardIcon sx={{ ml: 1 }} />
-        </Fab>
-        <Fab
-          onClick={() => searchFabClick()}
-          variant="extended"
-          size="medium"
-          color="primary"
-          aria-label="add"
-          disabled={isScanLoading}
-          sx={{ position: 'absolute', bottom: 16, left: 16 }}>
-          Refresh List
-        </Fab>
-      </Stack>
+          className="fixed bottom-4 right-4"
+          onClick={connectFabClick}>
+          Connect <ArrowRight />
+        </Button>
+        <Button
+          isDisabled={isScanLoading || isConnecting}
+          className="fixed bottom-4 left-4"
+          onClick={searchFabClick}>
+          Rescan <RefreshCcw />
+        </Button>
+      </div>
     </div>
   );
 };
@@ -157,42 +103,29 @@ const BluetoothDeviceList: React.FC<{
   devices: DiscoveredDevice[];
   setSelectedDevice: (device: DiscoveredDevice) => void;
 }> = ({ devices, setSelectedDevice }) => {
-  const [selectedIndex, setSelectedIndex] = React.useState<number>();
+  const [selectedItem, setSelectedItem] = React.useState<Set<number>>(new Set([0]));
 
-  const onItemClicked = (idx: number) => {
-    setSelectedDevice(devices[idx]);
-    setSelectedIndex(idx);
+  const onItemClicked = (item: Set<number>) => {
+    setSelectedDevice(devices[item.values().next().value]);
+    setSelectedItem(item);
   };
 
   return (
-    <List sx={{ width: '100vw' }}>
-      {devices.map((device, idx) => (
-        <BluetoothDeviceListItem
-          key={idx}
-          idx={idx}
-          device={device}
-          onClick={onItemClicked}
-          selected={selectedIndex === idx}
-        />
-      ))}
-    </List>
-  );
-};
-
-const BluetoothDeviceListItem: React.FC<{
-  idx: number;
-  device: DiscoveredDevice;
-  onClick: (idx: number) => void;
-  selected?: boolean;
-}> = ({ idx, device, onClick, selected }) => {
-  return (
-    <ListItem disablePadding>
-      <ListItemButton selected={selected} onClick={() => onClick(idx)}>
-        <ListItemIcon>
-          <BluetoothIcon />
-        </ListItemIcon>
-        <ListItemText primary={device.descriptor.name} />
-      </ListItemButton>
-    </ListItem>
+    <div className="flex w-full">
+      <Listbox
+        variant="flat"
+        disallowEmptySelection
+        selectionMode="single"
+        selectedKeys={selectedItem}
+        onSelectionChange={(keys) => onItemClicked(keys as Set<number>)}>
+        {devices.map((device, idx) => (
+          <ListboxItem key={idx}>
+            {device.descriptor.name.length > 0
+              ? device.descriptor.name
+              : device.descriptor.addr.address}
+          </ListboxItem>
+        ))}
+      </Listbox>
+    </div>
   );
 };
