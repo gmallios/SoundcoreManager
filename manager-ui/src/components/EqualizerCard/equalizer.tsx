@@ -1,3 +1,5 @@
+import React, { forwardRef, useCallback, useImperativeHandle, useMemo, useState } from 'react';
+import { Line } from 'react-chartjs-2';
 import {
   CategoryScale,
   Chart as ChartJS,
@@ -10,8 +12,6 @@ import {
   Title,
   Tooltip
 } from 'chart.js';
-import React, { forwardRef, useCallback, useImperativeHandle, useState } from 'react';
-import { Line } from 'react-chartjs-2';
 import 'chartjs-plugin-dragdata';
 
 ChartJS.register(
@@ -29,6 +29,7 @@ export interface EqualizerProps {
   bands: number;
   input: number[];
   onEqualizerChange: (output: number[]) => void;
+  disabled?: boolean;
 }
 
 export interface EqualizerRef {
@@ -39,13 +40,12 @@ export const MIN_VALUE = -6;
 export const MAX_VALUE = 6;
 
 export const Equalizer = forwardRef<EqualizerRef, EqualizerProps>((props, ref) => {
-  const { bands, input, onEqualizerChange } = props;
+  const { bands, input, onEqualizerChange, disabled } = props;
 
   useImperativeHandle(ref, () => ({
     onReset: onResetClick
   }));
 
-  // The 9th and 10th bands are not verified to have that frequency
   const labels = ['100', '200', '400', '800', '1.6k', '3.2k', '6.4k', '12.8k', '16k', '20k'];
   const [dataSet, setDataSet] = useState<number[]>(input.slice(0, bands));
 
@@ -56,24 +56,25 @@ export const Equalizer = forwardRef<EqualizerRef, EqualizerProps>((props, ref) =
         data: dataSet,
         borderColor: '9B9B9B',
         borderWidth: 1,
-        pointRadius: 2.5,
-        pointHoverRadius: 3,
-        pointBackgroundColor: '#609ACF',
-        pointBorderWidth: 0,
         spanGaps: false,
         fill: true,
         backgroundColor: 'rgba(53, 162, 235, 0.5)',
-        tension: 0.3
+        tension: 0.3,
+        pointRadius: !disabled ? 2.3 : 0,
+        pointHoverRadius: 3,
+        pointBackgroundColor: '#609ACF',
+        pointBorderWidth: 0
       }
     ]
   };
 
   const onDragEnd = (e: unknown, _datasetIdx: number, idx: string | number, value: number) => {
-    const newDataSet = dataSet;
+    if (disabled) return;
+
+    const newDataSet = [...dataSet];
     newDataSet[idx as number] = value;
     setDataSet(newDataSet.slice(0, bands));
     onEqualizerChange(newDataSet);
-    console.log('Equalizer output:', newDataSet);
   };
 
   const onResetClick = () => {
@@ -82,52 +83,61 @@ export const Equalizer = forwardRef<EqualizerRef, EqualizerProps>((props, ref) =
     onEqualizerChange(newDataSet);
   };
 
-  //@ts-expect-error: no type found for this event
-  const onHover = useCallback((e) => {
-    const point = e?.chart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, false);
-    if (point.length) e.native.target.style.cursor = 'grab';
-    else e.native.target.style.cursor = 'default';
-  }, []);
+  // @ts-ignore
+  const onHover = useCallback(
+    (e) => {
+      if (disabled) return;
 
-  const options = {
-    dragData: true,
-    scales: {
-      y: {
-        beginAtZero: true,
-        max: MIN_VALUE,
-        min: MAX_VALUE,
-        grid: {
-          display: false
-        }
-      },
-      x: {
-        grid: {
-          display: false
-        }
-      }
+      const point = e?.chart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, false);
+      if (point.length) e.native.target.style.cursor = 'grab';
+      else e.native.target.style.cursor = 'default';
     },
-    onHover: onHover,
-    plugins: {
-      dragData: {
-        round: 1,
-        dragX: true,
-        showTooltip: true,
-        onDragEnd: onDragEnd
+    [disabled]
+  );
+
+  const options = useMemo(
+    () => ({
+      dragData: !disabled,
+      scales: {
+        y: {
+          beginAtZero: true,
+          max: MIN_VALUE,
+          min: MAX_VALUE,
+          grid: {
+            display: false
+          }
+        },
+        x: {
+          grid: {
+            display: false
+          }
+        }
       },
-      legend: {
-        display: false
-      },
-      title: {
-        display: true,
-        text: 'Custom EQ'
+      onHover: onHover,
+      plugins: {
+        ...(!disabled && {
+          dragData: {
+            round: 1,
+            dragX: true,
+            showTooltip: true,
+            onDragEnd: onDragEnd
+          }
+        }),
+        legend: {
+          display: false
+        },
+        title: {
+          display: true,
+          text: !disabled ? 'Custom EQ' : 'Preset EQ'
+        }
       }
-    }
-  };
+    }),
+    [disabled, onHover]
+  );
 
   return (
     <div className={'mt-3'}>
       <Line data={data} options={options} />
-      {/*<Button onClick={() => onResetClick()}>Reset</Button>*/}
     </div>
   );
 });

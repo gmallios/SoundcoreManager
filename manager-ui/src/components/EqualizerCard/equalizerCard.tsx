@@ -6,6 +6,8 @@ import { BLEDevice } from '../../ble/bleDevice';
 import { useWebManagerStore } from '@stores/web/useWebManagerStore';
 import { Button, Card, CardBody, CardFooter, Select, SelectItem, Switch } from '@nextui-org/react';
 import { Equalizer, EqualizerRef } from '@components/EqualizerCard/equalizer';
+import { CircleCheck } from 'lucide-react';
+
 // import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 
 export interface EqualizerCardProps {
@@ -73,7 +75,7 @@ export const EqualizerCard: React.FC<EqualizerCardProps> = ({ state }) => {
   });
 
   const onCardPress = (v: string) => {
-    const newProfile = v == 'Custom' ? EQProfile.Custom : EQProfile.Acoustic;
+    const newProfile = v == 'Custom' ? EQProfile.Custom : EQProfile.SoundcoreSignature;
     if (!isOnCustom && newProfile !== 'Custom') {
       return;
     }
@@ -96,6 +98,7 @@ export const EqualizerCard: React.FC<EqualizerCardProps> = ({ state }) => {
               <EQModeCard
                 title={'Preset'}
                 isSelected={!isOnCustom}
+                hasBassUp={hasBassUp}
                 profiles={eqProfiles}
                 currentEqProfile={state.eqConfiguration.value.profile}
                 bassUpValue={state.eqConfiguration.value.profile === EQProfile.BassBooster}
@@ -116,6 +119,7 @@ export const EqualizerCard: React.FC<EqualizerCardProps> = ({ state }) => {
                 input={[...getMappedEqValues()]}
                 onEqualizerChange={onCustomEqualizerChange}
                 ref={eqRef}
+                disabled={!isOnCustom}
               />
             </div>
           </>
@@ -128,6 +132,7 @@ export const EqualizerCard: React.FC<EqualizerCardProps> = ({ state }) => {
 interface EQModeCardProps {
   title: 'Preset' | 'Custom';
   isSelected: boolean;
+  hasBassUp?: boolean;
   currentEqProfile?: EQProfile;
   profiles?: Array<string>;
   bassUpValue?: boolean;
@@ -141,6 +146,7 @@ interface EQModeCardProps {
 const EQModeCard: React.FC<EQModeCardProps> = ({
   title,
   isSelected,
+  hasBassUp,
   currentEqProfile,
   profiles,
   bassUpValue,
@@ -164,7 +170,7 @@ const EQModeCard: React.FC<EQModeCardProps> = ({
       }
       onPress={() => onPress && onPress(title)}>
       <div
-        className={'bg-default-100 p-3'}
+        className={'bg-default-100 p-3 pb-0'}
         style={{
           width: '100%',
           height: '100%'
@@ -172,21 +178,23 @@ const EQModeCard: React.FC<EQModeCardProps> = ({
         <div className={'flex justify-between'}>
           <div className={'flex flex-col items-start gap-1'}>
             <p className={'text-white'}>{title}</p>
-            {profiles && profiles.length > 0 && bassUpValue !== undefined && (
-              <Switch isSelected={bassUpValue} onValueChange={onBassUpChange} size="sm">
-                BassUp
-              </Switch>
+            {profiles && profiles.length > 0 && bassUpValue !== undefined && hasBassUp && (
+              <div className={'flex flex-row items-center gap-1'}>
+                <p className="text-small text-default-600 h-fit">BassUp</p>
+                <Switch isSelected={bassUpValue} onValueChange={onBassUpChange} size="sm" />
+              </div>
             )}
           </div>
-          {/* {isSelected && <CheckCircleIcon fontSize={'medium'} />} */}
+          {isSelected && <CircleCheck />}
         </div>
       </div>
-      <CardFooter className={'p-0'}>
+      <CardFooter className={'p-0 h-10'}>
         {profiles && profiles.length > 0 && (
           <Select
             //TODO: Remove hack and fix the styles
             label={!profiles.includes(visibleEqProfile) ? 'Select a profile' : ''}
             className="w-full p-0"
+            size="md"
             disabled={!isSelected}
             onSelectionChange={(e) => {
               onPresetChange && onPresetChange([...e][0] as EQProfile);

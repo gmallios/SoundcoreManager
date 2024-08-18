@@ -7,7 +7,7 @@ import { DeviceStateCard } from '@components/DeviceStateCard/deviceStateCard';
 import { BLEDeviceFactory } from './ble/bleDevice';
 import { Button, Navbar, NavbarBrand, NavbarContent, NavbarItem, Spinner } from '@nextui-org/react';
 import { EqualizerCard } from '@components/EqualizerCard/equalizerCard';
-import { BlurredOverlay } from '@components/atoms/BlurredOverlay';
+import { BlurredOverlay } from '@components/atoms/blurredOverlay';
 
 enum ConnectionDialogStatus {
   DIALOG_OPEN,

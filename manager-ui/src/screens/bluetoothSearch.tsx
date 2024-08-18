@@ -4,7 +4,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { DiscoveredDevice } from '../types/soundcore-lib';
 import { Button, Listbox, ListboxItem, Progress, Spinner } from '@nextui-org/react';
 import { ArrowRight, RefreshCcw } from 'lucide-react';
-import { BlurredOverlay } from '@components/atoms/BlurredOverlay';
+import { BlurredOverlay } from '@components/atoms/blurredOverlay';
 
 export const BluetoothSearchScreen: React.FC = () => {
   const {
