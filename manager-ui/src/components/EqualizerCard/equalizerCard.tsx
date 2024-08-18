@@ -6,7 +6,6 @@ import { BLEDevice } from '../../ble/bleDevice';
 import { useWebManagerStore } from '@stores/web/useWebManagerStore';
 import { Button, Card, CardBody, CardFooter, Select, SelectItem, Switch } from '@nextui-org/react';
 import { Equalizer, EqualizerRef } from '@components/EqualizerCard/equalizer';
-import { CircleCheck } from 'lucide-react';
 
 // import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 
@@ -168,6 +167,13 @@ const EQModeCard: React.FC<EQModeCardProps> = ({
       className={
         'border-none col-span-1 h-24 hover:-translate-y-0.5 ease-in-out transition-all transform-gpu'
       }
+      style={{
+        ...(isSelected && {
+          outlineColor: 'hsl(var(--nextui-focus) / var(--nextui-focus-opacity, 1))',
+          outlineOffset: '2px',
+          outlineWidth: '2px'
+        })
+      }}
       onPress={() => onPress && onPress(title)}>
       <div
         className={'bg-default-100 p-3 pb-0'}
@@ -185,7 +191,6 @@ const EQModeCard: React.FC<EQModeCardProps> = ({
               </div>
             )}
           </div>
-          {isSelected && <CircleCheck />}
         </div>
       </div>
       <CardFooter className={'p-0 h-10'}>
