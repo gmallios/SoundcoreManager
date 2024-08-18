@@ -82,10 +82,9 @@ export const Equalizer = forwardRef<EqualizerRef, EqualizerProps>((props, ref) =
     setDataSet(newDataSet);
     onEqualizerChange(newDataSet);
   };
-
-  // @ts-ignore
+  
   const onHover = useCallback(
-    (e) => {
+    (e: any) => {
       if (disabled) return;
 
       const point = e?.chart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, false);

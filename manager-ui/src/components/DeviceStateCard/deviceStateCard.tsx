@@ -27,7 +27,7 @@ export const DeviceStateCard: React.FC<{
 
             <div className="flex flex-col col-span-6 md:col-span-9 ml-2 mt-4 self-start">
               <div className="flex justify-between items-start">
-                <div className="flex flex-col gap-0">
+                <div className="flex gap-2">
                   <h3 className="font-semibold text-foreground/90">
                     {getDeviceName(state?.serial?.model)}
                   </h3>
