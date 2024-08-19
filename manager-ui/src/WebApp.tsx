@@ -5,9 +5,21 @@ import { generate_soundcore_service_uuids, getSoundcoreMacPrefixes } from '@wasm
 import { useWebManagerStore } from '@stores/web/useWebManagerStore';
 import { DeviceStateCard } from '@components/DeviceStateCard/deviceStateCard';
 import { BLEDeviceFactory } from './ble/bleDevice';
-import { Button, Navbar, NavbarBrand, NavbarContent, NavbarItem, Spinner } from '@nextui-org/react';
+import {
+  Button,
+  Dropdown,
+  DropdownItem,
+  DropdownMenu,
+  DropdownTrigger,
+  Navbar,
+  NavbarBrand,
+  NavbarContent,
+  NavbarItem,
+  Spinner
+} from '@nextui-org/react';
 import { EqualizerCard } from '@components/EqualizerCard/equalizerCard';
 import { BlurredOverlay } from '@components/atoms/blurredOverlay';
+import { ChevronDown, Unplug } from 'lucide-react';
 
 enum ConnectionDialogStatus {
   DIALOG_OPEN,
@@ -16,9 +28,9 @@ enum ConnectionDialogStatus {
 }
 
 export const WebApp: React.FC = () => {
-  const { state, device, setDevice } = useWebManagerStore((state) => ({
+  const { state, disconnect, setDevice } = useWebManagerStore((state) => ({
     state: state.currentState,
-    device: state.device,
+    disconnect: state.disconnect,
     setDevice: state.setDevice
   }));
   const [isConnecting, setIsConnecting] = useState(ConnectionDialogStatus.CLOSED);
@@ -55,9 +67,31 @@ export const WebApp: React.FC = () => {
         <NavbarBrand>Soundcore Manager</NavbarBrand>
         <NavbarContent justify="end">
           <NavbarItem>
-            <Button color="primary" href="#" variant="flat" onClick={scan}>
-              Connect to a device
-            </Button>
+            {!state ? (
+              <Button color="primary" href="#" variant="flat" onClick={scan}>
+                Connect to a device
+              </Button>
+            ) : (
+              <Dropdown>
+                <DropdownTrigger>
+                  <Button variant={'flat'} color={'success'}>
+                    Connected <ChevronDown size={20} />
+                  </Button>
+                </DropdownTrigger>
+                <DropdownMenu variant={'faded'} aria-label="Device Actions">
+                  <DropdownItem
+                    key="disconnect"
+                    className="text-danger"
+                    color="danger"
+                    onClick={disconnect}
+                    startContent={
+                      <Unplug className={'pointer-events-none flex-shrink-0'} size={20} />
+                    }>
+                    Disconnect
+                  </DropdownItem>
+                </DropdownMenu>
+              </Dropdown>
+            )}
           </NavbarItem>
         </NavbarContent>
       </Navbar>

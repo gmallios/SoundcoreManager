@@ -7,11 +7,17 @@ export interface WebManagerStore {
   currentState: SoundcoreDeviceState | null;
   setDevice: (device: BLEDevice | null) => void;
   setCurrentState: (currentState: SoundcoreDeviceState | null) => void;
+  disconnect: () => void;
 }
 
 export const useWebManagerStore = create<WebManagerStore>((set) => ({
   device: null,
   currentState: null,
   setDevice: (device) => set({ device }),
-  setCurrentState: (currentState) => set({ currentState })
+  setCurrentState: (currentState) => set({ currentState }),
+  disconnect: () =>
+    set((state) => {
+      state.device?.free();
+      return { device: null, currentState: null };
+    })
 }));

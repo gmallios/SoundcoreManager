@@ -30,6 +30,10 @@ export class BLEDevice {
   public async setEqualizerPreset(profile: EQProfile): Promise<void> {
     return this.webBLEDevice.setEqualizerPreset(JSON.stringify(profile));
   }
+
+  public free() {
+    this.webBLEDevice.free();
+  }
 }
 
 export const BLEDeviceFactory = async (device: BluetoothDevice): Promise<BLEDevice> => {
