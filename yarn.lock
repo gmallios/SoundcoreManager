@@ -1278,6 +1278,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@kurkle/color@npm:^0.3.0":
+  version: 0.3.2
+  resolution: "@kurkle/color@npm:0.3.2"
+  checksum: 10c0/a9e8e3e35dcd59dec4dd4f0105919c05e24823a96347bcf152965c29e48d6290b66d5fb96c071875db752e10930724c48ce6d338fefbd65e0ce5082d5c78970e
+  languageName: node
+  linkType: hard
+
 "@lukeed/ms@npm:^2.0.1":
   version: 2.0.2
   resolution: "@lukeed/ms@npm:2.0.2"
@@ -6955,21 +6962,24 @@ __metadata:
   languageName: node
   linkType: hard
 
-"chart.js@npm:^3.9.1, chart.js@npm:~3.9.1":
-  version: 3.9.1
-  resolution: "chart.js@npm:3.9.1"
-  checksum: 10c0/a31342233403faaa53bebc1019aeb7b849d6d2cd4108c10f1dd73b36c4fcfc7c21bce8986f2f6eb00a28801fddc68a287b8c9f65e9758c50db6efef955b4e991
+"chart.js@npm:~4.4.4":
+  version: 4.4.4
+  resolution: "chart.js@npm:4.4.4"
+  dependencies:
+    "@kurkle/color": "npm:^0.3.0"
+  checksum: 10c0/9fa3206403a6103916f7762c2665d322c42b0cc07fba91526b1d033ddb887c1ba74b3ebc0bd0748a9e55abd1017f25fdb2292cdd6579d8c2d3bcb1c58f71281c
   languageName: node
   linkType: hard
 
-"chartjs-plugin-dragdata@npm:^2.2.4":
-  version: 2.2.5
-  resolution: "chartjs-plugin-dragdata@npm:2.2.5"
+"chartjs-plugin-dragdata@npm:^2.3.1":
+  version: 2.3.1
+  resolution: "chartjs-plugin-dragdata@npm:2.3.1"
   dependencies:
-    chart.js: "npm:^3.9.1"
     d3-drag: "npm:^3.0.0"
     d3-selection: "npm:^3.0.0"
-  checksum: 10c0/241dde257f0dde7baacfe62adbee90ec2d5d7d6776663627d5ac87216e47cd1f32647530b4d8d1d3d66968cce048c3e4250ec80b8b4daa0900b9aed30358c583
+  peerDependencies:
+    chart.js: ^3.9.1 || ^4.0.1
+  checksum: 10c0/ef2ad83b956a5fd87ef3f41b277f982dee434bf5e7e64f30e1e7beb4dc4fc01c793aeec7f95a4b36a6690abe52af737350c892e03dea9c292201c2f54f53c1d0
   languageName: node
   linkType: hard
 
@@ -12136,8 +12146,8 @@ __metadata:
     "@vitejs/plugin-react": "npm:^4.0.0"
     "@vitejs/plugin-react-swc": "npm:^3.7.0"
     autoprefixer: "npm:^10.4.19"
-    chart.js: "npm:~3.9.1"
-    chartjs-plugin-dragdata: "npm:^2.2.4"
+    chart.js: "npm:~4.4.4"
+    chartjs-plugin-dragdata: "npm:^2.3.1"
     eslint: "npm:^8.57.0"
     eslint-config-prettier: "npm:^9.1.0"
     eslint-plugin-prettier: "npm:^5.1.3"
@@ -12148,7 +12158,7 @@ __metadata:
     postcss: "npm:^8.4.39"
     prettier: "npm:^3.2.5"
     react: "npm:^18.2.0"
-    react-chartjs-2: "npm:^4.3.1"
+    react-chartjs-2: "npm:^5.2.0"
     react-dom: "npm:^18.2.0"
     tailwindcss: "npm:^3.4.5"
     tauri-plugin-log-api: "https://github.com/tauri-apps/tauri-plugin-log#v1"
@@ -14390,13 +14400,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-chartjs-2@npm:^4.3.1":
-  version: 4.3.1
-  resolution: "react-chartjs-2@npm:4.3.1"
+"react-chartjs-2@npm:^5.2.0":
+  version: 5.2.0
+  resolution: "react-chartjs-2@npm:5.2.0"
   peerDependencies:
-    chart.js: ^3.5.0
+    chart.js: ^4.1.1
     react: ^16.8.0 || ^17.0.0 || ^18.0.0
-  checksum: 10c0/cac2500751e812c972d405eeeda9c94bd78a5190c09c4b922d9d888b7d71c0f5a55e3a4f807ce3fed8b32b8d5ccc4cf6f09f402cf64f82fb024e56970226686d
+  checksum: 10c0/437e443a268b7eebab3f1a6f0f5d936e58caf650fca55f568a612a46c563d22af683a64185eac8005aa644e4960a5a72cc1075a2574b89ec46c7653aaf4025e2
   languageName: node
   linkType: hard
 
