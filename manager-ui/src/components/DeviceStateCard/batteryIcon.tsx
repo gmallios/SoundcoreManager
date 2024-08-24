@@ -11,14 +11,17 @@ import {
 export const BatteryIcon: React.FC<{ battery: SingleBattery }> = ({ battery }) => {
   const { charging: isCharging, level } = battery;
   let icon = <BatteryWarning />;
+  let colorClass = '';
   if (!isCharging) {
     switch (level) {
       case 0:
         icon = <BatteryWarning />;
+        colorClass = 'text-danger';
         break;
       case 1:
       case 2:
         icon = <BatteryLow />;
+        colorClass = 'text-warning';
         break;
       case 3:
       case 4:
@@ -32,5 +35,5 @@ export const BatteryIcon: React.FC<{ battery: SingleBattery }> = ({ battery }) =
     icon = <BatteryCharging />;
   }
 
-  return <div className={'flex items-center gap-1'}>{icon}</div>;
+  return <div className={'flex items-center gap-1 ' + colorClass}>{icon}</div>;
 };
