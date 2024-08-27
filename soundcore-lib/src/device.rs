@@ -62,17 +62,24 @@ where
         connection: &C,
         byte_channel: &mut mpsc::Receiver<Vec<u8>>,
     ) -> SoundcoreLibResult<TaggedData<SoundcoreDeviceState>> {
-        let mut initial_state = Self::fetch_initial_state(connection, byte_channel).await?;
+        // TODO: Add test data to mocked device so initial state can be fetched
+        if cfg!(test) || cfg!(feature = "mock") {
+            return Ok(TaggedData {
+                tag: KnownProductCodes::A3951,
+                data: SoundcoreDeviceState::default(),
+            });
+        }
 
+        let mut initial_state = Self::fetch_initial_state(connection, byte_channel).await?;
         if initial_state.data.serial.is_none() || initial_state.data.fw.is_none() {
             debug!("Missing device info in initial state, fetching additional info...");
             initial_state.data =
                 Self::fetch_info(connection, byte_channel, &initial_state.data).await?;
         }
-        
+
         Ok(initial_state)
     }
-    
+
     async fn fetch_initial_state(
         connection: &C,
         byte_channel: &mut mpsc::Receiver<Vec<u8>>,
@@ -115,14 +122,6 @@ where
 
             F::sleep(Duration::from_millis(500)).await;
             retry_count += 1;
-        }
-
-        // TODO: Add test data to mocked device so initial state can be fetched
-        if cfg!(test) || cfg!(feature = "mock") {
-            return Ok(TaggedData {
-                tag: KnownProductCodes::A3951,
-                data: SoundcoreDeviceState::default(),
-            });
         }
 
         Err(SoundcoreLibError::MissingInitialState(
@@ -256,13 +255,13 @@ where
             let latest_eq_profile = latest_state.eq_configuration.get_profile();
             let new_eq_profile = eq.get_profile();
             if features.has_bass_up {
-                trace!(
-                    "Device {:?} supports BassUp, building and sending the appropriate command...",
-                    self.model
-                );
                 if latest_eq_profile == EQProfile::SoundcoreSignature
                     && new_eq_profile == EQProfile::BassBooster
                 {
+                    trace!(
+                    "Device {:?} supports BassUp, building and sending the appropriate command...",
+                    self.model
+                     );
                     self.connection
                         .write(
                             &BassUpCommandBuilder::new(self.model, true).build(),
