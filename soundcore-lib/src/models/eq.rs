@@ -22,7 +22,7 @@ impl MonoEQ {
     pub const MIN_SIGNED: i8 = -120;
     pub const MAX_SIGNED: i8 = 120;
     pub const MIN_BYTE: u8 = 0;
-    pub const MAX_BYTE: u8 = 240;
+    pub const MAX_BYTE: u8 = 180;
     pub const MAX_FLOAT: f32 = 18.0;
     pub const MIN_FLOAT: f32 = 6.0;
     pub const DRC_ADJUSTMENT: f32 = 10.0;
@@ -102,9 +102,10 @@ impl MonoEQ {
 
     /* Input should be clamped to -120..=120 then converted to the range 0..=240 */
     fn from_signed(value: &i8) -> u8 {
-        value
+        (value
             .clamp(&Self::MIN_SIGNED, &Self::MAX_SIGNED)
-            .wrapping_add(Self::MIN_SIGNED.abs()) as u8
+            .wrapping_add(Self::MIN_SIGNED.abs()) as u8)
+            .clamp(Self::MIN_BYTE, Self::MAX_BYTE)
     }
 
     fn to_signed(value: u8) -> i8 {
@@ -134,7 +135,8 @@ impl MonoEQ {
         let d15 = d4 * 0.81f64 * d3;
         let d16 = d9 * 0.81f64 * d3;
 
-        [(d11 - (0.00217f64 * d12)) as f32,
+        [
+            (d11 - (0.00217f64 * d12)) as f32,
             (((((((d13 + ((d2 * 1.73f64) * d14)) - d15) + (d6 * 0.204f64)) - (d7 * 0.068f64))
                 + (d9 * 0.045f64))
                 - (d10 * 0.0235f64))
@@ -173,7 +175,8 @@ impl MonoEQ {
                 - ((d10 * 0.71f64) * d3))
                 + (d12 * 1.5f64)) as f32,
             0f32,
-            -120f32]
+            -120f32,
+        ]
         .iter()
         .map(|v| v / 10.0)
         .collect()
@@ -204,7 +207,7 @@ mod eq_model {
     #[test]
     fn from_signed_check() {
         let signed_values = [-120, -100, -80, -60, -40, -20, 0, 20, 40, 60, 80, 100, 120];
-        let expected_values = vec![0, 20, 40, 60, 80, 100, 120, 140, 160, 180, 200, 220, 240];
+        let expected_values = vec![0, 20, 40, 60, 80, 100, 120, 140, 160, 180, 180, 180, 180];
         let actual_values: Vec<u8> = signed_values.iter().map(MonoEQ::from_signed).collect();
         assert_eq!(expected_values, actual_values);
     }
