@@ -1,18 +1,25 @@
-import React, { forwardRef, useCallback, useImperativeHandle, useMemo, useState } from 'react';
-import { Line } from 'react-chartjs-2';
+import { semanticColors } from '@nextui-org/react';
 import {
+  BubbleDataPoint,
   CategoryScale,
-  Chart as ChartJS,
+  Chart,
   ChartData,
+  ChartEvent,
+  Chart as ChartJS,
+  ChartOptions,
   Filler,
   Legend,
   LinearScale,
   LineElement,
+  Point,
   PointElement,
   Title,
   Tooltip
 } from 'chart.js';
+import { ActiveElement } from 'chart.js/dist/plugins/plugin.tooltip';
 import 'chartjs-plugin-dragdata';
+import { forwardRef, useImperativeHandle } from 'react';
+import { Line } from 'react-chartjs-2';
 
 ChartJS.register(
   CategoryScale,
@@ -47,95 +54,98 @@ export const Equalizer = forwardRef<EqualizerRef, EqualizerProps>((props, ref) =
   }));
 
   const labels = ['100', '200', '400', '800', '1.6k', '3.2k', '6.4k', '12.8k', '16k', '20k'];
-  const [dataSet, setDataSet] = useState<number[]>(input.slice(0, bands));
 
   const data: ChartData<'line', number[], string> = {
     labels: labels.slice(0, bands).map((label) => `${label}Hz`),
     datasets: [
       {
-        data: dataSet,
-        borderColor: '9B9B9B',
-        borderWidth: 1,
+        data: [...input],
         spanGaps: false,
         fill: true,
-        backgroundColor: 'rgba(53, 162, 235, 0.5)',
+        backgroundColor: semanticColors.dark.primary[200],
         tension: 0.3,
-        pointRadius: !disabled ? 2.3 : 0,
+        pointRadius: !disabled ? 3 : 0,
         pointHoverRadius: 3,
-        pointBackgroundColor: '#609ACF',
+        pointBackgroundColor: semanticColors.dark.primary[500],
         pointBorderWidth: 0
       }
     ]
   };
 
-  const onDragEnd = (e: unknown, _datasetIdx: number, idx: string | number, value: number) => {
-    if (disabled) return;
-
-    const newDataSet = [...dataSet];
+  const onDragEnd = (
+    _e: unknown,
+    _datasetIdx: number,
+    idx: number,
+    value: number | Point | [number, number] | BubbleDataPoint | null
+  ) => {
+    if (disabled || value === null || typeof value != 'number') return;
+    const newDataSet = [...input];
     newDataSet[idx as number] = value;
-    setDataSet(newDataSet.slice(0, bands));
     onEqualizerChange(newDataSet);
   };
 
   const onResetClick = () => {
     const newDataSet = Array(bands).fill(0);
-    setDataSet(newDataSet);
     onEqualizerChange(newDataSet);
   };
-  
-  const onHover = useCallback(
-    (e: any) => {
-      if (disabled) return;
 
-      const point = e?.chart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, false);
-      if (point.length) e.native.target.style.cursor = 'grab';
-      else e.native.target.style.cursor = 'default';
-    },
-    [disabled]
-  );
+  const onHover = (e: ChartEvent, _elements: ActiveElement[], chart: Chart) => {
+    if (disabled) return;
 
-  const options = useMemo(
-    () => ({
-      dragData: !disabled,
-      scales: {
-        y: {
-          beginAtZero: true,
-          max: MIN_VALUE,
-          min: MAX_VALUE,
-          grid: {
-            display: false
-          }
+    const point = chart.getElementsAtEventForMode(
+      e as unknown as Event,
+      'nearest',
+      { intersect: true },
+      false
+    );
+
+    if (point.length) (e.native?.target as HTMLElement).style.cursor = 'grab';
+    else (e.native?.target as HTMLElement).style.cursor = 'default';
+  };
+
+  const options: ChartOptions<'line'> = {
+    scales: {
+      y: {
+        beginAtZero: true,
+        suggestedMin: MIN_VALUE,
+        suggestedMax: MAX_VALUE,
+        grid: {
+          display: true
         },
-        x: {
-          grid: {
-            display: false
-          }
+        ticks: {
+          display: true,
+          stepSize: 1,
+          autoSkip: false
         }
       },
-      onHover: onHover,
-      plugins: {
-        ...(!disabled && {
-          dragData: {
-            round: 1,
-            dragX: true,
-            showTooltip: true,
-            onDragEnd: onDragEnd
-          }
-        }),
-        legend: {
+      x: {
+        grid: {
           display: false
-        },
-        title: {
-          display: true,
-          text: !disabled ? 'Custom EQ' : 'Preset EQ'
         }
       }
-    }),
-    [disabled, onHover]
-  );
+    },
+    onHover: onHover,
+    plugins: {
+      dragData: {
+        round: 1,
+        dragX: true,
+        showTooltip: true,
+        onDragEnd: onDragEnd
+      },
+      legend: {
+        display: false
+      },
+      title: {
+        display: true,
+        text: !disabled ? 'Custom EQ' : 'Preset EQ'
+      }
+    },
+    responsive: true,
+    maintainAspectRatio: false
+  };
 
   return (
-    <div className={'mt-3'}>
+    <div className={'mt-3 min-h-[500px]'}>
       <Line data={data} options={options} />
     </div>
   );

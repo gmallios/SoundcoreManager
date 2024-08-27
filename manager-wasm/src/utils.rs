@@ -1,4 +1,6 @@
+use std::str::FromStr;
 use soundcore_lib::btaddr::BluetoothAdrr;
+use soundcore_lib::models::EQProfile;
 use uuid::Uuid;
 use wasm_bindgen::prelude::wasm_bindgen;
 use wasm_bindgen::JsValue;
@@ -43,4 +45,12 @@ pub fn get_soundcore_mac_prefixes() -> Result<BLECompanyIdentifiers, JsValue> {
         .map(|prefix| prefix.to_vec())
         .collect::<Vec<Vec<u8>>>();
     Ok(serde_wasm_bindgen::to_value(&prefixes)?.into())
+}
+
+#[wasm_bindgen(js_name = "getPresetEqValue")]
+pub fn get_preset_eq_value(profile: String, bands: usize) -> Result<Vec<u8>, JsValue> {
+    Ok(EQProfile::from_str(&profile)
+        .map_err(|err| format!("{err:?}"))?
+        .eq()
+        .to_bytes(bands))
 }

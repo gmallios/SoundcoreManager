@@ -1,13 +1,12 @@
 import { BluetoothAdrr, EQProfile, SoundcoreDeviceState } from '@generated-types/soundcore-lib';
-import React, { useCallback, useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { useUpdateCustomEqualizer, useUpdatePresetEqualizer } from '@hooks/useDeviceCommand';
 import { useTauriManagerStore } from '@stores/tauri/useTauriManagerStore';
 import { BLEDevice } from '../../ble/bleDevice';
 import { useWebManagerStore } from '@stores/web/useWebManagerStore';
 import { Button, Card, CardBody, CardFooter, Select, SelectItem, Switch } from '@nextui-org/react';
 import { Equalizer, EqualizerRef } from '@components/EqualizerCard/equalizer';
-
-// import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import { getPresetEqValue } from '@wasm/manager_wasm';
 
 export interface EqualizerCardProps {
   state: SoundcoreDeviceState;
@@ -25,17 +24,22 @@ export const EqualizerCard: React.FC<EqualizerCardProps> = ({ state }) => {
   const isOnCustom = state.eqConfiguration.value.profile === EQProfile.Custom;
   const hasBassUp = state.featureSet.equalizerFeatures?.has_bass_up ?? false;
 
+  const [presetEqValues, setPresetEqValues] = useState<number[]>([]);
   const eqRef = useRef<EqualizerRef>(null);
 
-  const onCustomEqualizerChange = useCallback((output: number[]) => {
+  const onCustomEqualizerChange = (output: number[]) => {
     if (isOnCustom) {
       const new_eq = output.map((v) => v * 10);
       useUpdateCustomEqualizer(deviceAddrOrDevice, new_eq);
     }
-  }, []);
+  };
 
   const eqProfileChange = (profile: EQProfile) => {
-    console.log('Selected EQ profile:', profile);
+    setPresetEqValues(
+      mapRangeArray(Array.from(getPresetEqValue(profile.toString(), 8)), 0, 240, -6, 6).map(
+        (v) => v * 2
+      )
+    );
     useUpdatePresetEqualizer(deviceAddrOrDevice, profile);
   };
 
@@ -59,14 +63,14 @@ export const EqualizerCard: React.FC<EqualizerCardProps> = ({ state }) => {
     return input.map((value) => mapRange(value, inMin, inMax, outMin, outMax));
   };
 
-  const getMappedEqValues = (): number[] => {
+  const getMappedCustomEqValues = (): number[] => {
     let valueArr;
     if (state.eqConfiguration.value.eq && 'left' in state.eqConfiguration.value.eq) {
       valueArr = state.eqConfiguration.value.eq.left.values;
     } else {
       valueArr = state.eqConfiguration.value.eq.values;
     }
-    return mapRangeArray(valueArr, 0, 240, -6, 6);
+    return mapRangeArray(valueArr, 0, 240, -6, 6).map((v) => v * 2);
   };
 
   const eqProfiles = Object.keys(EQProfile).filter((item) => {
@@ -110,12 +114,13 @@ export const EqualizerCard: React.FC<EqualizerCardProps> = ({ state }) => {
                 title={'Custom'}
                 isSelected={isOnCustom}
                 onPress={onCardPress}
+                onResetEq={eqRef.current?.onReset}
               />
             </div>
             <div className={'w-full'}>
               <Equalizer
                 bands={state.featureSet.equalizerFeatures.bands}
-                input={[...getMappedEqValues()]}
+                input={isOnCustom ? [...getMappedCustomEqValues()] : [...presetEqValues]}
                 onEqualizerChange={onCustomEqualizerChange}
                 ref={eqRef}
                 disabled={!isOnCustom}
@@ -187,7 +192,12 @@ const EQModeCard: React.FC<EQModeCardProps> = ({
             {profiles && profiles.length > 0 && bassUpValue !== undefined && hasBassUp && (
               <div className={'flex flex-row items-center gap-1'}>
                 <p className="text-small text-default-600 h-fit">BassUp</p>
-                <Switch isSelected={bassUpValue} onValueChange={onBassUpChange} size="sm" />
+                <Switch
+                  isSelected={bassUpValue}
+                  onValueChange={onBassUpChange}
+                  size="sm"
+                  disabled={!isSelected}
+                />
               </div>
             )}
           </div>
@@ -200,7 +210,7 @@ const EQModeCard: React.FC<EQModeCardProps> = ({
             label={!profiles.includes(visibleEqProfile) ? 'Select a profile' : ''}
             className="w-full p-0"
             size="md"
-            disabled={!isSelected}
+            isDisabled={!isSelected}
             onSelectionChange={(e) => {
               onPresetChange && onPresetChange([...e][0] as EQProfile);
             }}
