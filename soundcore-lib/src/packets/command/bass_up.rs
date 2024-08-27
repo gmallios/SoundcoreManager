@@ -21,7 +21,7 @@ impl BassUpCommandBuilder {
         match self.product_code {
             KnownProductCodes::A3040 => A3040BassUpCommand::new(self.enable).bytes(),
             _ => {
-                warn!("Unknown or unhandled product code, using A3951 as default");
+                warn!("Unknown or unhandled product code, using A3040 as default");
                 A3040BassUpCommand::new(self.enable).bytes()
             }
         }
