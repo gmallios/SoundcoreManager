@@ -3,9 +3,9 @@ import {
   BubbleDataPoint,
   CategoryScale,
   Chart,
+  Chart as ChartJS,
   ChartData,
   ChartEvent,
-  Chart as ChartJS,
   ChartOptions,
   Filler,
   Legend,
@@ -141,11 +141,11 @@ export const Equalizer = forwardRef<EqualizerRef, EqualizerProps>((props, ref) =
       }
     },
     responsive: true,
-    maintainAspectRatio: false
+    maintainAspectRatio: true
   };
 
   return (
-    <div className={'mt-3 min-h-[500px]'}>
+    <div className={'mt-3 w-full'} style={{ aspectRatio: 2 }}>
       <Line data={data} options={options} />
     </div>
   );
