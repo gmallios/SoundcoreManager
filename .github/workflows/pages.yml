@@ -3,10 +3,7 @@ on:
   push:
     branches: [ 'master' ]
 
-permissions:
-  contents: read
-  pages: write
-  id-token: write
+
 
 concurrency:
   group: 'pages'
@@ -14,10 +11,11 @@ concurrency:
 
 jobs:
   deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -59,7 +57,7 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           path: './manager-ui/dist'
-          
+
       - name: ⏫ Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
