@@ -3,7 +3,6 @@
 import React, { useState } from 'react';
 import { generate_soundcore_service_uuids, getSoundcoreMacPrefixes } from '@wasm/manager_wasm';
 import { useWebManagerStore } from '@stores/web/useWebManagerStore';
-import { DeviceStateCard } from '@components/DeviceStateCard/deviceStateCard';
 import { BLEDeviceFactory } from './ble/bleDevice';
 import {
   Button,
@@ -17,9 +16,9 @@ import {
   NavbarItem,
   Spinner
 } from '@nextui-org/react';
-import { EqualizerCard } from '@components/EqualizerCard/equalizerCard';
 import { BlurredOverlay } from '@components/atoms/blurredOverlay';
 import { ChevronDown, Unplug } from 'lucide-react';
+import { DeviceStateLayout } from './layouts/deviceState';
 
 enum ConnectionDialogStatus {
   DIALOG_OPEN,
@@ -98,8 +97,7 @@ export const WebApp: React.FC = () => {
       <div className={'min-h-fit flex flex-col items-center justify-start p-4'}>
         {state ? (
           <div className={'flex flex-col items-stretch w-2/3 2xl:w-1/2'}>
-            <DeviceStateCard state={state} />
-            <EqualizerCard state={state} />
+            <DeviceStateLayout state={state} />
           </div>
         ) : (
           <>

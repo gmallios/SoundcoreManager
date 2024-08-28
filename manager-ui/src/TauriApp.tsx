@@ -1,10 +1,10 @@
 import React, { useEffect } from 'react';
 import './App.css';
 import { useTauriManagerStore } from '@stores/tauri/useTauriManagerStore';
-import { BluetoothSearchScreen } from './screens/bluetoothSearch';
-import { useAsyncBridgeEvent, useAsyncBridgeRequest } from './hooks/useAsyncBridge';
+import { BluetoothSearchLayout } from './layouts/bluetoothSearch';
+import { useAsyncBridgeEvent, useAsyncBridgeRequest } from '@hooks/useAsyncBridge';
 import { useShallow } from 'zustand/react/shallow';
-import { DeviceStateScreen } from '@screens/deviceState';
+import { DeviceStateLayout } from './layouts/deviceState';
 
 export const TauriApp: React.FC = () => {
   const [isFirstRender, setFirstRender] = React.useState(true);
@@ -12,8 +12,7 @@ export const TauriApp: React.FC = () => {
     useShallow((state) => [state.handleAsyncBridgeEvent, state.connectedAddresses])
   );
 
-  const state = useTauriManagerStore((state) => state);
-  console.log('state', state);
+  const currentState = useTauriManagerStore((state) => state.currentViewedDeviceState());
 
   // Add the event listener to the bridge, which listener is
   // provided by the store.
@@ -31,7 +30,11 @@ export const TauriApp: React.FC = () => {
 
   return (
     <React.Fragment>
-      {connectedAddresses.size !== 0 ? <DeviceStateScreen /> : <BluetoothSearchScreen />}
+      {connectedAddresses.size !== 0 && currentState ? (
+        <DeviceStateLayout state={currentState} />
+      ) : (
+        <BluetoothSearchLayout />
+      )}
     </React.Fragment>
   );
 };

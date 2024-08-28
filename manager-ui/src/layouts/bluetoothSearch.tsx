@@ -6,7 +6,7 @@ import { Button, Listbox, ListboxItem, Progress, Spinner } from '@nextui-org/rea
 import { ArrowRight, RefreshCcw } from 'lucide-react';
 import { BlurredOverlay } from '@components/atoms/blurredOverlay';
 
-export const BluetoothSearchScreen: React.FC = () => {
+export const BluetoothSearchLayout: React.FC = () => {
   const {
     isLoading: isScanLoading,
     startScan,
