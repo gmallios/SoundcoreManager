@@ -1,7 +1,6 @@
 name: 'Build & Push branch to netlify'
 
 on:
-  push:
   workflow_dispatch:
 
 jobs:
