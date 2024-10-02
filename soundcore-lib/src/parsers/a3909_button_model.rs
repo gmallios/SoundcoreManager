@@ -78,7 +78,7 @@ fn parse_non_tws_button<'a, E: ParseError<'a>>(
 }
 
 #[cfg(test)]
-mod a3909_button_model {
+mod test {
     use super::*;
 
     const BYTES: [u8; 12] = [1, 99, 1, 84, 1, 102, 1, 84, 0, 1, 0, 0];

@@ -9,7 +9,7 @@ authors.workspace = true
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-wasm-bindgen = "0.2.84"
+wasm-bindgen = "0.2"
 wasm-bindgen-futures = { workspace = true }
 web-sys = { workspace = true, features = [
     "Bluetooth",
@@ -26,7 +26,6 @@ serde_json = { workspace = true }
 serde-wasm-bindgen = { workspace = true }
 tokio = { workspace = true, features = ["sync", "rt", "macros"] }
 soundcore-lib = { workspace = true, default-features = false }
-async-trait = { workspace = true }
 console_error_panic_hook = { workspace = true }
 console_log = { workspace = true }
 log = { workspace = true }

@@ -1,3 +1,3 @@
-mod state;
+mod soundcore_device_state;
 
-pub use state::*;
+pub use soundcore_device_state::*;

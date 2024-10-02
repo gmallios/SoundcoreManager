@@ -1,7 +1,5 @@
 use std::{str::FromStr, time::Duration};
 
-use async_trait::async_trait;
-
 use crate::btaddr::BluetoothAdrr;
 use crate::{
     ble::{BLEDeviceDescriptor, BLEDeviceScanner},
@@ -10,7 +8,6 @@ use crate::{
 
 pub struct MockBLEScanner;
 
-#[async_trait]
 impl BLEDeviceScanner for MockBLEScanner {
     async fn scan(
         &self,

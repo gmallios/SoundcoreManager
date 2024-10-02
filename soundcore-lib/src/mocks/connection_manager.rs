@@ -1,6 +1,5 @@
 use std::sync::Arc;
 
-use async_trait::async_trait;
 use tokio::sync::{mpsc, Mutex};
 
 use crate::ble::BLEDeviceScanner;
@@ -23,7 +22,6 @@ impl MockBLEConnectionManager {
     }
 }
 
-#[async_trait]
 impl BLEConnectionManager for MockBLEConnectionManager {
     type Scanner = MockBLEScanner;
     type ConnectionFactory = MockBLEConnectionFactory;

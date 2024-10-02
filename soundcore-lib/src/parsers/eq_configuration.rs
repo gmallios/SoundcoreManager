@@ -33,6 +33,7 @@ pub fn parse_stereo_eq_configuration<'a, E: ParseError<'a>>(
     }
 }
 
+#[allow(unused)]
 pub fn parse_mono_eq_configuration<'a, E: ParseError<'a>>(
     eq_bands: usize,
 ) -> impl Fn(&'a [u8]) -> ParseResult<MonoEQConfiguration, E> {

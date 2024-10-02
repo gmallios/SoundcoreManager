@@ -34,6 +34,7 @@ where
     map(le_u8, T::from)(bytes)
 }
 
+#[allow(unused)]
 pub fn repr_parser<'a, T, E>(bytes: &'a [u8]) -> ParseResult<T, E>
 where
     T: From<u8>,

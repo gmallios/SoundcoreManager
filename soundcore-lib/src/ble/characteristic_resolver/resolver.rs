@@ -1,3 +1,4 @@
+#![allow(unused)]
 use std::sync::Arc;
 
 use uuid::{uuid, Uuid};
@@ -31,7 +32,7 @@ pub enum CharacteristicProperty {
 
 impl Service {
     #[cfg(feature = "btleplug-backend")]
-    async fn from_btleplug(service: btleplug::api::Service) -> SoundcoreLibResult<Self> {
+    async fn from_btleplug(_service: btleplug::api::Service) -> SoundcoreLibResult<Self> {
         todo!()
     }
 }

@@ -5,9 +5,10 @@ use nom::sequence::tuple;
 use serde::{Deserialize, Serialize};
 
 use crate::models::{
-    AgeRange, AutoPowerOff, ChargingCaseBattery, CustomButtonWearEnable, DeviceColor, DualBattery,
-    FirmwareVer, HearingProtect, InEarBeep, LeakyCompensation, MediaTone, SerialNumber, SideTone,
-    SoundMode, StereoEQConfiguration, SupportTwoCnn, TouchTone, TwsStatus, WearDetection, LDAC,
+    AgeRange, AutoPowerOff, ChargingCaseBattery, CustomButtonWearEnable, CustomHearID, DeviceColor,
+    DualBattery, FirmwareVer, HearID, HearingProtect, InEarBeep, LeakyCompensation, MediaTone,
+    SerialNumber, SideTone, SoundMode, StereoEQConfiguration, SupportTwoCnn, TouchTone, TwsStatus,
+    WearDetection, LDAC,
 };
 use crate::packets::DeviceStateResponse;
 use crate::parsers::{
@@ -43,6 +44,8 @@ pub struct A3947StateResponse {
     pub in_ear_beep: InEarBeep,
     pub auto_power_off: AutoPowerOff,
     pub custom_button_wear_enable: CustomButtonWearEnable,
+    pub age_range: AgeRange,
+    pub hear_id: CustomHearID,
 }
 pub fn parse_a3947_state_update<'a, E: ParseError<'a>>(
     bytes: &'a [u8],
@@ -65,11 +68,13 @@ pub fn parse_a3947_state_update<'a, E: ParseError<'a>>(
         let (bytes, eq) = parse_stereo_eq_configuration(10)(bytes)?;
         let (bytes, age_range) = u8_parser::<AgeRange, E>(bytes)?;
         let (bytes, hear_id) = parse_custom_hear_id_with_eq_index(10)(bytes)?;
-        let (bytes, custom_btn_selected) = le_u8(bytes)?;
-        let (bytes, button_model_bytes) = take(16usize)(bytes)?;
-        println!("Bytes: {:X?}", bytes);
+
+        // TODO
+        let (bytes, _custom_btn_selected) = le_u8(bytes)?;
+        let (bytes, _button_model_bytes) = take(16usize)(bytes)?;
+
         let (bytes, sound_mode) = parse_adaptive_sound_mode_customizable_trans(bytes)?;
-        let (bytes, (personal_anc_test_time, personal_anc_volume_db, personal_anc_result_index)) =
+        let (bytes, (_personal_anc_test_time, _personal_anc_volume_db, _personal_anc_result_index)) =
             tuple((le_u32, le_u8, le_u8))(bytes)?;
 
         let (
@@ -86,7 +91,7 @@ pub fn parse_a3947_state_update<'a, E: ParseError<'a>>(
                 support_two_cnn,
                 three_dimensional_effective_mode,
                 hearing_protect,
-                wear_detection_2,
+                _wear_detection_2,
                 in_ear_beep,
                 auto_power_off,
                 custom_button_wear_enable,
@@ -136,6 +141,8 @@ pub fn parse_a3947_state_update<'a, E: ParseError<'a>>(
                     in_ear_beep,
                     auto_power_off,
                     custom_button_wear_enable,
+                    age_range,
+                    hear_id,
                 },
             },
         ))
@@ -155,9 +162,9 @@ impl From<A3947StateResponse> for DeviceStateResponse {
             button_model: None,
             host_device: Some(value.host_device),
             side_tone: Some(value.side_tone),
-            age_range: None,
+            age_range: Some(value.age_range),
             hearid_eq_preset: None,
-            hear_id: None,
+            hear_id: Some(HearID::Custom(value.hear_id)),
             hear_id_has_data: None,
             touch_tone: Some(value.touch_tone),
             tws_status: Some(value.tws_status),

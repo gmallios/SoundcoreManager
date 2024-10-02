@@ -8,14 +8,13 @@ use std::sync::Arc;
 
 use log::trace;
 use mpsc::channel;
-use tauri::async_runtime::{Mutex, RwLock};
+use tauri::async_runtime::Mutex;
 use tauri::{AppHandle, Manager};
 use tauri_plugin_log::LogTarget;
 use tokio::sync::mpsc;
 
 use soundcore_lib::api::SoundcoreDeviceState;
 use soundcore_lib::btaddr::BluetoothAdrr;
-use soundcore_lib::types::KnownProductCodes;
 
 use crate::async_bridge::{async_bridge, BridgeCommand, BridgeResponse};
 
@@ -25,7 +24,6 @@ pub(crate) mod async_bridge;
 // mod tray;
 
 struct SoundcoreAppState {
-    model: Arc<RwLock<Option<KnownProductCodes>>>,
     bridge_tx: Mutex<mpsc::Sender<BridgeCommand>>,
     scan_in_progress: Arc<Mutex<bool>>,
     last_states: Arc<Mutex<HashMap<BluetoothAdrr, SoundcoreDeviceState>>>,
@@ -55,7 +53,6 @@ async fn main() {
         // .system_tray(tray::get_system_tray())
         // .on_system_tray_event(tray::handle_tray_event)
         .manage(SoundcoreAppState {
-            model: Arc::new(RwLock::new(None)),
             bridge_tx: Mutex::new(input_tx),
             scan_in_progress: Arc::new(Mutex::new(false)),
             last_states: Arc::new(Mutex::new(HashMap::new()))
@@ -81,16 +78,13 @@ async fn main() {
             /* Prevent window from closing - Primarily for macOS since we rely heavily on the window */
             tauri::RunEvent::WindowEvent { label, event, .. } => {
                 if cfg!(target_os = "macos"){
-                    match event {
-                        tauri::WindowEvent::CloseRequested { api, .. } => {
-                            api.prevent_close();
-                            let win = app_handle.get_window(label.as_str()).unwrap();
-                            win.hide().unwrap();
-                            /* Fix show/hide tray item */
-                            let item = app_handle.tray_handle().get_item("hide");
-                            item.set_title("Show").unwrap();
-                        }
-                        _ => {}
+                    if let tauri::WindowEvent::CloseRequested { api, .. } = event {
+                        api.prevent_close();
+                        let win = app_handle.get_window(label.as_str()).unwrap();
+                        win.hide().unwrap();
+                        /* Fix show/hide tray item */
+                        let item = app_handle.tray_handle().get_item("hide");
+                        item.set_title("Show").unwrap();
                     }
                 }
             }

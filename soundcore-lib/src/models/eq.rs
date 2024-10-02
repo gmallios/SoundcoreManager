@@ -95,21 +95,12 @@ impl MonoEQ {
         ((value as f32) / 10.0).clamp(Self::MIN_FLOAT, Self::MAX_FLOAT)
     }
 
-    /* Used for range of -6..=6 */
-    fn from_small_range_float(value: &f32) -> u8 {
-        Self::from_signed(&((value * 20.0) as i8).clamp(Self::MIN_SIGNED, Self::MAX_SIGNED))
-    }
-
     /* Input should be clamped to -120..=120 then converted to the range 0..=240 */
     fn from_signed(value: &i8) -> u8 {
         (value
             .clamp(&Self::MIN_SIGNED, &Self::MAX_SIGNED)
             .wrapping_add(Self::MIN_SIGNED.abs()) as u8)
             .clamp(Self::MIN_BYTE, Self::MAX_BYTE)
-    }
-
-    fn to_signed(value: u8) -> i8 {
-        (value as i8).wrapping_sub(Self::MIN_SIGNED.abs())
     }
 
     fn calculate_drc_adjustments(values: Vec<f32>) -> Vec<f32> {

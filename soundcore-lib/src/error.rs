@@ -1,7 +1,6 @@
 use thiserror::Error;
 
 pub type SoundcoreLibResult<E> = std::result::Result<E, SoundcoreLibError>;
-type ErrorWrapper = Box<dyn std::error::Error + Send + Sync>;
 
 #[derive(Error, Debug)]
 pub enum SoundcoreLibError {

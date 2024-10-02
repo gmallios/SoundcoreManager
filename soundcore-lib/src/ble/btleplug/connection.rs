@@ -1,4 +1,3 @@
-use async_trait::async_trait;
 use btleplug::api::{CharPropFlags, Characteristic, Peripheral as _, Service};
 use btleplug::platform::Peripheral;
 use futures::StreamExt;
@@ -72,7 +71,6 @@ impl BtlePlugConnection {
     ) -> SoundcoreLibResult<Option<BLEConnectionUuidSet>> {
         let services = peripheral
             .services()
-            .to_owned()
             .into_iter()
             .filter(|svc| svc.characteristics.len() >= 2)
             .filter(|svc| !EXCLUDED_SERVICE_UUIDS.contains(&svc.uuid))
@@ -80,13 +78,12 @@ impl BtlePlugConnection {
 
         for service in services.iter() {
             trace!("Inspecting Service: {:#?}", service);
-            let characteristics = service.characteristics.to_owned();
-            let read_characteristic = characteristics.to_owned().into_iter().find(|c| {
+            let read_characteristic = service.characteristics.clone().into_iter().find(|c| {
                 c.properties.contains(CharPropFlags::NOTIFY)
                     && c.properties.contains(CharPropFlags::READ)
             });
 
-            let write_characteristic = characteristics.into_iter().find(|c| {
+            let write_characteristic = service.characteristics.clone().into_iter().find(|c| {
                 c.properties.contains(CharPropFlags::WRITE)
                     && c.properties.contains(CharPropFlags::WRITE_WITHOUT_RESPONSE)
             });

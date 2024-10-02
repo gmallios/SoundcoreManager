@@ -9,8 +9,8 @@ use crate::models::{
 use crate::{
     api::DeviceFeatureSet,
     models::{
-        AgeRange, Battery, ButtonModel, EQConfiguration, HearID, SerialNumber,
-        SideTone, SoundMode, TwsStatus, WearDetection,
+        AgeRange, Battery, ButtonModel, EQConfiguration, HearID, SerialNumber, SideTone, SoundMode,
+        TwsStatus, WearDetection,
     },
 };
 

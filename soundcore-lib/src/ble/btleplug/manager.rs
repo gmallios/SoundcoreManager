@@ -1,7 +1,6 @@
 use std::sync::{Arc, Weak};
 use std::time::Duration;
 
-use async_trait::async_trait;
 use btleplug::api::{Central as _, CentralEvent};
 use btleplug::{
     api::Manager as _,
@@ -52,7 +51,6 @@ impl BtlePlugBLEManager {
     }
 }
 
-#[async_trait]
 impl BLEConnectionManager for BtlePlugBLEManager {
     type Scanner = BtlePlugScanner;
     type ConnectionFactory = BtlePlugConnectionFactory;

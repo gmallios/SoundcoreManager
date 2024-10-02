@@ -1,10 +1,9 @@
 use std::time::Duration;
 
-use async_trait::async_trait;
 use btleplug::api::{Central, Peripheral as _, ScanFilter};
 use btleplug::platform::{Adapter, Peripheral};
 use futures::{stream, StreamExt};
-use log::{debug, info, warn};
+use log::warn;
 
 use crate::ble::BLEDeviceScanner;
 use crate::btaddr::BluetoothAdrr;
@@ -136,7 +135,6 @@ impl BtlePlugScanner {
     }
 }
 
-#[async_trait]
 impl BLEDeviceScanner for BtlePlugScanner {
     async fn scan(
         &self,

@@ -111,7 +111,6 @@ impl From<BluetoothAdrr> for u64 {
     }
 }
 
-
 impl Display for BluetoothAdrr {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", Self::from_bytes_to_string(&self.address))

@@ -1,6 +1,5 @@
 use std::sync::{Arc, RwLock};
 
-use async_trait::async_trait;
 use log::{debug, error};
 use tokio::sync::mpsc::Receiver;
 use uuid::Uuid;

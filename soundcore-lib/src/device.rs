@@ -24,7 +24,7 @@ where
 {
     connection: Arc<C>,
     state_channel: Arc<Mutex<watch::Sender<SoundcoreDeviceState>>>,
-    state_channel_handle: F::JoinHandle,
+    _state_channel_handle: F::JoinHandle,
     model: KnownProductCodes,
 }
 
@@ -53,7 +53,7 @@ where
         Ok(Self {
             connection,
             state_channel: state_sender,
-            state_channel_handle: packet_handler,
+            _state_channel_handle: packet_handler,
             model,
         })
     }
@@ -111,12 +111,11 @@ where
                 None
             };
 
-            if let Ok(_) = state_req_fut.await {
-                match F::timeout(Duration::from_millis(1000), state_receive_fut).await {
-                    Ok(Some(packet)) => {
-                        return Ok(packet);
-                    }
-                    _ => {}
+            if state_req_fut.await.ok().is_some() {
+                if let Ok(Some(packet)) =
+                    F::timeout(Duration::from_millis(1000), state_receive_fut).await
+                {
+                    return Ok(packet);
                 };
             }
 
@@ -161,12 +160,11 @@ where
                 None
             };
 
-            if let Ok(_) = state_req_fut.await {
-                match F::timeout(Duration::from_millis(1000), state_receive_fut).await {
-                    Ok(Some(packet)) => {
-                        return Ok(packet);
-                    }
-                    _ => {}
+            if state_req_fut.await.ok().is_some() {
+                if let Ok(Some(packet)) =
+                    F::timeout(Duration::from_millis(1000), state_receive_fut).await
+                {
+                    return Ok(packet);
                 };
             }
             F::sleep(Duration::from_millis(500)).await;
@@ -201,9 +199,6 @@ where
                     }
                     Err(e) => {
                         error!("Failed to parse packet: {:?}", e);
-                    }
-                    _ => {
-                        error!("Unknown packet received, bytes: {:?}", bytes);
                     }
                 }
             }

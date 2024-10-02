@@ -2,6 +2,7 @@ use std::time::Duration;
 
 use futures::Future;
 
+#[allow(async_fn_in_trait)]
 pub trait ManagerFuture {
     type JoinHandle: ManagerJoinHandle;
 

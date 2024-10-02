@@ -1,6 +1,6 @@
-use std::str::FromStr;
 use soundcore_lib::btaddr::BluetoothAdrr;
 use soundcore_lib::models::EQProfile;
+use std::str::FromStr;
 use uuid::Uuid;
 use wasm_bindgen::prelude::wasm_bindgen;
 use wasm_bindgen::JsValue;

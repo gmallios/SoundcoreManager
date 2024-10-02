@@ -4,6 +4,8 @@ use crate::types::KnownProductCodes;
 pub enum RequestPacketKind {
     State,
     Info,
+    BatteryLevel,
+    BatteryStatus,
 }
 
 pub struct RequestPacketBuilder {
@@ -48,6 +50,8 @@ impl Packet for RequestPacketBuilder {
         match self.kind {
             RequestPacketKind::State => self.state_request(),
             RequestPacketKind::Info => self.info_request(),
+            RequestPacketKind::BatteryLevel => self.battery_level(),
+            RequestPacketKind::BatteryStatus => self.battery_status(),
         }
     }
 
@@ -58,7 +62,7 @@ impl Packet for RequestPacketBuilder {
 }
 
 #[cfg(test)]
-mod request_test {
+mod test {
     use super::*;
 
     #[test]
@@ -76,6 +80,24 @@ mod request_test {
         assert_eq!(
             packet,
             [0x08, 0xEE, 0x00, 0x00, 0x00, 0x01, 0x05, 0x0A, 0x00, 0x06]
+        );
+    }
+
+    #[test]
+    fn battery_level_default() {
+        let packet = RequestPacketBuilder::new(RequestPacketKind::BatteryLevel).build();
+        assert_eq!(
+            packet,
+            vec![0x08, 0xEE, 0x00, 0x00, 0x00, 0x01, 0x03, 0x0A, 0x00, 0x04]
+        );
+    }
+
+    #[test]
+    fn battery_status_default() {
+        let packet = RequestPacketBuilder::new(RequestPacketKind::BatteryStatus).build();
+        assert_eq!(
+            packet,
+            vec![0x08, 0xEE, 0x00, 0x00, 0x00, 0x01, 0x04, 0x0A, 0x00, 0x05]
         );
     }
 }

@@ -15,7 +15,13 @@ use manager_fut::ManagerFuture;
 ))]
 use manager_fut::TokioFuture;
 
+// TODO: Specify clippy & fmt features
+#[allow(unused_imports)]
+#[cfg(all(feature = "btleplug-backend", not(feature = "mock")))]
+use crate::ble::btleplug::manager::BtlePlugBLEManager;
 use crate::ble::BLEAdapterEvent;
+#[cfg(any(test, feature = "mock"))]
+use crate::mocks::*;
 use crate::{
     ble::{BLEConnectionManager, BLEDeviceDescriptor},
     btaddr::BluetoothAdrr,
@@ -23,12 +29,10 @@ use crate::{
     error::SoundcoreLibResult,
     types::{KnownProductCodes, SOUNDCORE_NAME_PRODUCT_CODE_MAP},
 };
-// TODO: Specify clippy & fmt features
-#[allow(unused_imports)]
-#[cfg(all(feature = "btleplug-backend", not(feature = "mock")))]
-use crate::ble::btleplug::manager::BtlePlugBLEManager;
-#[cfg(any(test, feature = "mock"))]
-use crate::mocks::*;
+
+type DeviceMap<B, F> = RwLock<
+    HashMap<BluetoothAdrr, Arc<SoundcoreBLEDevice<<B as BLEConnectionManager>::Connection, F>>>,
+>;
 
 pub struct DeviceManager<B, F>
 where
@@ -36,7 +40,7 @@ where
     F: ManagerFuture,
 {
     ble_manager: B,
-    ble_devices: RwLock<HashMap<BluetoothAdrr, Arc<SoundcoreBLEDevice<B::Connection, F>>>>,
+    ble_devices: DeviceMap<B, F>,
 }
 
 impl<B, F> DeviceManager<B, F>

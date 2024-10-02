@@ -23,7 +23,7 @@ mod state;
 
 #[derive(Debug)]
 pub enum ResponsePacket {
-    DeviceState(TaggedData<DeviceStateResponse>),
+    DeviceState(Box<TaggedData<DeviceStateResponse>>),
     SoundModeUpdate(SoundModeUpdateResponse),
     DeviceInfo(DeviceInfoResponse),
     BassUpUpdate(BassUpUpdateResponse),
@@ -42,7 +42,7 @@ impl ResponsePacket {
 
         Ok(match packet_header.kind {
             ResponsePacketKind::StateUpdate => {
-                Self::DeviceState(parse_state_update_packet(bytes)?.1)
+                Self::DeviceState(Box::new(parse_state_update_packet(bytes)?.1))
             }
             ResponsePacketKind::SoundModeUpdate => {
                 Self::SoundModeUpdate(parse_sound_mode_update_packet(bytes)?.1)
@@ -70,10 +70,10 @@ impl ResponsePacket {
         Ok(match packet_header.kind {
             ResponsePacketKind::StateUpdate => {
                 let tagged_state_resp = parse_state_update_packet(bytes)?.1;
-                let state = ResponsePacket::DeviceState(TaggedData {
+                let state = ResponsePacket::DeviceState(Box::new(TaggedData {
                     tag: tagged_state_resp.tag,
                     data: tagged_state_resp.data,
-                })
+                }))
                 .transform_state(&SoundcoreDeviceState::default());
                 Some(TaggedData {
                     tag: tagged_state_resp.tag,
@@ -127,7 +127,7 @@ impl StateTransformationPacket for ResponsePacket {
             _ => {
                 debug!("No state transformation implementation!");
                 state.clone()
-            },
+            }
         }
     }
 }

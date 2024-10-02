@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use std::fmt::Display;
 use typeshare::typeshare;
 
 #[derive(Debug, Serialize, Deserialize, Eq, PartialEq, Ord, PartialOrd, Clone, Copy, Hash)]
@@ -31,15 +32,15 @@ impl FirmwareVer {
     }
 }
 
-impl ToString for FirmwareVer {
-    fn to_string(&self) -> String {
-        format!("{:02}.{:02}", self.major, self.minor)
+impl Display for FirmwareVer {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:02}.{:02}", self.major, self.minor)
     }
 }
 
-impl Into<Option<DeviceFirmware>> for FirmwareVer {
-    fn into(self) -> Option<DeviceFirmware> {
-        Some(DeviceFirmware::SINGLE(self))
+impl From<FirmwareVer> for Option<DeviceFirmware> {
+    fn from(val: FirmwareVer) -> Self {
+        Some(DeviceFirmware::SINGLE(val))
     }
 }
 

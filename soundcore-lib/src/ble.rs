@@ -1,7 +1,6 @@
 use std::sync::Arc;
 use std::time::Duration;
 
-use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
@@ -15,7 +14,7 @@ pub mod btleplug;
 #[cfg(all(feature = "winrt-backend", not(feature = "mock")))]
 pub mod windows;
 
-#[async_trait]
+#[allow(async_fn_in_trait)]
 pub trait BLEConnectionManager {
     type Scanner: BLEDeviceScanner + Send + Sync;
     type ConnectionFactory: BLEConnectionFactory + Send + Sync;
@@ -47,13 +46,14 @@ pub enum BLEAdapterEvent {
     DeviceDisconnected(BluetoothAdrr),
 }
 
+#[allow(async_fn_in_trait)]
 pub trait BLEConnection {
     fn descriptor(&self) -> BLEDeviceDescriptor;
     async fn byte_channel(&self) -> SoundcoreLibResult<tokio::sync::mpsc::Receiver<Vec<u8>>>;
     async fn write(&self, bytes: &[u8], write_type: WriteType) -> SoundcoreLibResult<()>;
 }
 
-#[async_trait]
+#[allow(async_fn_in_trait)]
 pub trait BLEConnectionFactory {
     type Connection: BLEConnection + Send + Sync;
     async fn connect(
@@ -63,7 +63,7 @@ pub trait BLEConnectionFactory {
     ) -> SoundcoreLibResult<Self::Connection>;
 }
 
-#[async_trait]
+#[allow(async_fn_in_trait)]
 pub trait BLEDeviceScanner {
     async fn scan(
         &self,

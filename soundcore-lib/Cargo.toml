@@ -18,7 +18,6 @@ log = { workspace = true }
 env_logger = { workspace = true }
 thiserror = { workspace = true }
 serde = { workspace = true, features = ["derive", "rc"] }
-async-trait = { workspace = true }
 futures = { workspace = true }
 strum = { version = "0.26", features = ["derive"] }
 nom = "7"

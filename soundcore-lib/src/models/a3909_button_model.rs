@@ -12,6 +12,8 @@ pub struct A3909ButtonModel {
     pub right: ButtonSide,
 }
 impl A3909ButtonModel {
+    //TODO: Pending feature impl
+    #[allow(unused)]
     fn bytes(&self) -> [u8; 12] {
         let mut bytes = [0u8; 12];
         bytes[0..2].copy_from_slice(&self.left.double_press.bytes());

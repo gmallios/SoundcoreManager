@@ -2,7 +2,6 @@ use collections::HashMap;
 use std::{collections, sync, time::Duration};
 use sync::{Arc, Mutex};
 
-use async_trait::async_trait;
 use log::trace;
 use tokio::task::spawn_blocking;
 use windows::Devices::Bluetooth::Advertisement::{
@@ -60,7 +59,6 @@ impl WindowsBLEDeviceScanner {
     }
 }
 
-#[async_trait]
 impl BLEDeviceScanner for WindowsBLEDeviceScanner {
     // type Descriptor = WindowsBLEDescriptor;
 

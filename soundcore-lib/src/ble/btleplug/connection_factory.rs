@@ -1,4 +1,3 @@
-use async_trait::async_trait;
 use btleplug::api::{Central, Peripheral as _};
 use btleplug::platform::{Adapter, Manager, Peripheral, PeripheralId};
 
@@ -35,7 +34,6 @@ impl BtlePlugConnectionFactory {
     }
 }
 
-#[async_trait]
 impl BLEConnectionFactory for BtlePlugConnectionFactory {
     type Connection = BtlePlugConnection;
     async fn connect(
