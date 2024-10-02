@@ -25,7 +25,7 @@ pub fn parse_a3951_device_info_packet<'a, E: ParseError<'a>>(
         "parse_a3951_device_info",
         all_consuming(map(pair(parse_dual_fw, parse_serial_number), |(fw, sn)| {
             A3951DeviceInfoResponse {
-                fw: DeviceFirmware::DUAL(fw.0, fw.1),
+                fw: DeviceFirmware::new(fw.0, Some(fw.1)),
                 sn,
             }
         })),

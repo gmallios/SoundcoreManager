@@ -92,7 +92,7 @@ pub fn parse_a3027_state_response<'a, E: ParseError<'a>>(
                         hear_id,
                         sound_mode,
                         wear_detection,
-                        fw: DeviceFirmware::DUAL(fw.0, fw.1),
+                        fw: DeviceFirmware::new(fw.0, Some(fw.1)),
                         sn,
                         touch_func: touch_func.unwrap_or(false),
                     },

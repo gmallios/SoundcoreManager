@@ -14,11 +14,13 @@ import {
   NavbarBrand,
   NavbarContent,
   NavbarItem,
-  Spinner
+  Spinner,
+  useDisclosure
 } from '@nextui-org/react';
 import { BlurredOverlay } from '@components/atoms/blurredOverlay';
-import { ChevronDown, Unplug } from 'lucide-react';
+import { ChevronDown, Info, Unplug } from 'lucide-react';
 import { DeviceStateLayout } from './layouts/deviceState';
+import { DeviceInfoModal } from '@components/DeviceInfoModal/deviceInfoModal';
 
 enum ConnectionDialogStatus {
   DIALOG_OPEN,
@@ -32,6 +34,13 @@ export const WebApp: React.FC = () => {
     disconnect: state.disconnect,
     setDevice: state.setDevice
   }));
+
+  const {
+    isOpen: isDeviceInfoOpen,
+    onOpen: onDeviceInfoOpen,
+    onClose: onDeviceInfoClose
+  } = useDisclosure();
+
   const [isConnecting, setIsConnecting] = useState(ConnectionDialogStatus.CLOSED);
   const scan = async () => {
     setIsConnecting(ConnectionDialogStatus.DIALOG_OPEN);
@@ -79,6 +88,14 @@ export const WebApp: React.FC = () => {
                 </DropdownTrigger>
                 <DropdownMenu variant={'faded'} aria-label="Device Actions">
                   <DropdownItem
+                    key="deviceinfo"
+                    onClick={onDeviceInfoOpen}
+                    startContent={
+                      <Info className={'pointer-events-none flex-shrink-0'} size={20} />
+                    }>
+                    Device Information
+                  </DropdownItem>
+                  <DropdownItem
                     key="disconnect"
                     className="text-danger"
                     color="danger"
@@ -111,6 +128,9 @@ export const WebApp: React.FC = () => {
           </>
         )}
       </div>
+      {state && (
+        <DeviceInfoModal isOpen={isDeviceInfoOpen} onClose={onDeviceInfoClose} state={state} />
+      )}
     </>
   );
 };

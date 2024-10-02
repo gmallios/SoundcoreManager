@@ -3,9 +3,24 @@ use std::fmt::Display;
 use typeshare::typeshare;
 
 #[derive(Debug, Serialize, Deserialize, Eq, PartialEq, Ord, PartialOrd, Clone, Copy, Hash)]
-pub enum DeviceFirmware {
-    DUAL(FirmwareVer, FirmwareVer),
-    SINGLE(FirmwareVer),
+#[typeshare]
+pub struct DeviceFirmware {
+    primary: FirmwareVer,
+    secondary: Option<FirmwareVer>,
+}
+
+impl DeviceFirmware {
+    pub fn new(primary: FirmwareVer, secondary: Option<FirmwareVer>) -> Self {
+        Self { primary, secondary }
+    }
+
+    pub fn primary(&self) -> FirmwareVer {
+        self.primary
+    }
+
+    pub fn secondary(&self) -> Option<FirmwareVer> {
+        self.secondary
+    }
 }
 
 #[derive(
@@ -40,7 +55,7 @@ impl Display for FirmwareVer {
 
 impl From<FirmwareVer> for Option<DeviceFirmware> {
     fn from(val: FirmwareVer) -> Self {
-        Some(DeviceFirmware::SINGLE(val))
+        Some(DeviceFirmware::new(val, None))
     }
 }
 

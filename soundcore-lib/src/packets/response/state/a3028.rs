@@ -77,7 +77,7 @@ pub fn parse_a3028_state_response<'a, E: ParseError<'a>>(
                         age_range,
                         hear_id,
                         sound_mode,
-                        fw: DeviceFirmware::DUAL(fw.0, fw.1),
+                        fw: DeviceFirmware::new(fw.0, Some(fw.1)),
                         sn,
                     },
                 },
